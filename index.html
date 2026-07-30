@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CleverDados</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+</head>
+<body>
+
+    <!-- LOBBY PRINCIPAL -->
+    <div id="lobbyModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>🧠 CleverDados</h2>
+            <p>Selecciona un modo de juego</p>
+            <div class="input-group">
+                <label>Tu Nombre:</label>
+                <input type="text" id="playerName" placeholder="Ej. Leo" maxlength="10">
+            </div>
+            <div class="modal-buttons">
+                <div class="row-btns">
+                    <button class="modal-btn btn-primary" onclick="crearSala()">Crear Sala</button>
+                    <button class="modal-btn btn-secondary" onclick="mostrarUnirse()">Unirse</button>
+                </div>
+                <button class="modal-btn btn-outline" onclick="jugarSolo()" style="margin-top: 10px;">Jugar Solo (Local)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UNIRSE A SALA -->
+    <div id="joinModal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>Unirse a Sala</h2>
+            <p>Pide el código al creador de la sala</p>
+            <div class="input-group">
+                <label>Código de la Sala (4 letras/números):</label>
+                <input type="text" id="roomCodeInput" placeholder="ABCD" maxlength="4" style="text-transform: uppercase;">
+            </div>
+            <div class="modal-buttons row-btns">
+                <button class="modal-btn btn-outline" onclick="volverLobby()">Volver</button>
+                <button class="modal-btn btn-secondary" onclick="unirseSala()">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARGANDO -->
+    <div id="loadingModal" class="modal-overlay">
+        <div class="modal-box" style="background: transparent; border: none; box-shadow: none;">
+            <h2 id="loadingText">Conectando...</h2>
+        </div>
+    </div>
+
+    <!-- REINICIAR -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>¿Reiniciar tablero?</h3>
+            <p>Se borrarán todas tus marcas.</p>
+            <div class="modal-buttons row-btns">
+                <button class="modal-btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+                <button class="modal-btn btn-danger" onclick="confirmarReinicio()">Reiniciar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI DEL JUEGO -->
+    <header>
+        <h1>🧠 CleverDados</h1>
+        <div id="roomInfoDisplay" class="room-info" style="display: none;"></div>
+    </header>
+
+    <div class="app-container">
+        <div class="board-container">
+            <!-- TABLERO COMPLETO -->
+            <div class="board" id="game-board">
+                <!-- ÁREA GRIS -->
+                <div class="area area-gris" id="area-gris">
+                    <div class="area-title">⬜ ÁREA GRIS</div>
+                    <div id="area-gris-content"></div>
+                </div>
+
+                <!-- ÁREA AMARILLA -->
+                <div class="area area-amarilla" id="area-amarilla">
+                    <div class="area-title">🟨 ÁREA AMARILLA</div>
+                    <div id="area-amarilla-content"></div>
+                </div>
+
+                <!-- ÁREA AZUL -->
+                <div class="area area-azul" id="area-azul">
+                    <div class="area-title">🟦 ÁREA AZUL</div>
+                    <div id="area-azul-content"></div>
+                </div>
+
+                <!-- ÁREA VERDE -->
+                <div class="area area-verde" id="area-verde">
+                    <div class="area-title">🟩 ÁREA VERDE</div>
+                    <div id="area-verde-content"></div>
+                </div>
+
+                <!-- ÁREA NARANJA -->
+                <div class="area area-naranja" id="area-naranja">
+                    <div class="area-title">🟧 ÁREA NARANJA</div>
+                    <div id="area-naranja-content"></div>
+                </div>
+
+                <!-- ÁREA MORADO -->
+                <div class="area area-morado" id="area-morado">
+                    <div class="area-title">🟪 ÁREA MORADO</div>
+                    <div id="area-morado-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="scoreboard">
+                <div class="scores-grid">
+                    <div class="score-item gris"><span class="color-dot"></span><span id="score-gris">0</span></div>
+                    <div class="score-item amarilla"><span class="color-dot"></span><span id="score-amarilla">0</span></div>
+                    <div class="score-item azul"><span class="color-dot"></span><span id="score-azul">0</span></div>
+                    <div class="score-item verde"><span class="color-dot"></span><span id="score-verde">0</span></div>
+                    <div class="score-item naranja"><span class="color-dot"></span><span id="score-naranja">0</span></div>
+                    <div class="score-item morado"><span class="color-dot"></span><span id="score-morado">0</span></div>
+                </div>
+                
+                <div class="bonus-section">
+                    <span class="bonus-label">⭐ Bonificación:</span>
+                    <span id="bonus-display">0</span>
+                </div>
+
+                <div class="total-score">
+                    TOTAL: <span id="score-total">0</span>
+                </div>
+                
+                <div class="controls">
+                    <button class="modal-btn btn-danger" onclick="mostrarModalReinicio()">🔄 Reiniciar Mi Tablero</button>
+                </div>
+            </div>
+
+            <!-- TABLA DE POSICIONES -->
+            <div class="leaderboard" id="leaderboardPanel">
+                <h3>🏆 Posiciones</h3>
+                <div id="playersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARGAR ÁREAS -->
+    <script src="areas/area-gris.js"></script>
+    <script src="areas/area-amarilla.js"></script>
+    <script src="areas/area-azul.js"></script>
+    <script src="areas/area-verde.js"></script>
+    <script src="areas/area-naranja.js"></script>
+    <script src="areas/area-morado.js"></script>
+    <script src="multijugador.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
