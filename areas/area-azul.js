@@ -30,10 +30,10 @@ const BONIFICACIONES_FILA = [
 
 // Bonificaciones de columna
 const BONIFICACIONES_COLUMNA = [
-    { col: 0, celdas: [0, 4, 8], bonificacion: 'Espiral', simbolo: '🌀', color: '#78909c' },
-    { col: 1, celdas: [1, 5, 9], bonificacion: 'XVerde', simbolo: '✖', color: '#43a047' },
-    { col: 2, celdas: [2, 6, 10], bonificacion: '6Morado', simbolo: '6', color: '#7b1fa2' },
-    { col: 3, celdas: [3, 7, 11], bonificacion: '+1', simbolo: '+1', color: '#ffd700' }
+    { col: 0, celdas: [0, 4, 8], bonificacion: 'Espiral', simbolo: '♻', color: '#78909c', tipo: 'espiral' },
+    { col: 1, celdas: [1, 5, 9], bonificacion: 'XVerde', simbolo: '✖', color: '#43a047', tipo: 'gris', habilidadGris: 'x', indiceGris: 5 },
+    { col: 2, celdas: [2, 6, 10], bonificacion: '6Morado', simbolo: '6', color: '#7b1fa2', tipo: 'gris', habilidadGris: 'seis', indiceGris: 4 },
+    { col: 3, celdas: [3, 7, 11], bonificacion: '+1', simbolo: '+1', color: '#ffd700', tipo: 'mas1' }
 ];
 
 // Estado
@@ -96,16 +96,17 @@ function inicializarAreaAzul() {
             `;
         }
         
-        // Bonificación de fila (5ª columna) - Como puntaje: siempre visible con símbolo y color
+        // Bonificación de fila (5ª columna)
         const bonifConfig = BONIFICACIONES_FILA[fila];
-        const completada = filasCompletadasAzul[fila];
-        const clase = completada ? 'puntaje-completado' : 'puntaje-pendiente';
+        const bonifDesbloqueada = filasCompletadasAzul[fila];
+        const clase = bonifDesbloqueada ? 'puntaje-completado' : 'puntaje-pendiente';
         
         html += `
             <div class="azul-bonificacion-circulo puntaje-circulo ${clase}" 
                  data-azul-fila="${fila}"
+                 data-bonificacion="${bonifConfig.bonificacion}"
                  style="background-color: ${bonifConfig.color}; border-color: ${bonifConfig.color};">
-                ${completada ? '✓' : bonifConfig.simbolo}
+                ${bonifDesbloqueada ? '✓' : bonifConfig.simbolo}
             </div>
         `;
         
@@ -183,7 +184,6 @@ function manejarClickAzul(index) {
 // ============================================================
 
 function actualizarPuntajesAzul() {
-    // Actualizar puntajes de la fila superior
     const circulos = document.querySelectorAll('.azul-puntajes-fila .puntaje-circulo');
     circulos.forEach((circulo, index) => {
         const completado = index < progresoAzul;
@@ -212,7 +212,7 @@ function verificarFilasAzul() {
         if (todasMarcadas) {
             filasCompletadasAzul[filaIndex] = true;
             
-            // Actualizar círculo de bonificación de fila (como puntaje)
+            // Actualizar círculo de bonificación de fila
             const circulo = document.querySelector(`.azul-bonificacion-circulo[data-azul-fila="${filaIndex}"]`);
             if (circulo) {
                 circulo.classList.remove('puntaje-pendiente');
@@ -247,7 +247,7 @@ function verificarColumnasAzul() {
         if (todasMarcadas) {
             columnasCompletadasAzul[colIndex] = true;
             
-            // Actualizar círculo de bonificación de columna (como puntaje)
+            // Actualizar círculo de bonificación de columna
             const circulo = document.querySelector(`.azul-columna-circulo[data-azul-columna="${colIndex}"]`);
             if (circulo) {
                 circulo.classList.remove('puntaje-pendiente');
@@ -256,9 +256,32 @@ function verificarColumnasAzul() {
             }
             
             // Aplicar efecto de la bonificación
-            aplicarBonificacionColumnaAzul(bonif.bonificacion);
+            aplicarBonificacionColumnaAzul(bonif);
         }
     });
+}
+
+// ============================================================
+// APLICAR BONIFICACIÓN DE COLUMNA
+// ============================================================
+
+function aplicarBonificacionColumnaAzul(bonif) {
+    switch(bonif.tipo) {
+        case 'espiral':
+            if (typeof window.desbloquearEspiralExterno === 'function') {
+                window.desbloquearEspiralExterno();
+            }
+            break;
+        case 'mas1':
+            if (typeof window.desbloquearMas1Externo === 'function') {
+                window.desbloquearMas1Externo();
+            }
+            break;
+        case 'gris':
+            desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
+            break;
+    }
+    recalcularPuntajesAzul();
 }
 
 // ============================================================
@@ -266,55 +289,19 @@ function verificarColumnasAzul() {
 // ============================================================
 
 function desbloquearEnGrisAzul(habilidadId, indice) {
-    const celdas = document.querySelectorAll(`.celda-habilidad[data-habilidad="${habilidadId}"]`);
+    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
+    const cell = document.querySelector(selector);
     
-    for (let cell of celdas) {
-        const cellIndex = parseInt(cell.dataset.col);
-        if (cellIndex === indice && cell.classList.contains('bloqueada')) {
-            cell.classList.remove('bloqueada');
-            cell.classList.add('desbloqueada');
-            if (cell.dataset.color) {
-                cell.style.opacity = '1';
-                cell.style.filter = 'none';
-            }
-            return true;
+    if (cell && cell.classList.contains('bloqueada')) {
+        cell.classList.remove('bloqueada');
+        cell.classList.add('desbloqueada');
+        if (cell.dataset.color) {
+            cell.style.opacity = '1';
+            cell.style.filter = 'none';
         }
-    }
-    
-    for (let cell of celdas) {
-        if (cell.classList.contains('bloqueada')) {
-            cell.classList.remove('bloqueada');
-            cell.classList.add('desbloqueada');
-            if (cell.dataset.color) {
-                cell.style.opacity = '1';
-                cell.style.filter = 'none';
-            }
-            return true;
-        }
+        return true;
     }
     return false;
-}
-
-// ============================================================
-// APLICAR BONIFICACIÓN DE COLUMNA
-// ============================================================
-
-function aplicarBonificacionColumnaAzul(bonificacion) {
-    switch(bonificacion) {
-        case 'Espiral':
-            puntosBonificacion += 1;
-            break;
-        case 'XVerde':
-            puntosBonificacion += 2;
-            break;
-        case '6Morado':
-            puntosBonificacion += 2;
-            break;
-        case '+1':
-            puntosBonificacion += 1;
-            break;
-    }
-    recalcularPuntajesAzul();
 }
 
 // ============================================================

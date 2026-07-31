@@ -749,50 +749,160 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     gap: var(--cell-gap);
 }
 
+.verde-puntajes-fila {
+    display: flex;
+    gap: var(--cell-gap);
+    justify-content: center;
+    margin-bottom: 6px;
+    padding: 2px 0;
+}
+
+.verde-puntajes-fila .puntaje-circulo {
+    width: 28px;
+    height: 28px;
+}
+
+.verde-tabla-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .verde-fila {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
 }
 
-.verde-fila .cell {
-    min-width: 24px;
-    height: 24px;
-    font-size: 0.5rem;
-}
-
-.verde-fila .cell.bonus-cell {
-    background: rgba(255, 215, 0, 0.12);
-}
-
-/* --- ETIQUETAS DE BONIFICACIÓN VERDE --- */
-.verde-bonificaciones {
+.verde-celda-wrapper {
     display: flex;
-    gap: var(--cell-gap);
     justify-content: center;
-    margin-top: 4px;
-    padding: 2px 0;
+    align-items: center;
 }
 
-.verde-bonificaciones .bonificacion-label {
-    min-width: 32px;
-    height: 24px;
-    font-size: 0.5rem;
-}
-
-/* --- ETIQUETAS DE PUNTAJES VERDE --- */
-.verde-puntajes {
-    display: flex;
-    gap: var(--cell-gap);
-    justify-content: center;
-    margin-top: 2px;
-    padding: 2px 0;
-}
-
-.verde-puntajes .puntaje-label {
+.verde-cell {
     min-width: 28px;
-    height: 20px;
+    height: 28px;
     font-size: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-cell);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    cursor: pointer;
+    user-select: none;
+    padding: 0 2px;
+    transition: all 0.15s;
+}
+
+.verde-cell:not(.marcada):hover {
+    border-color: rgba(255,255,255,0.3);
+    transform: scale(1.05);
+}
+
+.verde-cell.marcada {
+    background: var(--bg-box);
+    color: transparent !important;
+    border-color: rgba(255,255,255,0.5);
+    position: relative;
+    cursor: default;
+}
+
+.verde-cell.marcada::after {
+    content: "✓";
+    position: absolute;
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #4caf50;
+}
+
+.verde-bonus-fila {
+    display: flex;
+    gap: var(--cell-gap);
+    justify-content: center;
+}
+
+.verde-bonus-item {
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.verde-bonus-item.vacio {
+    opacity: 0;
+}
+
+.verde-bonificacion-circulo {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: bold;
+    color: #fff;
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-color);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .verde-puntajes-fila .puntaje-circulo {
+        width: 22px;
+        height: 22px;
+        font-size: 0.5rem;
+    }
+    
+    .verde-cell {
+        min-width: 22px;
+        height: 22px;
+        font-size: 0.4rem;
+    }
+    
+    .verde-bonus-item {
+        min-width: 22px;
+        height: 22px;
+    }
+    
+    .verde-bonificacion-circulo {
+        width: 18px;
+        height: 18px;
+        font-size: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .verde-puntajes-fila .puntaje-circulo {
+        width: 18px;
+        height: 18px;
+        font-size: 0.4rem;
+        border-width: 1.5px;
+    }
+    
+    .verde-cell {
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.35rem;
+    }
+    
+    .verde-bonus-item {
+        min-width: 18px;
+        height: 18px;
+    }
+    
+    .verde-bonificacion-circulo {
+        width: 14px;
+        height: 14px;
+        font-size: 0.4rem;
+        border-width: 1.5px;
+    }
 }
 
 /* ============================================================
@@ -1229,4 +1339,124 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--border-color);
+}
+
+/* ============================================================
+   MODAL NUMÉRICO
+   ============================================================ */
+
+.modal-numerico-overlay {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 5000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+    animation: modalFadeIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-numerico-box {
+    background: var(--bg-panel);
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    width: 100%;
+    max-width: 360px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.modal-numerico-box h2 {
+    color: #fff;
+    margin-bottom: 4px;
+    font-size: 1.4rem;
+}
+
+.modal-numerico-box p {
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.modal-numerico-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.modal-numerico-btn {
+    padding: 16px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.6rem;
+    font-weight: bold;
+    cursor: pointer;
+    background: var(--bg-cell);
+    color: var(--text-main);
+    transition: all 0.15s;
+    border: 1px solid var(--border-color);
+}
+
+.modal-numerico-btn:hover {
+    background: var(--color-azul);
+    color: #fff;
+    transform: scale(1.05);
+    border-color: var(--color-azul);
+}
+
+.modal-numerico-btn:active {
+    transform: scale(0.95);
+}
+
+.modal-numerico-cancelar {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    transition: all 0.15s;
+    width: 100%;
+}
+
+.modal-numerico-cancelar:hover {
+    background: var(--bg-box);
+    color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .modal-numerico-box {
+        padding: 20px;
+        max-width: 300px;
+    }
+    
+    .modal-numerico-box h2 {
+        font-size: 1.2rem;
+    }
+    
+    .modal-numerico-btn {
+        padding: 14px 0;
+        font-size: 1.4rem;
+    }
 }

@@ -6,7 +6,7 @@
 const AMARILLA_CONFIG = {
     filas: [
         { numeros: [3, 6, 5, 'X'], bonificacion: 'XAzul', color: '#1e88e5', simbolo: '✖', habilidadGris: 'x', indiceGris: 1 },
-        { numeros: [2, 1, 'X', 5], bonificacion: '4Naranja', color: '#ff6f00', simbolo: '6', habilidadGris: 'seis', indiceGris: 1 },
+        { numeros: [2, 1, 'X', 5], bonificacion: '4Naranja', color: '#ff6f00', simbolo: '4', habilidadGris: 'seis', indiceGris: 1 },
         { numeros: [1, 'X', 2, 4], bonificacion: 'XVerde', color: '#43a047', simbolo: '✖', habilidadGris: 'x', indiceGris: 4 },
         { numeros: ['X', 3, 4, 6], bonificacion: 'Lobo', color: '#7b1fa2', simbolo: '🐺', habilidadGris: 'lobo', indiceGris: 0 }
     ],
@@ -189,33 +189,17 @@ function verificarFilaCompleta(filaIndex) {
 // ============================================================
 
 function desbloquearEnGris(habilidadId, indice) {
-    // Buscar la celda específica en Gris por habilidad e índice
-    const celdas = document.querySelectorAll(`.celda-habilidad[data-habilidad="${habilidadId}"]`);
+    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
+    const cell = document.querySelector(selector);
     
-    for (let cell of celdas) {
-        const cellIndex = parseInt(cell.dataset.col);
-        if (cellIndex === indice && cell.classList.contains('bloqueada')) {
-            cell.classList.remove('bloqueada');
-            cell.classList.add('desbloqueada');
-            if (cell.dataset.color) {
-                cell.style.opacity = '1';
-                cell.style.filter = 'none';
-            }
-            return true;
+    if (cell && cell.classList.contains('bloqueada')) {
+        cell.classList.remove('bloqueada');
+        cell.classList.add('desbloqueada');
+        if (cell.dataset.color) {
+            cell.style.opacity = '1';
+            cell.style.filter = 'none';
         }
-    }
-    
-    // Si no se encontró el índice específico, desbloquear la primera bloqueada
-    for (let cell of celdas) {
-        if (cell.classList.contains('bloqueada')) {
-            cell.classList.remove('bloqueada');
-            cell.classList.add('desbloqueada');
-            if (cell.dataset.color) {
-                cell.style.opacity = '1';
-                cell.style.filter = 'none';
-            }
-            return true;
-        }
+        return true;
     }
     return false;
 }
@@ -272,12 +256,18 @@ function verificarTodoCompleto() {
     if (todasFilas && todasColumnas) {
         todoCompletado = true;
         
+        // Actualizar círculo +1
         const circulos = document.querySelectorAll('.amarilla-puntajes .puntaje-circulo');
         const ultimoCirculo = circulos[circulos.length - 1];
         if (ultimoCirculo) {
             ultimoCirculo.classList.remove('puntaje-pendiente');
             ultimoCirculo.classList.add('puntaje-completado');
             ultimoCirculo.textContent = '✓';
+        }
+        
+        // Desbloquear +1 en Gris (siguiente disponible)
+        if (typeof window.desbloquearMas1Externo === 'function') {
+            window.desbloquearMas1Externo();
         }
         
         puntosBonificacion += 1;
