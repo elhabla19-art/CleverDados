@@ -67,6 +67,18 @@
         </div>
     </div>
 
+    <!-- ZOOM DE ÁREA -->
+    <div id="zoomAreaModal" class="modal-overlay zoom-area-modal" style="display: none;">
+        <div class="modal-box zoom-modal">
+            <div class="zoom-header">
+                <!-- Título eliminado -->
+            </div>
+            <div class="zoom-body">
+                <div class="area-replica" id="zoomAreaContent"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- UI DEL JUEGO -->
     <header>
         <h1>🧠 CleverDados</h1>
@@ -77,7 +89,7 @@
         <div class="board-container">
             <!-- TABLERO COMPLETO -->
             <div class="board" id="game-board">
-                <!-- ÁREA GRIS (Fila 1) -->
+                <!-- ÁREA GRIS (Fila 1) - SIN ZOOM -->
                 <div class="area area-gris" id="area-gris">
                     <div id="area-gris-content"></div>
                 </div>
@@ -85,28 +97,28 @@
                 <!-- FILA 2: AMARILLA | AZUL -->
                 <div class="area-row">
                     <!-- ÁREA AMARILLA -->
-                    <div class="area area-amarilla half" id="area-amarilla">
+                    <div class="area area-amarilla half area-clickable" id="area-amarilla" data-area="amarilla" onclick="abrirZoomArea('amarilla')">
                         <div id="area-amarilla-content"></div>
                     </div>
 
                     <!-- ÁREA AZUL -->
-                    <div class="area area-azul half" id="area-azul">
+                    <div class="area area-azul half area-clickable" id="area-azul" data-area="azul" onclick="abrirZoomArea('azul')">
                         <div id="area-azul-content"></div>
                     </div>
                 </div>
 
                 <!-- ÁREA VERDE (Fila 3) -->
-                <div class="area area-verde" id="area-verde">
+                <div class="area area-verde area-clickable" id="area-verde" data-area="verde" onclick="abrirZoomArea('verde')">
                     <div id="area-verde-content"></div>
                 </div>
 
                 <!-- ÁREA NARANJA (Fila 4) -->
-                <div class="area area-naranja" id="area-naranja">
+                <div class="area area-naranja area-clickable" id="area-naranja" data-area="naranja" onclick="abrirZoomArea('naranja')">
                     <div id="area-naranja-content"></div>
                 </div>
 
                 <!-- ÁREA MORADO (Fila 5) -->
-                <div class="area area-morado" id="area-morado">
+                <div class="area area-morado area-clickable" id="area-morado" data-area="morado" onclick="abrirZoomArea('morado')">
                     <div id="area-morado-content"></div>
                 </div>
             </div>
@@ -150,6 +162,5 @@
     
     <!-- 6. MAIN -->
     <script src="main.js"></script>
-    
 </body>
 </html>

@@ -130,6 +130,39 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
+   ÁREAS - CLICKABLES PARA ZOOM
+   ============================================================ */
+
+.area-clickable {
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.area-clickable:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Eliminar lupa de todas las áreas */
+.area-zoom-hint {
+    display: none !important;
+}
+
+/* Eliminar títulos de área que puedan aparecer */
+.area-title {
+    display: none !important;
+}
+
+/* Área gris NO clickable */
+.area-gris.area-clickable {
+    cursor: default !important;
+}
+
+.area-gris.area-clickable:hover {
+    border-color: #78909c !important;
+}
+
+/* ============================================================
    FILA DE ÁREAS EN PARALELO (AMARILLA | AZUL)
    ============================================================ */
 
@@ -143,6 +176,19 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 .area.half {
     width: 100%;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.area.half #area-amarilla-content,
+.area.half #area-azul-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ============================================================
@@ -384,6 +430,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     flex-direction: column;
     gap: 8px;
     width: 100%;
+    align-items: center;
 }
 
 .gris-turnos {
@@ -391,6 +438,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
 }
 
 .gris-etiqueta {
@@ -466,6 +515,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
+    width: 100%;
+    justify-content: center;
 }
 
 .gris-columna {
@@ -542,13 +593,16 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
-   ÁREA AMARILLA
+   ÁREA AMARILLA - CENTRADO
    ============================================================ */
 
 .amarilla-grid {
     display: flex;
     flex-direction: column;
     gap: var(--cell-gap);
+    width: 100%;
+    align-items: center;
+    justify-content: center;
 }
 
 .amarilla-fila {
@@ -556,6 +610,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     gap: var(--cell-gap);
     justify-content: center;
     align-items: center;
+    width: 100%;
 }
 
 .amarilla-fila .cell {
@@ -588,6 +643,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     justify-content: center;
     margin-top: 4px;
     padding: 2px 0;
+    width: 100%;
 }
 
 .amarilla-puntajes .puntaje-circulo {
@@ -596,13 +652,16 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
-   ÁREA AZUL
+   ÁREA AZUL - CENTRADO
    ============================================================ */
 
 .azul-grid {
     display: flex;
     flex-direction: column;
     gap: var(--cell-gap);
+    width: 100%;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Fila de puntajes visuales */
@@ -613,6 +672,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     margin-bottom: 6px;
     padding: 2px 0;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .azul-puntajes-fila .puntaje-circulo {
@@ -626,6 +686,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     gap: var(--cell-gap);
     justify-content: center;
     align-items: center;
+    width: 100%;
 }
 
 .azul-fila .cell {
@@ -680,6 +741,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     justify-content: center;
     margin-top: 4px;
     padding: 2px 0;
+    width: 100%;
 }
 
 /* ============================================================
@@ -690,6 +752,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     display: flex;
     flex-direction: column;
     gap: var(--cell-gap);
+    width: 100%;
+    align-items: center;
 }
 
 .verde-puntajes-fila {
@@ -699,6 +763,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     margin-bottom: 6px;
     padding: 2px 0;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .verde-puntajes-fila .puntaje-circulo {
@@ -710,12 +775,15 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     display: flex;
     flex-direction: column;
     gap: 4px;
+    width: 100%;
+    align-items: center;
 }
 
 .verde-fila {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
+    width: 100%;
 }
 
 .verde-celda-wrapper {
@@ -766,6 +834,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
+    width: 100%;
 }
 
 .verde-bonus-item {
@@ -804,18 +873,23 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     display: flex;
     flex-direction: column;
     gap: var(--cell-gap);
+    width: 100%;
+    align-items: center;
 }
 
 .naranja-tabla-container {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    width: 100%;
+    align-items: center;
 }
 
 .naranja-fila {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
+    width: 100%;
 }
 
 .naranja-celda-wrapper {
@@ -887,6 +961,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
+    width: 100%;
 }
 
 .naranja-bonus-item {
@@ -926,18 +1001,23 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     display: flex;
     flex-direction: column;
     gap: var(--cell-gap);
+    width: 100%;
+    align-items: center;
 }
 
 .morado-tabla-container {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    width: 100%;
+    align-items: center;
 }
 
 .morado-fila {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
+    width: 100%;
 }
 
 .morado-celda-wrapper {
@@ -1002,6 +1082,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
+    width: 100%;
 }
 
 .morado-bonus-item {
@@ -1208,7 +1289,275 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
-   RESPONSIVE
+   ZOOM MODAL PARA ÁREAS (AMPLIADO - MÁS GRANDE)
+   ============================================================ */
+
+.zoom-area-modal .zoom-modal {
+    max-width: 750px;
+    padding: 16px 20px 20px 20px;
+    background: var(--bg-panel);
+    border-radius: 16px;
+}
+
+.zoom-area-modal .zoom-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Eliminar títulos del zoom */
+.zoom-area-modal .zoom-area-title {
+    display: none !important;
+}
+
+.zoom-area-modal .zoom-header {
+    justify-content: flex-end !important;
+    margin-bottom: 4px;
+    min-height: 0;
+}
+
+/* Eliminar botón X del zoom */
+.zoom-close {
+    display: none !important;
+}
+
+/* Reproducción exacta del área con tamaño aumentado */
+.zoom-area-modal .area-replica {
+    background: var(--bg-box);
+    border-radius: 12px;
+    padding: 20px 24px;
+    border: 2px solid var(--border-color);
+    width: 100%;
+    max-width: 700px;
+}
+
+/* Tamaños aumentados para el zoom - MÁS GRANDES */
+.zoom-area-modal .cell {
+    min-width: 64px;
+    height: 64px;
+    font-size: 1.3rem;
+    border-radius: 8px;
+}
+
+.zoom-area-modal .cell.marcada::after {
+    font-size: 1.8rem;
+}
+
+/* ============================================================
+   ZOOM - OCULTAR BONIFICACIONES Y PUNTAJES
+   ============================================================ */
+
+.zoom-area-modal .bonificacion-circulo,
+.zoom-area-modal .puntaje-circulo,
+.zoom-area-modal .amarilla-bonificacion-circulo,
+.zoom-area-modal .amarilla-puntajes,
+.zoom-area-modal .azul-bonificacion-circulo,
+.zoom-area-modal .azul-columna-circulo,
+.zoom-area-modal .azul-puntajes-fila,
+.zoom-area-modal .azul-columnas,
+.zoom-area-modal .verde-bonus-fila,
+.zoom-area-modal .verde-puntajes-fila,
+.zoom-area-modal .naranja-bonus-fila,
+.zoom-area-modal .morado-bonus-fila,
+.zoom-area-modal .gris-etiqueta,
+.zoom-area-modal .gris-turnos {
+    display: none !important;
+}
+
+/* En el zoom, las filas de bonificaciones no ocupan espacio */
+.zoom-area-modal .amarilla-fila .amarilla-bonificacion-circulo {
+    display: none !important;
+}
+
+/* Ajustar grids para que ocupen todo el espacio */
+.zoom-area-modal .amarilla-grid,
+.zoom-area-modal .azul-grid,
+.zoom-area-modal .verde-grid,
+.zoom-area-modal .naranja-grid,
+.zoom-area-modal .morado-grid {
+    width: 100%;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ============================================================
+   ZOOM - VERDE, NARANJA, MORADO EN 2 FILAS (6 + 5)
+   ============================================================ */
+
+.zoom-area-modal .verde-fila,
+.zoom-area-modal .naranja-fila,
+.zoom-area-modal .morado-fila {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+    max-width: 650px;
+}
+
+.zoom-area-modal .verde-fila .verde-celda-wrapper,
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper,
+.zoom-area-modal .morado-fila .morado-celda-wrapper {
+    flex: 0 0 auto;
+}
+
+/* Forzar 6 en primera fila y 5 en segunda */
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(1),
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(2),
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(3),
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(4),
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(5),
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(6) {
+    order: 1;
+}
+
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(7),
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(8),
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(9),
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(10),
+.zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(11) {
+    order: 2;
+}
+
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(1),
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(2),
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(3),
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(4),
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(5),
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(6) {
+    order: 1;
+}
+
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(7),
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(8),
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(9),
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(10),
+.zoom-area-modal .naranja-fila .naranja-celda-wrapper:nth-child(11) {
+    order: 2;
+}
+
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(1),
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(2),
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(3),
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(4),
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(5),
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(6) {
+    order: 1;
+}
+
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(7),
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(8),
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(9),
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(10),
+.zoom-area-modal .morado-fila .morado-celda-wrapper:nth-child(11) {
+    order: 2;
+}
+
+/* Tamaños específicos en zoom - MÁS GRANDES */
+.zoom-area-modal .amarilla-fila .cell {
+    min-width: 60px;
+    height: 60px;
+    font-size: 1.2rem;
+}
+
+.zoom-area-modal .azul-fila .cell {
+    min-width: 56px;
+    height: 56px;
+    font-size: 1.1rem;
+}
+
+.zoom-area-modal .verde-cell {
+    min-width: 56px;
+    height: 56px;
+    font-size: 1rem;
+}
+
+.zoom-area-modal .naranja-cell {
+    min-width: 56px;
+    height: 56px;
+    font-size: 1.1rem;
+}
+
+.zoom-area-modal .morado-cell {
+    min-width: 56px;
+    height: 56px;
+    font-size: 1.1rem;
+}
+
+/* ============================================================
+   RESPONSIVE ZOOM - MÓVIL MÁS GRANDE
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .zoom-area-modal .zoom-modal {
+        padding: 12px 14px 14px 14px;
+        max-width: 95%;
+    }
+    
+    .zoom-area-modal .area-replica {
+        padding: 12px 14px;
+    }
+    
+    .zoom-area-modal .cell {
+        min-width: 50px !important;
+        height: 50px !important;
+        font-size: 1rem !important;
+    }
+    
+    .zoom-area-modal .cell.marcada::after {
+        font-size: 1.4rem !important;
+    }
+    
+    .zoom-area-modal .amarilla-fila .cell { min-width: 48px !important; height: 48px !important; }
+    .zoom-area-modal .azul-fila .cell { min-width: 46px !important; height: 46px !important; }
+    .zoom-area-modal .verde-cell { min-width: 46px !important; height: 46px !important; }
+    .zoom-area-modal .naranja-cell { min-width: 46px !important; height: 46px !important; }
+    .zoom-area-modal .morado-cell { min-width: 46px !important; height: 46px !important; }
+    
+    .zoom-area-modal .verde-fila,
+    .zoom-area-modal .naranja-fila,
+    .zoom-area-modal .morado-fila {
+        gap: 4px;
+        max-width: 450px;
+    }
+}
+
+@media (max-width: 480px) {
+    .zoom-area-modal .zoom-modal {
+        padding: 8px 10px 10px 10px;
+    }
+    
+    .zoom-area-modal .area-replica {
+        padding: 8px 10px;
+    }
+    
+    .zoom-area-modal .cell {
+        min-width: 44px !important;
+        height: 44px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .zoom-area-modal .cell.marcada::after {
+        font-size: 1.2rem !important;
+    }
+    
+    .zoom-area-modal .amarilla-fila .cell { min-width: 42px !important; height: 42px !important; }
+    .zoom-area-modal .azul-fila .cell { min-width: 40px !important; height: 40px !important; }
+    .zoom-area-modal .verde-cell { min-width: 40px !important; height: 40px !important; }
+    .zoom-area-modal .naranja-cell { min-width: 40px !important; height: 40px !important; }
+    .zoom-area-modal .morado-cell { min-width: 40px !important; height: 40px !important; }
+    
+    .zoom-area-modal .verde-fila,
+    .zoom-area-modal .naranja-fila,
+    .zoom-area-modal .morado-fila {
+        gap: 3px;
+        max-width: 280px;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE GENERAL
    ============================================================ */
 
 @media (max-width: 768px) {

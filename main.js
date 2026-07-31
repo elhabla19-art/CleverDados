@@ -291,6 +291,116 @@ function jugarSolo() {
 }
 
 // ============================================================
+// ZOOM DE ÁREA - FUNCIONALIDAD
+// ============================================================
+
+function abrirZoomArea(area) {
+    // No abrir zoom para área gris
+    if (area === 'gris') return;
+    
+    const modal = document.getElementById('zoomAreaModal');
+    const content = document.getElementById('zoomAreaContent');
+    
+    // Obtener el contenido del área
+    const areaElement = document.getElementById(`area-${area}`);
+    const areaContent = areaElement ? areaElement.querySelector(`#area-${area}-content`) : null;
+    
+    if (areaContent) {
+        // Clonar el contenido para el zoom
+        const clone = areaContent.cloneNode(true);
+        content.innerHTML = '';
+        content.appendChild(clone);
+        
+        // Reorganizar verde, naranja y morado en 2 filas (6 + 5)
+        if (area === 'verde' || area === 'naranja' || area === 'morado') {
+            reorganizarEnDosFilas(content, area);
+        }
+    } else {
+        content.innerHTML = '<p style="color: var(--text-muted);">Contenido no disponible</p>';
+    }
+    
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function reorganizarEnDosFilas(container, area) {
+    // Buscar la fila principal
+    const fila = container.querySelector(`.${area}-fila`);
+    if (!fila) return;
+    
+    // Obtener todos los wrappers de celdas
+    const wrappers = fila.querySelectorAll(`.${area}-celda-wrapper`);
+    if (wrappers.length === 0) return;
+    
+    // Limpiar la fila original
+    fila.innerHTML = '';
+    fila.style.display = 'flex';
+    fila.style.flexWrap = 'wrap';
+    fila.style.gap = '6px';
+    fila.style.justifyContent = 'center';
+    fila.style.width = '100%';
+    fila.style.maxWidth = '650px';
+    
+    // Añadir todos los wrappers en orden
+    wrappers.forEach((w, index) => {
+        w.style.flex = '0 0 auto';
+        // Los primeros 6 van a la primera fila, los siguientes 5 a la segunda
+        if (index >= 6) {
+            w.style.marginTop = '6px';
+        }
+        fila.appendChild(w);
+    });
+}
+
+function cerrarZoomArea() {
+    const modal = document.getElementById('zoomAreaModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+// ============================================================
+// PROPAGAR CLICKS DESDE EL ZOOM
+// ============================================================
+
+function propagarClickZoom(cell) {
+    // Buscar la celda correspondiente por data attributes
+    const area = cell.dataset.area;
+    const fila = cell.dataset.fila;
+    const col = cell.dataset.col;
+    const index = cell.dataset.index;
+    
+    if (area && fila !== undefined && col !== undefined) {
+        const selector = `[data-area="${area}"][data-fila="${fila}"][data-col="${col}"]`;
+        const targetCell = document.querySelector(selector);
+        if (targetCell && !targetCell.classList.contains('marcada') && !targetCell.classList.contains('pre-marcada')) {
+            // Disparar el evento click
+            const clickEvent = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            targetCell.dispatchEvent(clickEvent);
+            return true;
+        }
+    } else if (area && index !== undefined) {
+        const selector = `[data-area="${area}"][data-index="${index}"]`;
+        const targetCell = document.querySelector(selector);
+        if (targetCell && !targetCell.classList.contains('marcada') && !targetCell.classList.contains('pre-marcada')) {
+            const clickEvent = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            targetCell.dispatchEvent(clickEvent);
+            return true;
+        }
+    }
+    return false;
+}
+
+// ============================================================
 // EXPONER FUNCIONES GLOBALMENTE
 // ============================================================
 
@@ -303,6 +413,9 @@ window.mostrarModalReinicio = mostrarModalReinicio;
 window.cerrarModal = cerrarModal;
 window.confirmarReinicio = confirmarReinicio;
 window.jugarSolo = jugarSolo;
+window.abrirZoomArea = abrirZoomArea;
+window.cerrarZoomArea = cerrarZoomArea;
+window.propagarClickZoom = propagarClickZoom;
 
 // ============================================================
 // INICIALIZACIÓN
@@ -322,6 +435,34 @@ document.addEventListener('DOMContentLoaded', () => {
         // Solo agregar si tiene los atributos necesarios
         if (cell.dataset.area && cell.dataset.fila !== undefined && cell.dataset.col !== undefined) {
             cell.addEventListener('click', () => manejarClickCelda(cell));
+        }
+    });
+    
+    // Event listener para propagar clicks desde el zoom
+    document.addEventListener('click', function(e) {
+        const cell = e.target.closest('.cell');
+        if (!cell) return;
+        
+        // Si está dentro del zoom
+        const zoomModal = document.getElementById('zoomAreaModal');
+        if (zoomModal && zoomModal.style.display === 'flex' && zoomModal.contains(cell)) {
+            // Evitar que el click se propague al área principal
+            e.stopPropagation();
+            propagarClickZoom(cell);
+        }
+    });
+    
+    // Cerrar zoom con ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarZoomArea();
+        }
+    });
+    
+    // Cerrar zoom al hacer clic fuera del modal
+    document.getElementById('zoomAreaModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarZoomArea();
         }
     });
     
