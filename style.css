@@ -1085,50 +1085,157 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     gap: var(--cell-gap);
 }
 
+.morado-tabla-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .morado-fila {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
 }
 
-.morado-fila .cell {
-    min-width: 24px;
-    height: 24px;
-    font-size: 0.5rem;
+.morado-celda-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.morado-fila .cell.bonus-cell {
-    background: rgba(255, 215, 0, 0.12);
+.morado-cell {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-cell);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    cursor: pointer;
+    user-select: none;
+    padding: 0 2px;
+    transition: all 0.15s;
 }
 
-/* --- CÍRCULOS DE BONIFICACIÓN MORADO --- */
-.morado-bonificaciones {
+.morado-cell:not(.marcada):hover {
+    border-color: rgba(255,255,255,0.3);
+    transform: scale(1.05);
+}
+
+.morado-cell.marcada {
+    background: var(--bg-box);
+    border-color: rgba(255,255,255,0.5);
+    position: relative;
+    cursor: default;
+}
+
+.morado-cell.marcada::after {
+    content: "✓";
+    position: absolute;
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: #4caf50;
+    top: -6px;
+    right: -6px;
+    background: var(--bg-main);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #4caf50;
+}
+
+.morado-cell.bonus-cell {
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+/* Fila de bonificaciones */
+.morado-bonus-fila {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
-    margin-top: 4px;
-    padding: 2px 0;
 }
 
-.morado-bonificaciones .bonificacion-circulo {
-    width: 24px;
-    height: 24px;
-    font-size: 0.55rem;
-}
-
-/* --- CÍRCULOS DE PUNTAJES MORADO --- */
-.morado-puntajes {
+.morado-bonus-item {
+    min-width: 28px;
+    height: 28px;
     display: flex;
-    gap: var(--cell-gap);
     justify-content: center;
-    margin-top: 2px;
-    padding: 2px 0;
+    align-items: center;
 }
 
-.morado-puntajes .puntaje-circulo {
-    width: 24px;
-    height: 24px;
-    font-size: 0.5rem;
+.morado-bonus-item.vacio {
+    opacity: 0;
+}
+
+/* Círculos de bonificación */
+.morado-bonificacion-circulo {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: bold;
+    color: #fff;
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-color);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .morado-cell {
+        min-width: 22px;
+        height: 22px;
+        font-size: 0.5rem;
+    }
+    
+    .morado-bonus-item {
+        min-width: 22px;
+        height: 22px;
+    }
+    
+    .morado-bonificacion-circulo {
+        width: 18px;
+        height: 18px;
+        font-size: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .morado-cell {
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.4rem;
+    }
+    
+    .morado-cell.marcada::after {
+        font-size: 0.6rem;
+        width: 12px;
+        height: 12px;
+        top: -5px;
+        right: -5px;
+    }
+    
+    .morado-bonus-item {
+        min-width: 18px;
+        height: 18px;
+    }
+    
+    .morado-bonificacion-circulo {
+        width: 14px;
+        height: 14px;
+        font-size: 0.4rem;
+        border-width: 1.5px;
+    }
 }
 
 /* ============================================================

@@ -129,14 +129,12 @@ function inicializarAreaGris() {
                 <div class="gris-habilidades-grid">
     `;
     
-    // COLUMNA 1: ♻, +1, •••
     html += `<div class="gris-columna">`;
     html += generarFilaHabilidad('espiral');
     html += generarFilaHabilidad('mas1');
     html += generarFilaHabilidad('dados1');
     html += `</div>`;
     
-    // COLUMNA 2: ✖, #, •|••
     html += `<div class="gris-columna">`;
     html += generarFilaHabilidad('x');
     html += generarFilaHabilidad('seis');
@@ -218,13 +216,11 @@ function estaDesbloqueadaGris(habilidadId, index) {
     const config = HABILIDADES_CONFIG[habilidadId];
     if (!config) return false;
     
-    // 1. Verificar si fue desbloqueada externamente
     const clave = `${habilidadId}-${index}`;
     if (desbloqueosExternos[clave]) {
         return true;
     }
     
-    // 2. Verificar desbloqueo por turnos
     if (config.turnosDesbloqueo && config.turnosDesbloqueo.length > 0) {
         let totalDesbloqueadas = 0;
         config.turnosDesbloqueo.forEach(turnoNum => {
@@ -282,7 +278,10 @@ function desbloquearSiguienteExterno(habilidadId) {
     return true;
 }
 
-// Funciones específicas para cada habilidad
+// ============================================================
+// FUNCIONES PARA DESBLOQUEO EXTERNO CON ÍNDICE ESPECÍFICO
+// ============================================================
+
 function desbloquearEspiralExterno(indice) {
     if (indice !== undefined) {
         return desbloquearExterno('espiral', indice);
@@ -297,6 +296,7 @@ function desbloquearMas1Externo(indice) {
     return desbloquearSiguienteExterno('mas1');
 }
 
+// CORREGIDO: Usan desbloquearExterno con índice específico
 function desbloquearXExterno(indice) {
     return desbloquearExterno('x', indice);
 }
