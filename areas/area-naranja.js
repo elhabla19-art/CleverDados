@@ -1,8 +1,8 @@
 // ============================================================
-// ÁREA NARANJA - CLEVERDADOS (CORREGIDO FINAL)
+// ÁREA NARANJA - CLEVERDADOS (CORREGIDO - CON VALORES NUMÉRICOS)
 // ============================================================
 
-// Configuración del área naranja - CORREGIDA
+// Configuración del área naranja
 const NARANJA_CONFIG = [
     // index 0: Sin bonificación, multiplicador 1
     { index: 0, valor: '', bonus: null, requiereNumero: true, multiplicador: 1 },
@@ -38,7 +38,7 @@ let bonificacionesNaranja = [
     false  // index 9: 6Morado
 ];
 
-// Índices que tienen bonificación - CORREGIDO
+// Índices que tienen bonificación
 const BONUS_INDICES_NARANJA = [2, 4, 5, 7, 9];
 
 // Estado de progreso para orden
@@ -63,7 +63,6 @@ function inicializarAreaNaranja() {
         const id = `naranja-${index}`;
         const estaMarcada = historialMovimientos.includes(id);
         const valorGuardado = valoresNaranja[index];
-        const claseMarcada = estaMarcada ? 'marcada' : '';
         const esMultiplicador = celda.multiplicador > 1;
         const claseMultiplicador = esMultiplicador ? 'multiplicador' : '';
         const tieneBonus = celda.bonus !== null;
@@ -76,11 +75,14 @@ function inicializarAreaNaranja() {
         
         html += `
             <div class="naranja-celda-wrapper">
-                <div class="naranja-cell cell ${claseMarcada} ${claseMultiplicador} ${claseBonus}" 
+                <div class="cell ${claseMultiplicador} ${claseBonus}" 
+                     data-area="naranja"
                      data-index="${index}"
                      data-requiere-numero="${celda.requiereNumero}"
                      data-tiene-bonus="${tieneBonus}"
-                     onclick="manejarClickNaranja(${index})">
+                     data-marcada="${estaMarcada}"
+                     onclick="manejarClickNaranja(${index})"
+                     style="${estaMarcada ? 'border-color: #4caf50;' : ''}">
                     ${displayValor}
                 </div>
             </div>
@@ -88,20 +90,17 @@ function inicializarAreaNaranja() {
     });
     html += `</div>`;
     
-    // Fila de bonificaciones (debajo de cada casilla)
+    // Fila de bonificaciones (debajo de cada casilla) - SIEMPRE ESTÁTICAS
     html += `<div class="naranja-bonus-fila">`;
     NARANJA_CONFIG.forEach((celda, index) => {
         const tieneBonus = celda.bonus !== null;
         if (tieneBonus) {
-            const bonusIdx = BONUS_INDICES_NARANJA.indexOf(index);
-            const completada = bonificacionesNaranja[bonusIdx];
-            const clase = completada ? 'puntaje-completado' : 'puntaje-pendiente';
             html += `
                 <div class="naranja-bonus-item">
-                    <div class="naranja-bonificacion-circulo puntaje-circulo ${clase}" 
-                         data-naranja-bonus="${bonusIdx}"
-                         style="background-color: ${celda.color}; border-color: ${celda.color};">
-                        ${completada ? '✓' : celda.simbolo}
+                    <div class="naranja-bonificacion-circulo" 
+                         data-naranja-bonus="${index}"
+                         style="background-color: ${celda.color}; border-color: ${celda.color}; opacity:0.5;">
+                        ${celda.simbolo}
                     </div>
                 </div>
             `;
@@ -114,6 +113,9 @@ function inicializarAreaNaranja() {
     html += `</div>`;
     html += `</div>`;
     container.innerHTML = html;
+    
+    // Actualizar visuales
+    actualizarVisuales();
 }
 
 // ============================================================
@@ -122,13 +124,53 @@ function inicializarAreaNaranja() {
 
 function actualizarProgresoNaranja() {
     let marcadas = 0;
-    NARANJA_CONFIG.forEach((celda, index) => {
+    if (typeof NARANJA_CONFIG !== 'undefined' && NARANJA_CONFIG && typeof historialMovimientos !== 'undefined') {
+        NARANJA_CONFIG.forEach((celda, index) => {
+            const id = `naranja-${index}`;
+            if (historialMovimientos.includes(id)) {
+                marcadas++;
+            }
+        });
+    }
+    progresoNaranja = marcadas;
+}
+
+// ============================================================
+// ACTUALIZAR VISUALES NARANJA
+// ============================================================
+
+function actualizarVisualesNaranja() {
+    // Actualizar celdas en el tablero principal
+    document.querySelectorAll('.cell[data-area="naranja"]').forEach(cell => {
+        const index = parseInt(cell.dataset.index);
+        if (isNaN(index)) return;
+        
         const id = `naranja-${index}`;
-        if (historialMovimientos.includes(id)) {
-            marcadas++;
+        const estaMarcada = historialMovimientos.includes(id);
+        const valorGuardado = valoresNaranja[index];
+        
+        if (estaMarcada && valorGuardado !== null && valorGuardado !== undefined) {
+            cell.classList.add('marcada');
+            cell.textContent = valorGuardado;
+            cell.style.borderColor = '#4caf50';
+            cell.style.color = '#ffffff';
+            cell.dataset.marcada = 'true';
+        } else {
+            cell.classList.remove('marcada');
+            // Restaurar valor original
+            if (NARANJA_CONFIG[index]) {
+                cell.textContent = NARANJA_CONFIG[index].valor || '';
+            }
+            cell.style.borderColor = '';
+            cell.style.color = '';
+            cell.dataset.marcada = 'false';
         }
     });
-    progresoNaranja = marcadas;
+    
+    // Actualizar visuales del zoom si está abierto
+    if (typeof actualizarVisualesZoom === 'function') {
+        actualizarVisualesZoom();
+    }
 }
 
 // ============================================================
@@ -136,7 +178,7 @@ function actualizarProgresoNaranja() {
 // ============================================================
 
 function manejarClickNaranja(index) {
-    // SOLO permitir clicks si estamos en modo zoom
+    // SOLO permitir clicks en modo zoom
     if (typeof enModoZoom === 'undefined' || !enModoZoom) {
         return;
     }
@@ -147,7 +189,7 @@ function manejarClickNaranja(index) {
     if (historialMovimientos.includes(id)) return;
     
     if (index !== progresoNaranja) {
-        const cell = document.querySelector(`.naranja-cell[data-index="${index}"]`);
+        const cell = document.querySelector(`.cell[data-area="naranja"][data-index="${index}"]`);
         if (cell) {
             cell.style.borderColor = '#ff4444';
             setTimeout(() => {
@@ -192,28 +234,39 @@ function marcarNaranja(index, numero) {
     
     if (historialMovimientos.includes(id)) return;
     
+    // Marcar la casilla en el historial
     historialMovimientos.push(id);
     
-    const cell = document.querySelector(`.naranja-cell[data-index="${index}"]`);
-    if (cell) {
-        cell.classList.add('marcada');
-        if (numero !== null) {
-            cell.textContent = numero;
-        }
+    // Guardar el valor
+    valoresNaranja[index] = numero;
+    
+    // Actualizar visuales
+    actualizarVisualesNaranja();
+    
+    // Actualizar progreso
+    actualizarProgresoNaranja();
+    
+    // Verificar bonificación (desbloquea en gris)
+    verificarBonificacionNaranja(index);
+    
+    // Recalcular puntajes
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesNaranja();
     }
     
-    actualizarProgresoNaranja();
-    verificarBonificacionNaranja(index);
-    recalcularPuntajesNaranja();
+    // Actualizar visuales del tablero principal
     actualizarVisuales();
     
+    // Sincronizar
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
     }
 }
 
 // ============================================================
-// VERIFICAR BONIFICACIÓN
+// VERIFICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
 // ============================================================
 
 function verificarBonificacionNaranja(index) {
@@ -225,19 +278,11 @@ function verificarBonificacionNaranja(index) {
     if (!celda.bonus) return;
     
     bonificacionesNaranja[bonusIdx] = true;
-    
-    const circulo = document.querySelector(`.naranja-bonificacion-circulo[data-naranja-bonus="${bonusIdx}"]`);
-    if (circulo) {
-        circulo.classList.remove('puntaje-pendiente');
-        circulo.classList.add('puntaje-completado');
-        circulo.textContent = '✓';
-    }
-    
     aplicarBonificacionNaranja(celda);
 }
 
 // ============================================================
-// APLICAR BONIFICACIÓN CON ÍNDICE ESPECÍFICO
+// APLICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
 // ============================================================
 
 function aplicarBonificacionNaranja(celda) {
@@ -265,20 +310,22 @@ function aplicarBonificacionNaranja(celda) {
             }
             break;
         case 'lobo':
-            if (typeof window.desbloquearLoboExterno === 'function') {
-                window.desbloquearLoboExterno(celda.indiceGris);
-            }
+            // Lobo fue eliminado de Gris
             break;
     }
-    recalcularPuntajesNaranja();
+    
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesNaranja();
+    }
 }
 
 // ============================================================
-// RECALCULAR PUNTAJES
+// RECALCULAR PUNTAJES (FALLBACK)
 // ============================================================
 
 function recalcularPuntajesNaranja() {
-    // Si existe PUNTAJES, usarlo
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         PUNTAJES.calcularTotal();
         return;
@@ -332,9 +379,10 @@ function resetAreaNaranja() {
     bonificacionesNaranja = [false, false, false, false, false];
     progresoNaranja = 0;
     
-    document.querySelectorAll('.naranja-cell').forEach(cell => {
-        cell.classList.remove('marcada');
+    document.querySelectorAll('.cell[data-area="naranja"]').forEach(cell => {
+        cell.textContent = NARANJA_CONFIG[parseInt(cell.dataset.index)].valor || '';
         cell.style.borderColor = '';
+        cell.dataset.marcada = 'false';
     });
     
     inicializarAreaNaranja();
@@ -347,3 +395,7 @@ function resetAreaNaranja() {
 window.inicializarAreaNaranja = inicializarAreaNaranja;
 window.resetAreaNaranja = resetAreaNaranja;
 window.recalcularPuntajesNaranja = recalcularPuntajesNaranja;
+window.valoresNaranja = valoresNaranja;
+window.actualizarVisualesNaranja = actualizarVisualesNaranja;
+window.manejarClickNaranja = manejarClickNaranja;
+window.marcarNaranja = marcarNaranja;

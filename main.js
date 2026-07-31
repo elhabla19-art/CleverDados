@@ -116,7 +116,6 @@ function calcularPuntajes() {
 // ============================================================
 
 function actualizarVisuales() {
-    // Actualizar celdas de todas las áreas
     document.querySelectorAll('.cell').forEach(cell => {
         const area = cell.dataset.area;
         if (!area) return;
@@ -128,7 +127,6 @@ function actualizarVisuales() {
         let id = '';
         let estaMarcada = false;
         
-        // Determinar el ID según el área y los atributos disponibles
         if (area === 'amarilla' && fila !== undefined && col !== undefined) {
             id = `amarilla-${fila}-${col}`;
         } else if (area === 'azul' && index !== undefined) {
@@ -139,8 +137,7 @@ function actualizarVisuales() {
             id = `naranja-${index}`;
         } else if (area === 'morado' && index !== undefined) {
             id = `morado-${index}`;
-        } else if (area === 'gris' && fila !== undefined && col !== undefined) {
-            // Gris maneja sus propios estados
+        } else if (area === 'gris') {
             return;
         }
         
@@ -148,19 +145,34 @@ function actualizarVisuales() {
             estaMarcada = historialMovimientos.includes(id);
         }
         
-        // Aplicar o quitar la clase marcada
         if (estaMarcada) {
             cell.classList.add('marcada');
-            // Para naranja y morado, mostrar el valor guardado
+            
+            // Naranja: mostrar valor numérico
             if (area === 'naranja' && typeof valoresNaranja !== 'undefined' && valoresNaranja[index] !== null && valoresNaranja[index] !== undefined) {
                 cell.textContent = valoresNaranja[index];
-            }
-            if (area === 'morado' && typeof valoresMorado !== 'undefined' && valoresMorado[index] !== null && valoresMorado[index] !== undefined) {
+                cell.style.color = '#ffffff';
+            } 
+            // Morado: mostrar valor numérico
+            else if (area === 'morado' && typeof valoresMorado !== 'undefined' && valoresMorado[index] !== null && valoresMorado[index] !== undefined) {
                 cell.textContent = valoresMorado[index];
+                cell.style.color = '#ffffff';
+            }
+            // Otras áreas: mantener su valor original
+            else if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
+                cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
+            } else if (area === 'azul' && typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL[index]) {
+                cell.textContent = TABLA_AZUL[index].valor || '';
+            } else if (area === 'verde' && typeof TABLA_VERDE !== 'undefined' && TABLA_VERDE[index]) {
+                cell.textContent = TABLA_VERDE[index].valor || '';
             }
         } else {
             cell.classList.remove('marcada');
-            // Restaurar valores originales para áreas que los tengan
+            
+            // Restaurar valores originales
+            if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
+                cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
+            }
             if (area === 'azul' && typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL[index]) {
                 cell.textContent = TABLA_AZUL[index].valor || '';
             }
@@ -169,16 +181,16 @@ function actualizarVisuales() {
             }
             if (area === 'naranja' && typeof NARANJA_CONFIG !== 'undefined' && NARANJA_CONFIG[index]) {
                 cell.textContent = NARANJA_CONFIG[index].valor || '';
+                cell.style.color = '';
             }
             if (area === 'morado' && typeof MORADO_CONFIG !== 'undefined' && MORADO_CONFIG[index]) {
                 cell.textContent = MORADO_CONFIG[index].valor || '';
-            }
-            if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
-                cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
+                cell.style.color = '';
             }
         }
     });
 }
+
 
 // ============================================================
 // ACTUALIZAR VISUALES EN EL ZOOM - VERSIÓN MEJORADA
@@ -199,7 +211,6 @@ function actualizarVisualesZoom() {
         let id = '';
         let estaMarcada = false;
         
-        // Determinar el ID según el área
         if (area === 'amarilla' && fila !== undefined && col !== undefined) {
             id = `amarilla-${fila}-${col}`;
         } else if (area === 'azul' && index !== undefined) {
@@ -216,16 +227,26 @@ function actualizarVisualesZoom() {
             estaMarcada = historialMovimientos.includes(id);
         }
         
-        // Aplicar estado visual
         if (estaMarcada) {
             cell.classList.add('marcada');
             
-            // Mostrar valores guardados para áreas con números
+            // Naranja: mostrar valor numérico
             if (area === 'naranja' && typeof valoresNaranja !== 'undefined' && valoresNaranja[index] !== null && valoresNaranja[index] !== undefined) {
                 cell.textContent = valoresNaranja[index];
-            }
-            if (area === 'morado' && typeof valoresMorado !== 'undefined' && valoresMorado[index] !== null && valoresMorado[index] !== undefined) {
+                cell.style.color = '#ffffff';
+            } 
+            // Morado: mostrar valor numérico
+            else if (area === 'morado' && typeof valoresMorado !== 'undefined' && valoresMorado[index] !== null && valoresMorado[index] !== undefined) {
                 cell.textContent = valoresMorado[index];
+                cell.style.color = '#ffffff';
+            }
+            // Otras áreas: mantener su valor original
+            else if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
+                cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
+            } else if (area === 'azul' && typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL[index]) {
+                cell.textContent = TABLA_AZUL[index].valor || '';
+            } else if (area === 'verde' && typeof TABLA_VERDE !== 'undefined' && TABLA_VERDE[index]) {
+                cell.textContent = TABLA_VERDE[index].valor || '';
             }
         } else {
             cell.classList.remove('marcada');
@@ -242,9 +263,11 @@ function actualizarVisualesZoom() {
             }
             if (area === 'naranja' && typeof NARANJA_CONFIG !== 'undefined' && NARANJA_CONFIG[index]) {
                 cell.textContent = NARANJA_CONFIG[index].valor || '';
+                cell.style.color = '';
             }
             if (area === 'morado' && typeof MORADO_CONFIG !== 'undefined' && MORADO_CONFIG[index]) {
                 cell.textContent = MORADO_CONFIG[index].valor || '';
+                cell.style.color = '';
             }
         }
     });

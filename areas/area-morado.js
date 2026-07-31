@@ -77,11 +77,14 @@ function inicializarAreaMorado() {
         
         html += `
             <div class="morado-celda-wrapper">
-                <div class="morado-cell cell ${claseMarcada} ${claseBonus}" 
+                <div class="cell ${claseMarcada} ${claseBonus}" 
+                     data-area="morado"
                      data-index="${index}"
                      data-requiere-numero="${celda.requiereNumero}"
                      data-tiene-bonus="${tieneBonus}"
-                     onclick="manejarClickMorado(${index})">
+                     data-marcada="${estaMarcada}"
+                     onclick="manejarClickMorado(${index})"
+                     style="${estaMarcada ? 'border-color: #4caf50; color: #ffffff;' : ''}">
                     ${displayValor}
                 </div>
             </div>
@@ -89,20 +92,17 @@ function inicializarAreaMorado() {
     });
     html += `</div>`;
     
-    // Fila de bonificaciones (debajo de cada casilla)
+    // Fila de bonificaciones (debajo de cada casilla) - SIEMPRE ESTÁTICAS
     html += `<div class="morado-bonus-fila">`;
     MORADO_CONFIG.forEach((celda, index) => {
         const tieneBonus = celda.bonus !== null;
         if (tieneBonus) {
-            const bonusIdx = BONUS_INDICES_MORADO.indexOf(index);
-            const completada = bonificacionesMorado[bonusIdx];
-            const clase = completada ? 'puntaje-completado' : 'puntaje-pendiente';
             html += `
                 <div class="morado-bonus-item">
-                    <div class="morado-bonificacion-circulo puntaje-circulo ${clase}" 
-                         data-morado-bonus="${bonusIdx}"
-                         style="background-color: ${celda.color}; border-color: ${celda.color};">
-                        ${completada ? '✓' : celda.simbolo}
+                    <div class="morado-bonificacion-circulo" 
+                         data-morado-bonus="${index}"
+                         style="background-color: ${celda.color}; border-color: ${celda.color}; opacity:0.5;">
+                        ${celda.simbolo}
                     </div>
                 </div>
             `;
@@ -115,6 +115,9 @@ function inicializarAreaMorado() {
     html += `</div>`;
     html += `</div>`;
     container.innerHTML = html;
+    
+    // Aplicar estado visual inicial
+    actualizarVisualesMorado();
 }
 
 // ============================================================
@@ -123,12 +126,14 @@ function inicializarAreaMorado() {
 
 function actualizarProgresoMorado() {
     let marcadas = 0;
-    MORADO_CONFIG.forEach((celda, index) => {
-        const id = `morado-${index}`;
-        if (historialMovimientos.includes(id)) {
-            marcadas++;
-        }
-    });
+    if (typeof MORADO_CONFIG !== 'undefined' && MORADO_CONFIG && typeof historialMovimientos !== 'undefined') {
+        MORADO_CONFIG.forEach((celda, index) => {
+            const id = `morado-${index}`;
+            if (historialMovimientos.includes(id)) {
+                marcadas++;
+            }
+        });
+    }
     progresoMorado = marcadas;
     
     if (progresoMorado > 0) {
@@ -140,11 +145,49 @@ function actualizarProgresoMorado() {
 }
 
 // ============================================================
+// ACTUALIZAR VISUALES MORADO
+// ============================================================
+
+function actualizarVisualesMorado() {
+    // Actualizar celdas en el tablero principal
+    document.querySelectorAll('.cell[data-area="morado"]').forEach(cell => {
+        const index = parseInt(cell.dataset.index);
+        if (isNaN(index)) return;
+        
+        const id = `morado-${index}`;
+        const estaMarcada = historialMovimientos.includes(id);
+        const valorGuardado = valoresMorado[index];
+        
+        if (estaMarcada && valorGuardado !== null && valorGuardado !== undefined) {
+            cell.classList.add('marcada');
+            cell.textContent = valorGuardado;
+            cell.style.borderColor = '#4caf50';
+            cell.style.color = '#ffffff';
+            cell.dataset.marcada = 'true';
+        } else {
+            cell.classList.remove('marcada');
+            // Restaurar valor original
+            if (MORADO_CONFIG[index]) {
+                cell.textContent = MORADO_CONFIG[index].valor || '';
+            }
+            cell.style.borderColor = '';
+            cell.style.color = '';
+            cell.dataset.marcada = 'false';
+        }
+    });
+    
+    // Actualizar visuales del zoom si está abierto
+    if (typeof actualizarVisualesZoom === 'function') {
+        actualizarVisualesZoom();
+    }
+}
+
+// ============================================================
 // MANEJAR CLICK EN CELDA
 // ============================================================
 
 function manejarClickMorado(index) {
-    // SOLO permitir clicks si estamos en modo zoom
+    // SOLO permitir clicks en modo zoom
     if (typeof enModoZoom === 'undefined' || !enModoZoom) {
         return;
     }
@@ -155,7 +198,7 @@ function manejarClickMorado(index) {
     if (historialMovimientos.includes(id)) return;
     
     if (index !== progresoMorado) {
-        const cell = document.querySelector(`.morado-cell[data-index="${index}"]`);
+        const cell = document.querySelector(`.cell[data-area="morado"][data-index="${index}"]`);
         if (cell) {
             cell.style.borderColor = '#ff4444';
             setTimeout(() => {
@@ -173,7 +216,7 @@ function manejarClickMorado(index) {
             mostrarModalNumerico(function(numero) {
                 if (ultimoNumeroMorado !== null && ultimoNumeroMorado !== 6) {
                     if (numero <= ultimoNumeroMorado) {
-                        const cell = document.querySelector(`.morado-cell[data-index="${index}"]`);
+                        const cell = document.querySelector(`.cell[data-area="morado"][data-index="${index}"]`);
                         if (cell) {
                             cell.style.borderColor = '#ff4444';
                             setTimeout(() => {
@@ -219,18 +262,20 @@ function marcarMorado(index, numero) {
     if (historialMovimientos.includes(id)) return;
     
     historialMovimientos.push(id);
+    valoresMorado[index] = numero;
     
-    const cell = document.querySelector(`.morado-cell[data-index="${index}"]`);
-    if (cell) {
-        cell.classList.add('marcada');
-        if (numero !== null) {
-            cell.textContent = numero;
-        }
-    }
+    // Actualizar visuales
+    actualizarVisualesMorado();
     
     actualizarProgresoMorado();
     verificarBonificacionMorado(index);
-    recalcularPuntajesMorado();
+    
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesMorado();
+    }
+    
     actualizarVisuales();
     
     if (typeof broadcastPuntaje === 'function') {
@@ -251,14 +296,6 @@ function verificarBonificacionMorado(index) {
     if (!celda.bonus) return;
     
     bonificacionesMorado[bonusIdx] = true;
-    
-    const circulo = document.querySelector(`.morado-bonificacion-circulo[data-morado-bonus="${bonusIdx}"]`);
-    if (circulo) {
-        circulo.classList.remove('puntaje-pendiente');
-        circulo.classList.add('puntaje-completado');
-        circulo.textContent = '✓';
-    }
-    
     aplicarBonificacionMorado(celda);
 }
 
@@ -291,18 +328,22 @@ function aplicarBonificacionMorado(celda) {
             }
             break;
         case 'lobo':
-            // Lobo fue eliminado de Gris, pero mantenemos la función por si acaso
+            // Lobo fue eliminado de Gris
             break;
     }
-    recalcularPuntajesMorado();
+    
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesMorado();
+    }
 }
 
 // ============================================================
-// RECALCULAR PUNTAJES
+// RECALCULAR PUNTAJES (FALLBACK)
 // ============================================================
 
 function recalcularPuntajesMorado() {
-    // Si existe PUNTAJES, usarlo
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         PUNTAJES.calcularTotal();
         return;
@@ -343,9 +384,14 @@ function resetAreaMorado() {
     progresoMorado = 0;
     ultimoNumeroMorado = null;
     
-    document.querySelectorAll('.morado-cell').forEach(cell => {
+    document.querySelectorAll('.cell[data-area="morado"]').forEach(cell => {
+        const index = parseInt(cell.dataset.index);
         cell.classList.remove('marcada');
         cell.style.borderColor = '';
+        cell.style.color = '';
+        if (MORADO_CONFIG[index]) {
+            cell.textContent = MORADO_CONFIG[index].valor || '';
+        }
     });
     
     inicializarAreaMorado();
@@ -358,3 +404,7 @@ function resetAreaMorado() {
 window.inicializarAreaMorado = inicializarAreaMorado;
 window.resetAreaMorado = resetAreaMorado;
 window.recalcularPuntajesMorado = recalcularPuntajesMorado;
+window.valoresMorado = valoresMorado;
+window.actualizarVisualesMorado = actualizarVisualesMorado;
+window.manejarClickMorado = manejarClickMorado;
+window.marcarMorado = marcarMorado;

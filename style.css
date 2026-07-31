@@ -143,17 +143,14 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     border-color: rgba(255, 255, 255, 0.4);
 }
 
-/* Eliminar lupa de todas las áreas */
 .area-zoom-hint {
     display: none !important;
 }
 
-/* Eliminar títulos de área que puedan aparecer */
 .area-title {
     display: none !important;
 }
 
-/* Área gris NO clickable */
 .area-gris.area-clickable {
     cursor: default !important;
 }
@@ -203,38 +200,14 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     transition: border-color 0.2s;
 }
 
-/* Bordes de colores por área */
-.area-gris {
-    border-color: #78909c;
-}
+.area-gris { border-color: #78909c; }
+.area-amarilla { border-color: #fdd835; }
+.area-azul { border-color: #1e88e5; }
+.area-verde { border-color: #43a047; }
+.area-naranja { border-color: #ff6f00; }
+.area-morado { border-color: #7b1fa2; }
 
-.area-amarilla {
-    border-color: #fdd835;
-}
-
-.area-azul {
-    border-color: #1e88e5;
-}
-
-.area-verde {
-    border-color: #43a047;
-}
-
-.area-naranja {
-    border-color: #ff6f00;
-}
-
-.area-morado {
-    border-color: #7b1fa2;
-}
-
-/* ============================================================
-   Títulos de áreas - OCULTOS
-   ============================================================ */
-
-.area-title {
-    display: none;
-}
+.area-title { display: none; }
 
 /* --- CELDAS GLOBALES --- */
 .cell {
@@ -264,18 +237,44 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 .cell.marcada {
     background: var(--bg-box);
-    color: transparent !important;
     border-color: rgba(255,255,255,0.5);
     position: relative;
 }
 
-.cell.marcada::after {
+/* ============================================================
+   ✓ PARA AMARILLA, AZUL Y VERDE (SOLO EN ESTAS ÁREAS)
+   ============================================================ */
+
+.cell.marcada[data-area="amarilla"]::after,
+.cell.marcada[data-area="azul"]::after,
+.cell.marcada[data-area="verde"]::after {
     content: "✓";
     position: absolute;
     font-size: 1rem;
     font-weight: 900;
     color: #4caf50;
 }
+
+/* ============================================================
+   NARANJA Y MORADO - SIN ✓, SOLO EL VALOR NUMÉRICO
+   ============================================================ */
+
+.cell.marcada[data-area="naranja"]::after,
+.cell.marcada[data-area="morado"]::after {
+    display: none !important;
+}
+
+.cell.marcada[data-area="naranja"] {
+    color: #ffffff !important;
+}
+
+.cell.marcada[data-area="morado"] {
+    color: #ffffff !important;
+}
+
+/* ============================================================
+   OTRAS CLASES DE CELDAS
+   ============================================================ */
 
 .cell.pre-marcada {
     background: rgba(255,0,0,0.12);
@@ -290,7 +289,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
    ESTILOS GLOBALES - BONIFICACIONES Y PUNTAJES
    ============================================================ */
 
-/* --- CÍRCULOS DE BONIFICACIÓN --- */
 .bonificacion-circulo {
     width: 32px;
     height: 32px;
@@ -326,7 +324,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     transform: scale(1.05);
 }
 
-/* --- CÍRCULOS DE PUNTAJES --- */
 .puntaje-circulo {
     width: 32px;
     height: 32px;
@@ -355,7 +352,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     box-shadow: 0 0 12px rgba(76, 175, 80, 0.2);
 }
 
-/* --- ETIQUETAS DE BONIFICACIÓN (rectángulos) --- */
 .bonificacion-label {
     min-width: 52px;
     height: 32px;
@@ -385,7 +381,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
-/* --- ETIQUETAS DE PUNTAJES (rectángulos) --- */
 .puntaje-label {
     min-width: 36px;
     height: 28px;
@@ -412,7 +407,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     color: #fff;
 }
 
-/* --- FILAS DE PUNTAJES (contenedor) --- */
 .puntajes-fila {
     display: flex;
     gap: var(--cell-gap);
@@ -593,7 +587,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
-   ÁREA AMARILLA - CENTRADO
+   ÁREA AMARILLA
    ============================================================ */
 
 .amarilla-grid {
@@ -619,7 +613,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     font-size: 0.7rem;
 }
 
-/* Círculos de bonificación de fila - Amarilla */
 .amarilla-bonificacion-circulo {
     width: 32px;
     height: 32px;
@@ -636,7 +629,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     flex-shrink: 0;
 }
 
-/* Puntajes de columnas */
 .amarilla-puntajes {
     display: flex;
     gap: var(--cell-gap);
@@ -652,7 +644,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
-   ÁREA AZUL - CENTRADO
+   ÁREA AZUL
    ============================================================ */
 
 .azul-grid {
@@ -664,7 +656,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     justify-content: center;
 }
 
-/* Fila de puntajes visuales */
 .azul-puntajes-fila {
     display: flex;
     gap: var(--cell-gap);
@@ -680,7 +671,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     height: 32px;
 }
 
-/* Filas de la tabla */
 .azul-fila {
     display: flex;
     gap: var(--cell-gap);
@@ -700,7 +690,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     cursor: default;
 }
 
-/* Círculos de bonificación de fila - Azul */
 .azul-bonificacion-circulo {
     width: 32px;
     height: 32px;
@@ -717,7 +706,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     flex-shrink: 0;
 }
 
-/* Círculos de bonificación de columna - Azul */
 .azul-columna-circulo {
     width: 32px;
     height: 32px;
@@ -734,7 +722,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     flex-shrink: 0;
 }
 
-/* Columnas de bonificaciones */
 .azul-columnas {
     display: flex;
     gap: var(--cell-gap);
@@ -816,7 +803,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 .verde-cell.marcada {
     background: var(--bg-box);
-    color: transparent !important;
     border-color: rgba(255,255,255,0.5);
     position: relative;
     cursor: default;
@@ -928,21 +914,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .naranja-cell.marcada::after {
-    content: "✓";
-    position: absolute;
-    font-size: 0.9rem;
-    font-weight: 900;
-    color: #4caf50;
-    top: -6px;
-    right: -6px;
-    background: var(--bg-main);
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #4caf50;
+    display: none !important;
 }
 
 .naranja-cell.multiplicador {
@@ -956,7 +928,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     border-color: #ffd700;
 }
 
-/* Fila de bonificaciones */
 .naranja-bonus-fila {
     display: flex;
     gap: var(--cell-gap);
@@ -976,7 +947,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     opacity: 0;
 }
 
-/* Círculos de bonificación */
 .naranja-bonificacion-circulo {
     width: 26px;
     height: 26px;
@@ -1056,28 +1026,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .morado-cell.marcada::after {
-    content: "✓";
-    position: absolute;
-    font-size: 0.9rem;
-    font-weight: 900;
-    color: #4caf50;
-    top: -6px;
-    right: -6px;
-    background: var(--bg-main);
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #4caf50;
+    display: none !important;
 }
 
 .morado-cell.bonus-cell {
     border-color: rgba(255, 215, 0, 0.3);
 }
 
-/* Fila de bonificaciones */
 .morado-bonus-fila {
     display: flex;
     gap: var(--cell-gap);
@@ -1097,7 +1052,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     opacity: 0;
 }
 
-/* Círculos de bonificación */
 .morado-bonificacion-circulo {
     width: 26px;
     height: 26px;
@@ -1170,10 +1124,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     color: #fff;
 }
 
-/* ============================================================
-   CONTROLS - BOTÓN REINICIAR
-   ============================================================ */
-
 .controls {
     display: flex;
     justify-content: center;
@@ -1206,14 +1156,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 @keyframes modalFadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .modal-numerico-box {
@@ -1289,7 +1233,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
-   ZOOM MODAL PARA ÁREAS (AMPLIADO - MÁS GRANDE)
+   ZOOM MODAL PARA ÁREAS
    ============================================================ */
 
 .zoom-area-modal .zoom-modal {
@@ -1306,7 +1250,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     gap: 12px;
 }
 
-/* Eliminar títulos del zoom */
 .zoom-area-modal .zoom-area-title {
     display: none !important;
 }
@@ -1317,12 +1260,10 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     min-height: 0;
 }
 
-/* Eliminar botón X del zoom */
 .zoom-close {
     display: none !important;
 }
 
-/* Reproducción exacta del área con tamaño aumentado */
 .zoom-area-modal .area-replica {
     background: var(--bg-box);
     border-radius: 12px;
@@ -1332,7 +1273,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     max-width: 700px;
 }
 
-/* Tamaños aumentados para el zoom - MÁS GRANDES */
 .zoom-area-modal .cell {
     min-width: 64px;
     height: 64px;
@@ -1365,12 +1305,10 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     display: none !important;
 }
 
-/* En el zoom, las filas de bonificaciones no ocupan espacio */
 .zoom-area-modal .amarilla-fila .amarilla-bonificacion-circulo {
     display: none !important;
 }
 
-/* Ajustar grids para que ocupen todo el espacio */
 .zoom-area-modal .amarilla-grid,
 .zoom-area-modal .azul-grid,
 .zoom-area-modal .verde-grid,
@@ -1402,7 +1340,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     flex: 0 0 auto;
 }
 
-/* Forzar 6 en primera fila y 5 en segunda */
 .zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(1),
 .zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(2),
 .zoom-area-modal .verde-fila .verde-celda-wrapper:nth-child(3),
@@ -1454,7 +1391,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     order: 2;
 }
 
-/* Tamaños específicos en zoom - MÁS GRANDES */
 .zoom-area-modal .amarilla-fila .cell {
     min-width: 60px;
     height: 60px;
@@ -1486,7 +1422,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
-   RESPONSIVE ZOOM - MÓVIL MÁS GRANDE
+   RESPONSIVE ZOOM
    ============================================================ */
 
 @media (max-width: 768px) {
@@ -1566,7 +1502,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     .board-container { padding: 6px; }
     .area { padding: 6px 8px; }
 
-    /* Gris */
     .gris-turno-cell { min-width: 38px; height: 42px; }
     .turno-numero { font-size: 0.7rem; }
     .turno-bonificacion { font-size: 0.6rem; }
@@ -1575,30 +1510,25 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     .gris-fila-habilidad { gap: 3px; min-height: 26px; }
     .gris-etiqueta { font-size: 0.55rem; min-width: 45px; }
 
-    /* Amarilla */
     .amarilla-fila .cell { min-width: 26px; height: 26px; font-size: 0.55rem; }
     .amarilla-bonificacion-circulo { width: 26px; height: 26px; font-size: 0.65rem; }
     .amarilla-puntajes .puntaje-circulo { width: 26px; height: 26px; font-size: 0.55rem; }
 
-    /* Azul */
     .azul-fila .cell { min-width: 24px; height: 24px; font-size: 0.5rem; }
     .azul-bonificacion-circulo { width: 26px; height: 26px; font-size: 0.65rem; }
     .azul-columna-circulo { width: 26px; height: 26px; font-size: 0.65rem; }
     .azul-puntajes-fila .puntaje-circulo { width: 26px; height: 26px; font-size: 0.55rem; }
     .azul-columnas .puntaje-circulo { width: 26px; height: 26px; font-size: 0.55rem; }
 
-    /* Verde */
     .verde-puntajes-fila .puntaje-circulo { width: 26px; height: 26px; font-size: 0.55rem; }
     .verde-cell { min-width: 26px; height: 26px; font-size: 0.5rem; }
     .verde-bonus-item { min-width: 26px; height: 26px; }
     .verde-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
 
-    /* Naranja */
     .naranja-cell { min-width: 26px; height: 26px; font-size: 0.55rem; }
     .naranja-bonus-item { min-width: 26px; height: 26px; }
     .naranja-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
 
-    /* Morado */
     .morado-cell { min-width: 26px; height: 26px; font-size: 0.55rem; }
     .morado-bonus-item { min-width: 26px; height: 26px; }
     .morado-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
@@ -1610,7 +1540,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     .board-container { padding: 4px; }
     .area { padding: 4px 6px; }
 
-    /* Gris */
     .gris-turno-cell { min-width: 32px; height: 36px; padding: 1px 2px; }
     .turno-numero { font-size: 0.6rem; }
     .turno-bonificacion { font-size: 0.5rem; }
@@ -1619,33 +1548,26 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     .gris-fila-habilidad { gap: 2px; min-height: 22px; }
     .gris-etiqueta { font-size: 0.5rem; min-width: 35px; }
 
-    /* Amarilla */
     .amarilla-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
     .amarilla-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; border-width: 1.5px; }
     .amarilla-puntajes .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; border-width: 1.5px; }
 
-    /* Azul */
     .azul-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
     .azul-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; border-width: 1.5px; }
     .azul-columna-circulo { width: 22px; height: 22px; font-size: 0.55rem; border-width: 1.5px; }
     .azul-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; border-width: 1.5px; }
     .azul-columnas .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; border-width: 1.5px; }
 
-    /* Verde */
     .verde-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; border-width: 1.5px; }
     .verde-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
     .verde-bonus-item { min-width: 22px; height: 22px; }
     .verde-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
 
-    /* Naranja */
     .naranja-cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
-    .naranja-cell.marcada::after { font-size: 0.7rem; width: 14px; height: 14px; top: -5px; right: -5px; }
     .naranja-bonus-item { min-width: 22px; height: 22px; }
     .naranja-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
 
-    /* Morado */
     .morado-cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
-    .morado-cell.marcada::after { font-size: 0.7rem; width: 14px; height: 14px; top: -5px; right: -5px; }
     .morado-bonus-item { min-width: 22px; height: 22px; }
     .morado-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
 
@@ -1686,7 +1608,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     .player-card { padding: 4px 6px; }
     .player-card-header { font-size: 0.7rem; }
 
-    /* Gris landscape */
     .gris-turno-cell { min-width: 30px; height: 34px; }
     .turno-numero { font-size: 0.55rem; }
     .turno-bonificacion { font-size: 0.45rem; }
@@ -1695,30 +1616,25 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     .gris-fila-habilidad { min-height: 22px; gap: 2px; }
     .gris-etiqueta { font-size: 0.5rem; min-width: 35px; }
 
-    /* Amarilla landscape */
     .amarilla-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
     .amarilla-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
     .amarilla-puntajes .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; }
 
-    /* Azul landscape */
     .azul-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
     .azul-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
     .azul-columna-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
     .azul-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; }
     .azul-columnas .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; }
 
-    /* Verde landscape */
     .verde-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; }
     .verde-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
     .verde-bonus-item { min-width: 22px; height: 22px; }
     .verde-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
 
-    /* Naranja landscape */
     .naranja-cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
     .naranja-bonus-item { min-width: 22px; height: 22px; }
     .naranja-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
 
-    /* Morado landscape */
     .morado-cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
     .morado-bonus-item { min-width: 22px; height: 22px; }
     .morado-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
@@ -1746,4 +1662,3 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 ::-webkit-scrollbar-thumb:hover {
     background: var(--border-color);
 }
-
