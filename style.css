@@ -523,17 +523,24 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     font-size: 0.6rem;
 }
 
-.amarilla-fila .cell.bonus-cell {
-    background: rgba(255, 215, 0, 0.12);
-}
-
-/* --- CÍRCULOS DE BONIFICACIÓN AMARILLA --- */
-.amarilla-fila .bonificacion-circulo {
+/* Círculos de bonificación de fila - Amarilla */
+.amarilla-bonificacion-circulo {
     width: 28px;
     height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #fff;
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-color);
+    user-select: none;
+    flex-shrink: 0;
 }
 
-/* --- CÍRCULOS DE PUNTAJES AMARILLA --- */
+/* Puntajes de columnas */
 .amarilla-puntajes {
     display: flex;
     gap: var(--cell-gap);
@@ -547,6 +554,49 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     height: 28px;
 }
 
+/* Responsive */
+@media (max-width: 768px) {
+    .amarilla-fila .cell {
+        min-width: 22px;
+        height: 22px;
+        font-size: 0.5rem;
+    }
+    
+    .amarilla-bonificacion-circulo {
+        width: 22px;
+        height: 22px;
+        font-size: 0.55rem;
+    }
+    
+    .amarilla-puntajes .puntaje-circulo {
+        width: 22px;
+        height: 22px;
+        font-size: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .amarilla-fila .cell {
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.4rem;
+    }
+    
+    .amarilla-bonificacion-circulo {
+        width: 18px;
+        height: 18px;
+        font-size: 0.45rem;
+        border-width: 1.5px;
+    }
+    
+    .amarilla-puntajes .puntaje-circulo {
+        width: 18px;
+        height: 18px;
+        font-size: 0.4rem;
+        border-width: 1.5px;
+    }
+}
+
 /* ============================================================
    ÁREA AZUL
    ============================================================ */
@@ -557,36 +607,75 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     gap: var(--cell-gap);
 }
 
+/* Fila de puntajes visuales */
+.azul-puntajes-fila {
+    display: flex;
+    gap: var(--cell-gap);
+    justify-content: center;
+    margin-bottom: 6px;
+    padding: 2px 0;
+}
+
+.azul-puntajes-fila .puntaje-circulo {
+    width: 28px;
+    height: 28px;
+}
+
+/* Filas de la tabla */
 .azul-fila {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
+    align-items: center;
 }
 
 .azul-fila .cell {
-    min-width: 24px;
-    height: 24px;
-    font-size: 0.5rem;
-}
-
-.azul-fila-inferior {
-    display: flex;
-    gap: var(--cell-gap);
-    justify-content: center;
-}
-
-.azul-fila-inferior .cell {
     min-width: 28px;
     height: 28px;
     font-size: 0.6rem;
 }
 
-.azul-fila-inferior .cell.bonus-cell {
-    background: rgba(255, 215, 0, 0.12);
+.azul-fila .cell.celda-vacia {
+    opacity: 0.3;
+    cursor: default;
 }
 
-/* --- CÍRCULOS DE BONIFICACIÓN AZUL --- */
-.azul-bonificaciones {
+/* Círculos de bonificación de fila - Azul */
+.azul-bonificacion-circulo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #fff;
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-color);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+/* Círculos de bonificación de columna - Azul */
+.azul-columna-circulo {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #fff;
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-color);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+/* Columnas de bonificaciones */
+.azul-columnas {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
@@ -594,23 +683,60 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     padding: 2px 0;
 }
 
-.azul-bonificaciones .bonificacion-circulo {
-    width: 28px;
-    height: 28px;
+/* Responsive */
+@media (max-width: 768px) {
+    .azul-puntajes-fila .puntaje-circulo {
+        width: 22px;
+        height: 22px;
+        font-size: 0.5rem;
+    }
+    
+    .azul-fila .cell {
+        min-width: 22px;
+        height: 22px;
+        font-size: 0.5rem;
+    }
+    
+    .azul-bonificacion-circulo {
+        width: 22px;
+        height: 22px;
+        font-size: 0.55rem;
+    }
+    
+    .azul-columna-circulo {
+        width: 22px;
+        height: 22px;
+        font-size: 0.55rem;
+    }
 }
 
-/* --- CÍRCULOS DE PUNTAJES AZUL --- */
-.azul-puntajes {
-    display: flex;
-    gap: var(--cell-gap);
-    justify-content: center;
-    margin-top: 2px;
-    padding: 2px 0;
-}
-
-.azul-puntajes .puntaje-circulo {
-    width: 28px;
-    height: 28px;
+@media (max-width: 480px) {
+    .azul-puntajes-fila .puntaje-circulo {
+        width: 18px;
+        height: 18px;
+        font-size: 0.4rem;
+        border-width: 1.5px;
+    }
+    
+    .azul-fila .cell {
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.4rem;
+    }
+    
+    .azul-bonificacion-circulo {
+        width: 18px;
+        height: 18px;
+        font-size: 0.45rem;
+        border-width: 1.5px;
+    }
+    
+    .azul-columna-circulo {
+        width: 18px;
+        height: 18px;
+        font-size: 0.45rem;
+        border-width: 1.5px;
+    }
 }
 
 /* ============================================================

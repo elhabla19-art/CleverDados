@@ -60,23 +60,23 @@ function inicializarAreaAmarilla() {
             `;
         });
         
-        // Círculo de bonificación de fila (5ª columna) - SIEMPRE VISIBLE CON SU SÍMBOLO
+        // Círculo de bonificación de fila (5ª columna) - SIEMPRE VISIBLE CON SU SÍMBOLO Y COLOR
         const bonifDesbloqueada = bonificacionesAmarilla[`fila${filaIndex}`];
-        const claseBonif = bonifDesbloqueada ? 'bonif-desbloqueada' : 'bonif-bloqueada';
+        const clase = bonifDesbloqueada ? 'puntaje-completado' : 'puntaje-pendiente';
         
         html += `
-            <div class="bonificacion-circulo ${claseBonif}" 
-                 data-fila="${filaIndex}"
+            <div class="amarilla-bonificacion-circulo puntaje-circulo ${clase}" 
+                 data-amarilla-fila="${filaIndex}"
                  data-bonificacion="${fila.bonificacion}"
-                 style="${bonifDesbloqueada ? `background-color: ${fila.color}; border-color: ${fila.color};` : ''}">
-                ${fila.simbolo}
+                 style="background-color: ${fila.color}; border-color: ${fila.color};">
+                ${bonifDesbloqueada ? '✓' : fila.simbolo}
             </div>
         `;
         
         html += `</div>`;
     });
     
-    // Fila de círculos de puntajes
+    // Fila de círculos de puntajes de columnas
     html += `<div class="amarilla-puntajes">`;
     AMARILLA_CONFIG.columnas.forEach((puntaje, colIndex) => {
         const completada = columnasCompletadas[colIndex];
@@ -169,42 +169,39 @@ function verificarFilaCompleta(filaIndex) {
     if (marcadas === totalNumeros && !filasCompletadas[filaIndex]) {
         filasCompletadas[filaIndex] = true;
         
-        // Actualizar círculo de bonificación
-        const circulo = document.querySelector(`.bonificacion-circulo[data-fila="${filaIndex}"]`);
+        // Actualizar círculo de bonificación de fila
+        const circulo = document.querySelector(`.amarilla-bonificacion-circulo[data-amarilla-fila="${filaIndex}"]`);
         if (circulo) {
-            circulo.classList.remove('bonif-bloqueada');
-            circulo.classList.add('bonif-desbloqueada');
-            circulo.style.backgroundColor = config.color;
-            circulo.style.borderColor = config.color;
+            circulo.classList.remove('puntaje-pendiente');
+            circulo.classList.add('puntaje-completado');
+            circulo.textContent = '✓';
         }
         
         bonificacionesAmarilla[`fila${filaIndex}`] = true;
         
-        // DESBLOQUEAR EN ÁREA GRIS - Usar el índice específico
+        // Desbloquear en Gris con índice específico
         desbloquearEnGris(config.habilidadGris, config.indiceGris);
     }
 }
 
 // ============================================================
-// DESBLOQUEAR EN ÁREA GRIS - CON ÍNDICE ESPECÍFICO
+// DESBLOQUEAR EN GRIS - CON ÍNDICE ESPECÍFICO
 // ============================================================
 
 function desbloquearEnGris(habilidadId, indice) {
     // Buscar la celda específica en Gris por habilidad e índice
     const celdas = document.querySelectorAll(`.celda-habilidad[data-habilidad="${habilidadId}"]`);
     
-    // Buscar la celda con el índice específico
     for (let cell of celdas) {
         const cellIndex = parseInt(cell.dataset.col);
         if (cellIndex === indice && cell.classList.contains('bloqueada')) {
             cell.classList.remove('bloqueada');
             cell.classList.add('desbloqueada');
-            
             if (cell.dataset.color) {
                 cell.style.opacity = '1';
                 cell.style.filter = 'none';
             }
-            return;
+            return true;
         }
     }
     
@@ -213,14 +210,14 @@ function desbloquearEnGris(habilidadId, indice) {
         if (cell.classList.contains('bloqueada')) {
             cell.classList.remove('bloqueada');
             cell.classList.add('desbloqueada');
-            
             if (cell.dataset.color) {
                 cell.style.opacity = '1';
                 cell.style.filter = 'none';
             }
-            return;
+            return true;
         }
     }
+    return false;
 }
 
 // ============================================================
@@ -249,7 +246,7 @@ function verificarColumnaCompleta(colIndex) {
         columnasCompletadas[colIndex] = true;
         
         // Actualizar círculo de puntaje
-        const circulos = document.querySelectorAll('.puntaje-circulo');
+        const circulos = document.querySelectorAll('.amarilla-puntajes .puntaje-circulo');
         if (circulos[colIndex]) {
             circulos[colIndex].classList.remove('puntaje-pendiente');
             circulos[colIndex].classList.add('puntaje-completado');
@@ -275,7 +272,7 @@ function verificarTodoCompleto() {
     if (todasFilas && todasColumnas) {
         todoCompletado = true;
         
-        const circulos = document.querySelectorAll('.puntaje-circulo');
+        const circulos = document.querySelectorAll('.amarilla-puntajes .puntaje-circulo');
         const ultimoCirculo = circulos[circulos.length - 1];
         if (ultimoCirculo) {
             ultimoCirculo.classList.remove('puntaje-pendiente');
