@@ -1,6 +1,8 @@
 // ============================================================
-// MODAL NUMÉRICO - CLEVERDADOS
+// MODAL NUMÉRICO - CLEVERDADOS (CORREGIDO)
 // ============================================================
+
+let modalNumericoAbierto = false;
 
 /**
  * Muestra un modal para seleccionar un número del 1 al 6
@@ -9,14 +11,17 @@
  * @param {string} subtitulo - Subtítulo del modal (opcional)
  */
 function mostrarModalNumerico(callback, titulo = 'Selecciona un número', subtitulo = 'Elige del 1 al 6') {
+    // Si ya hay un modal abierto, no crear otro
+    if (modalNumericoAbierto) return;
+    
     // Crear overlay
     const overlay = document.createElement('div');
     overlay.className = 'modal-numerico-overlay';
     overlay.id = 'modalNumericoOverlay';
     
-    // Crear contenido del modal
+    // Crear contenido del modal - SIN BOTÓN CANCELAR
     overlay.innerHTML = `
-        <div class="modal-numerico-box">
+        <div class="modal-numerico-box" id="modalNumericoBox">
             <h2>${titulo}</h2>
             <p>${subtitulo}</p>
             <div class="modal-numerico-grid">
@@ -27,22 +32,49 @@ function mostrarModalNumerico(callback, titulo = 'Selecciona un número', subtit
                 <button class="modal-numerico-btn" data-numero="5">5</button>
                 <button class="modal-numerico-btn" data-numero="6">6</button>
             </div>
-            <button class="modal-numerico-cancelar" onclick="cerrarModalNumerico()">Cancelar</button>
         </div>
     `;
     
     document.body.appendChild(overlay);
+    modalNumericoAbierto = true;
+    
+    // Cerrar al hacer clic fuera del modal (en el overlay)
+    overlay.addEventListener('click', function(e) {
+        // Solo cerrar si el clic fue directamente en el overlay (no en el box ni en sus hijos)
+        if (e.target === this) {
+            cerrarModalNumerico();
+        }
+    });
     
     // Event listeners para los botones numéricos
     overlay.querySelectorAll('.modal-numerico-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
             const numero = parseInt(this.dataset.numero);
+            
+            // Guardar referencia al callback antes de cerrar
+            const callbackLocal = callback;
+            
+            // Cerrar el modal
             cerrarModalNumerico();
-            if (typeof callback === 'function') {
-                callback(numero);
+            
+            // Ejecutar callback después de cerrar
+            if (typeof callbackLocal === 'function') {
+                setTimeout(function() {
+                    callbackLocal(numero);
+                }, 50);
             }
         });
     });
+    
+    // Evitar que el clic dentro del box cierre el modal
+    const box = overlay.querySelector('#modalNumericoBox');
+    if (box) {
+        box.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
 }
 
 /**
@@ -52,6 +84,7 @@ function cerrarModalNumerico() {
     const overlay = document.getElementById('modalNumericoOverlay');
     if (overlay) {
         overlay.remove();
+        modalNumericoAbierto = false;
     }
 }
 
