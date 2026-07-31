@@ -15,14 +15,14 @@ const NARANJA_CONFIG = [
     // index 4: XAmarilla, multiplicador 1
     { index: 4, valor: '', bonus: 'XAmarilla', color: '#fdd835', simbolo: '✖', tipo: 'x', indiceGris: 8, requiereNumero: true, multiplicador: 1 },
     // index 5: +1 CON ×2, multiplicador 2
-    { index: 5, valor: '×2', bonus: '+1', color: '#ffd700', simbolo: '+1', tipo: 'mas1', indiceGris: 4, requiereNumero: true, multiplicador: 2 },
+    { index: 5, valor: '×2', bonus: '+1', color: '#78909c', simbolo: '+1', tipo: 'mas1', indiceGris: 4, requiereNumero: true, multiplicador: 2 },
     // index 6: Sin bonificación, multiplicador 1
     { index: 6, valor: '', bonus: null, requiereNumero: true, multiplicador: 1 },
     // index 7: Lobo CON ×2, multiplicador 2
-    { index: 7, valor: '×2', bonus: 'Lobo', color: '#7b1fa2', simbolo: '🐺', tipo: 'lobo', indiceGris: 0, requiereNumero: true, multiplicador: 2 },
+    { index: 7, valor: '×2', bonus: 'Lobo', color: '#d32f2f', simbolo: '♦', tipo: 'lobo', indiceGris: 0, requiereNumero: true, multiplicador: 2 },
     // index 8: Sin bonificación, multiplicador 1
     { index: 8, valor: '', bonus: null, requiereNumero: true, multiplicador: 1 },
-    // index 9: 6Morado CON ×3, multiplicador 3  <--- MOVIDO AQUÍ
+    // index 9: 6Morado CON ×3, multiplicador 3
     { index: 9, valor: '×3', bonus: '6Morado', color: '#7b1fa2', simbolo: '6', tipo: 'seis', indiceGris: 6, requiereNumero: true, multiplicador: 3 },
     // index 10: Sin bonificación, multiplicador 1
     { index: 10, valor: '', bonus: null, requiereNumero: true, multiplicador: 1 }
@@ -35,11 +35,11 @@ let bonificacionesNaranja = [
     false, // index 4: XAmarilla
     false, // index 5: +1
     false, // index 7: Lobo
-    false  // index 9: 6Morado  <--- ACTUALIZADO
+    false  // index 9: 6Morado
 ];
 
 // Índices que tienen bonificación - CORREGIDO
-const BONUS_INDICES_NARANJA = [2, 4, 5, 7, 9];  // <--- ACTUALIZADO
+const BONUS_INDICES_NARANJA = [2, 4, 5, 7, 9];
 
 // Estado de progreso para orden
 let progresoNaranja = 0;

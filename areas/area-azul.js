@@ -25,7 +25,7 @@ const TABLA_AZUL = [
 const BONIFICACIONES_FILA = [
     { fila: 0, celdas: [1, 2, 3], bonificacion: '5Naranja', color: '#ff6f00', simbolo: '5', habilidadGris: 'seis', indiceGris: 2 },
     { fila: 1, celdas: [4, 5, 6, 7], bonificacion: 'XAmarillo', color: '#fdd835', simbolo: '✖', habilidadGris: 'x', indiceGris: 7 },
-    { fila: 2, celdas: [8, 9, 10, 11], bonificacion: 'Lobo', color: '#7b1fa2', simbolo: '🐺', habilidadGris: 'lobo', indiceGris: 1 }
+    { fila: 2, celdas: [8, 9, 10, 11], bonificacion: 'Lobo', color: '#d32f2f', simbolo: '♦', habilidadGris: 'lobo', indiceGris: 1 }
 ];
 
 // Bonificaciones de columna
@@ -64,7 +64,7 @@ const BONIFICACIONES_COLUMNA = [
         celdas: [3, 7, 11], 
         bonificacion: '+1', 
         simbolo: '+1', 
-        color: '#ffd700', 
+        color: '#78909c', 
         tipo: 'mas1',
         indiceGris: 2
     }

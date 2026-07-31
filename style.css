@@ -5,6 +5,7 @@
     --color-amarillo: #fdd835;
     --color-naranja: #ff6f00;
     --color-morado: #7b1fa2;
+    --color-rojo: #d32f2f;
     --bg-main: #121212;
     --bg-panel: #1e1e1e;
     --bg-box: #2d2d2d;
@@ -12,8 +13,8 @@
     --text-main: #e0e0e0;
     --text-muted: #9e9e9e;
     --border-color: #333333;
-    --cell-size: 32px;
-    --cell-gap: 2px;
+    --cell-size: 38px;
+    --cell-gap: 3px;
 }
 
 * {
@@ -152,17 +153,41 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     background: var(--bg-box);
     border-radius: 10px;
     padding: 8px 10px;
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
+    transition: border-color 0.2s;
 }
 
+/* Bordes de colores por área */
+.area-gris {
+    border-color: #78909c;
+}
+
+.area-amarilla {
+    border-color: #fdd835;
+}
+
+.area-azul {
+    border-color: #1e88e5;
+}
+
+.area-verde {
+    border-color: #43a047;
+}
+
+.area-naranja {
+    border-color: #ff6f00;
+}
+
+.area-morado {
+    border-color: #7b1fa2;
+}
+
+/* ============================================================
+   Títulos de áreas - OCULTOS
+   ============================================================ */
+
 .area-title {
-    font-size: 0.7rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-    text-align: center;
+    display: none;
 }
 
 /* --- CELDAS GLOBALES --- */
@@ -174,7 +199,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     align-items: center;
     background: var(--bg-cell);
     border-radius: 4px;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: bold;
     color: var(--text-main);
     border: 1px solid transparent;
@@ -201,7 +226,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 .cell.marcada::after {
     content: "✓";
     position: absolute;
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 900;
     color: #4caf50;
 }
@@ -221,13 +246,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 /* --- CÍRCULOS DE BONIFICACIÓN --- */
 .bonificacion-circulo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: bold;
     color: #fff;
     transition: all 0.3s ease;
@@ -257,13 +282,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 /* --- CÍRCULOS DE PUNTAJES --- */
 .puntaje-circulo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: bold;
     transition: all 0.3s ease;
     border: 2px solid var(--border-color);
@@ -287,12 +312,12 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 /* --- ETIQUETAS DE BONIFICACIÓN (rectángulos) --- */
 .bonificacion-label {
     min-width: 52px;
-    height: 28px;
+    height: 32px;
     border-radius: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.55rem;
+    font-size: 0.6rem;
     font-weight: bold;
     color: #fff;
     transition: all 0.3s ease;
@@ -316,13 +341,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 /* --- ETIQUETAS DE PUNTAJES (rectángulos) --- */
 .puntaje-label {
-    min-width: 32px;
-    height: 24px;
+    min-width: 36px;
+    height: 28px;
     border-radius: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: bold;
     transition: all 0.3s ease;
     border: 1px solid var(--border-color);
@@ -389,8 +414,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 44px;
-    height: 44px;
+    min-width: 48px;
+    height: 48px;
     background: var(--bg-cell);
     border-radius: 8px;
     border: 2px solid var(--border-color);
@@ -417,23 +442,23 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 .gris-turno-cell.marcada::after {
     content: "✓";
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: #4caf50;
     position: absolute;
     top: -6px;
     right: -6px;
     background: var(--bg-main);
     border-radius: 50%;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid #4caf50;
 }
 
-.turno-numero { font-size: 0.8rem; font-weight: bold; color: var(--text-main); }
-.turno-bonificacion { font-size: 0.7rem; color: var(--text-muted); font-weight: bold; }
+.turno-numero { font-size: 0.9rem; font-weight: bold; color: var(--text-main); }
+.turno-bonificacion { font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
 .gris-turno-cell.marcada .turno-numero,
 .gris-turno-cell.marcada .turno-bonificacion { opacity: 0.5; }
 
@@ -455,26 +480,26 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     gap: 4px;
     padding: 2px 4px;
     border-radius: 4px;
-    min-height: 28px;
+    min-height: 32px;
     flex-wrap: wrap;
 }
 
 .habilidad-simbolo {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: bold;
-    min-width: 24px;
+    min-width: 28px;
     text-align: center;
     color: var(--text-main);
 }
 
 .celda-habilidad {
-    width: 26px;
-    height: 26px;
+    width: 30px;
+    height: 30px;
     border-radius: 4px;
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: bold;
     color: #fff;
     transition: transform 0.15s;
@@ -511,7 +536,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 .celda-habilidad.usada::after {
     content: "✓";
     position: absolute;
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 900;
     color: #4caf50;
 }
@@ -534,20 +559,20 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .amarilla-fila .cell {
-    min-width: 28px;
-    height: 28px;
-    font-size: 0.6rem;
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
 }
 
 /* Círculos de bonificación de fila - Amarilla */
 .amarilla-bonificacion-circulo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: bold;
     color: #fff;
     transition: all 0.3s ease;
@@ -566,8 +591,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .amarilla-puntajes .puntaje-circulo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
 }
 
 /* ============================================================
@@ -587,11 +612,12 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     justify-content: center;
     margin-bottom: 6px;
     padding: 2px 0;
+    flex-wrap: wrap;
 }
 
 .azul-puntajes-fila .puntaje-circulo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
 }
 
 /* Filas de la tabla */
@@ -603,9 +629,9 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .azul-fila .cell {
-    min-width: 28px;
-    height: 28px;
-    font-size: 0.6rem;
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
 }
 
 .azul-fila .cell.celda-vacia {
@@ -615,13 +641,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 /* Círculos de bonificación de fila - Azul */
 .azul-bonificacion-circulo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: bold;
     color: #fff;
     transition: all 0.3s ease;
@@ -632,13 +658,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 /* Círculos de bonificación de columna - Azul */
 .azul-columna-circulo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     font-weight: bold;
     color: #fff;
     transition: all 0.3s ease;
@@ -672,11 +698,12 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     justify-content: center;
     margin-bottom: 6px;
     padding: 2px 0;
+    flex-wrap: wrap;
 }
 
 .verde-puntajes-fila .puntaje-circulo {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
 }
 
 .verde-tabla-container {
@@ -698,9 +725,9 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .verde-cell {
-    min-width: 28px;
-    height: 28px;
-    font-size: 0.5rem;
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.6rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -730,7 +757,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 .verde-cell.marcada::after {
     content: "✓";
     position: absolute;
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 900;
     color: #4caf50;
 }
@@ -742,8 +769,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .verde-bonus-item {
-    min-width: 28px;
-    height: 28px;
+    min-width: 32px;
+    height: 32px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -754,13 +781,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .verde-bonificacion-circulo {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: bold;
     color: #fff;
     transition: all 0.3s ease;
@@ -798,9 +825,9 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .naranja-cell {
-    min-width: 28px;
-    height: 28px;
-    font-size: 0.6rem;
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -829,15 +856,15 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 .naranja-cell.marcada::after {
     content: "✓";
     position: absolute;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 900;
     color: #4caf50;
     top: -6px;
     right: -6px;
     background: var(--bg-main);
     border-radius: 50%;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -863,8 +890,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .naranja-bonus-item {
-    min-width: 28px;
-    height: 28px;
+    min-width: 32px;
+    height: 32px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -876,13 +903,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 /* Círculos de bonificación */
 .naranja-bonificacion-circulo {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: bold;
     color: #fff;
     transition: all 0.3s ease;
@@ -920,9 +947,9 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .morado-cell {
-    min-width: 28px;
-    height: 28px;
-    font-size: 0.6rem;
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.7rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -951,15 +978,15 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 .morado-cell.marcada::after {
     content: "✓";
     position: absolute;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 900;
     color: #4caf50;
     top: -6px;
     right: -6px;
     background: var(--bg-main);
     border-radius: 50%;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -978,8 +1005,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 .morado-bonus-item {
-    min-width: 28px;
-    height: 28px;
+    min-width: 32px;
+    height: 32px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -991,13 +1018,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
 /* Círculos de bonificación */
 .morado-bonificacion-circulo {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: bold;
     color: #fff;
     transition: all 0.3s ease;
@@ -1007,7 +1034,7 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
-   SIDE PANEL
+   SIDE PANEL - LEADERBOARD
    ============================================================ */
 
 .side-panel {
@@ -1017,80 +1044,8 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     gap: 10px;
 }
 
-.scoreboard {
-    background: var(--bg-panel);
-    padding: 12px;
-    border-radius: 16px;
-    width: 100%;
-    border: 1px solid var(--border-color);
-}
-
-.scores-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-bottom: 10px;
-}
-
-.score-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: var(--bg-box);
-    padding: 4px 2px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    border: 1px solid var(--border-color);
-}
-
-.color-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-bottom: 2px;
-}
-
-.score-item.gris .color-dot { background: var(--color-gris); }
-.score-item.amarilla .color-dot { background: var(--color-amarillo); }
-.score-item.azul .color-dot { background: var(--color-azul); }
-.score-item.verde .color-dot { background: var(--color-verde); }
-.score-item.naranja .color-dot { background: var(--color-naranja); }
-.score-item.morado .color-dot { background: var(--color-morado); }
-
-.bonus-section {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    background: var(--bg-box);
-    padding: 6px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-}
-
-.bonus-label { font-size: 0.85rem; font-weight: bold; color: #ffd700; }
-#bonus-display { font-weight: bold; font-size: 1rem; color: #ffd700; }
-
-.total-score {
-    text-align: center;
-    font-size: 1.4rem;
-    font-weight: 900;
-    background: #000;
-    color: #fff;
-    padding: 6px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-}
-
-.controls { display: flex; justify-content: center; margin-top: 8px; }
-
-/* ============================================================
-   LEADERBOARD
-   ============================================================ */
-
 .leaderboard {
-    display: none;
+    display: flex;
     background: var(--bg-panel);
     padding: 12px;
     border-radius: 12px;
@@ -1105,6 +1060,13 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+
+.no-players {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
 }
 
 .player-card {
@@ -1125,6 +1087,21 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     font-weight: bold;
     font-size: 0.9rem;
     color: #fff;
+}
+
+/* ============================================================
+   CONTROLS - BOTÓN REINICIAR
+   ============================================================ */
+
+.controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.controls .modal-btn {
+    width: 100%;
+    max-width: 200px;
 }
 
 /* ============================================================
@@ -1230,154 +1207,99 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     color: #fff;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-    .modal-numerico-box {
-        padding: 20px;
-        max-width: 300px;
-    }
-    
-    .modal-numerico-box h2 {
-        font-size: 1.2rem;
-    }
-    
-    .modal-numerico-btn {
-        padding: 14px 0;
-        font-size: 1.4rem;
-    }
-}
-
 /* ============================================================
-   RESPONSIVE - AMARILLA | AZUL EN PARALELO
-   ============================================================ */
-
-/* En móvil mantener paralelo */
-@media (max-width: 480px) {
-    .area-row {
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-    }
-}
-
-@media (max-width: 380px) {
-    .area-row {
-        grid-template-columns: 1fr 1fr;
-        gap: 4px;
-    }
-}
-
-/* Landscape: mantener paralelo */
-@media (orientation: landscape) and (max-height: 700px) {
-    .area-row {
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-    }
-    
-    .area.half {
-        padding: 4px 6px;
-    }
-}
-
-/* ============================================================
-   RESPONSIVE GENERAL
+   RESPONSIVE
    ============================================================ */
 
 @media (max-width: 768px) {
-    :root { --cell-size: 26px; --cell-gap: 1.5px; }
+    :root { --cell-size: 30px; --cell-gap: 2px; }
     
     .board-container { padding: 6px; }
     .area { padding: 6px 8px; }
-    .area-title { font-size: 0.6rem; }
 
     /* Gris */
-    .gris-turno-cell { min-width: 34px; height: 38px; }
-    .turno-numero { font-size: 0.65rem; }
-    .turno-bonificacion { font-size: 0.55rem; }
-    .celda-habilidad { width: 22px; height: 22px; font-size: 0.55rem; }
-    .habilidad-simbolo { font-size: 0.7rem; min-width: 20px; }
-    .gris-fila-habilidad { gap: 3px; min-height: 24px; }
+    .gris-turno-cell { min-width: 38px; height: 42px; }
+    .turno-numero { font-size: 0.7rem; }
+    .turno-bonificacion { font-size: 0.6rem; }
+    .celda-habilidad { width: 24px; height: 24px; font-size: 0.6rem; }
+    .habilidad-simbolo { font-size: 0.75rem; min-width: 22px; }
+    .gris-fila-habilidad { gap: 3px; min-height: 26px; }
     .gris-etiqueta { font-size: 0.55rem; min-width: 45px; }
 
     /* Amarilla */
-    .amarilla-fila .cell { min-width: 22px; height: 22px; font-size: 0.5rem; }
-    .amarilla-fila .bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
-    .amarilla-puntajes .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
+    .amarilla-fila .cell { min-width: 26px; height: 26px; font-size: 0.55rem; }
+    .amarilla-bonificacion-circulo { width: 26px; height: 26px; font-size: 0.65rem; }
+    .amarilla-puntajes .puntaje-circulo { width: 26px; height: 26px; font-size: 0.55rem; }
 
     /* Azul */
-    .azul-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
-    .azul-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
-    .azul-columna-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
-    .azul-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
-    .azul-columnas .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
+    .azul-fila .cell { min-width: 24px; height: 24px; font-size: 0.5rem; }
+    .azul-bonificacion-circulo { width: 26px; height: 26px; font-size: 0.65rem; }
+    .azul-columna-circulo { width: 26px; height: 26px; font-size: 0.65rem; }
+    .azul-puntajes-fila .puntaje-circulo { width: 26px; height: 26px; font-size: 0.55rem; }
+    .azul-columnas .puntaje-circulo { width: 26px; height: 26px; font-size: 0.55rem; }
 
     /* Verde */
-    .verde-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
-    .verde-cell { min-width: 22px; height: 22px; font-size: 0.4rem; }
-    .verde-bonus-item { min-width: 22px; height: 22px; }
-    .verde-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.5rem; }
+    .verde-puntajes-fila .puntaje-circulo { width: 26px; height: 26px; font-size: 0.55rem; }
+    .verde-cell { min-width: 26px; height: 26px; font-size: 0.5rem; }
+    .verde-bonus-item { min-width: 26px; height: 26px; }
+    .verde-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
 
     /* Naranja */
-    .naranja-cell { min-width: 22px; height: 22px; font-size: 0.5rem; }
-    .naranja-bonus-item { min-width: 22px; height: 22px; }
-    .naranja-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.5rem; }
+    .naranja-cell { min-width: 26px; height: 26px; font-size: 0.55rem; }
+    .naranja-bonus-item { min-width: 26px; height: 26px; }
+    .naranja-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
 
     /* Morado */
-    .morado-cell { min-width: 22px; height: 22px; font-size: 0.5rem; }
-    .morado-bonus-item { min-width: 22px; height: 22px; }
-    .morado-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.5rem; }
-
-    .scores-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
-    .score-item { font-size: 0.75rem; padding: 3px 2px; }
+    .morado-cell { min-width: 26px; height: 26px; font-size: 0.55rem; }
+    .morado-bonus-item { min-width: 26px; height: 26px; }
+    .morado-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
 }
 
 @media (max-width: 480px) {
-    :root { --cell-size: 20px; --cell-gap: 1px; }
+    :root { --cell-size: 24px; --cell-gap: 1.5px; }
     
     .board-container { padding: 4px; }
     .area { padding: 4px 6px; }
-    .area-title { font-size: 0.5rem; }
 
     /* Gris */
-    .gris-turno-cell { min-width: 28px; height: 32px; padding: 1px 2px; }
-    .turno-numero { font-size: 0.55rem; }
-    .turno-bonificacion { font-size: 0.45rem; }
-    .celda-habilidad { width: 18px; height: 18px; font-size: 0.45rem; border-radius: 2px; }
-    .habilidad-simbolo { font-size: 0.6rem; min-width: 16px; }
-    .gris-fila-habilidad { gap: 2px; min-height: 20px; }
+    .gris-turno-cell { min-width: 32px; height: 36px; padding: 1px 2px; }
+    .turno-numero { font-size: 0.6rem; }
+    .turno-bonificacion { font-size: 0.5rem; }
+    .celda-habilidad { width: 20px; height: 20px; font-size: 0.5rem; border-radius: 2px; }
+    .habilidad-simbolo { font-size: 0.65rem; min-width: 18px; }
+    .gris-fila-habilidad { gap: 2px; min-height: 22px; }
     .gris-etiqueta { font-size: 0.5rem; min-width: 35px; }
 
     /* Amarilla */
-    .amarilla-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
-    .amarilla-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
-    .amarilla-puntajes .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
+    .amarilla-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
+    .amarilla-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; border-width: 1.5px; }
+    .amarilla-puntajes .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; border-width: 1.5px; }
 
     /* Azul */
-    .azul-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .azul-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
-    .azul-columna-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
-    .azul-puntajes-fila .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
-    .azul-columnas .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
+    .azul-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
+    .azul-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; border-width: 1.5px; }
+    .azul-columna-circulo { width: 22px; height: 22px; font-size: 0.55rem; border-width: 1.5px; }
+    .azul-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; border-width: 1.5px; }
+    .azul-columnas .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; border-width: 1.5px; }
 
     /* Verde */
-    .verde-puntajes-fila .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
-    .verde-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .verde-bonus-item { min-width: 18px; height: 18px; }
-    .verde-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; border-width: 1.5px; }
+    .verde-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; border-width: 1.5px; }
+    .verde-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
+    .verde-bonus-item { min-width: 22px; height: 22px; }
+    .verde-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
 
     /* Naranja */
-    .naranja-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .naranja-cell.marcada::after { font-size: 0.6rem; width: 12px; height: 12px; top: -5px; right: -5px; }
-    .naranja-bonus-item { min-width: 18px; height: 18px; }
-    .naranja-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; border-width: 1.5px; }
+    .naranja-cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
+    .naranja-cell.marcada::after { font-size: 0.7rem; width: 14px; height: 14px; top: -5px; right: -5px; }
+    .naranja-bonus-item { min-width: 22px; height: 22px; }
+    .naranja-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
 
     /* Morado */
-    .morado-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .morado-cell.marcada::after { font-size: 0.6rem; width: 12px; height: 12px; top: -5px; right: -5px; }
-    .morado-bonus-item { min-width: 18px; height: 18px; }
-    .morado-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; border-width: 1.5px; }
+    .morado-cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
+    .morado-cell.marcada::after { font-size: 0.7rem; width: 14px; height: 14px; top: -5px; right: -5px; }
+    .morado-bonus-item { min-width: 22px; height: 22px; }
+    .morado-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
 
-    .scores-grid { grid-template-columns: repeat(2, 1fr); }
-    .score-item { font-size: 0.7rem; }
     .modal-box { padding: 20px; }
     .modal-btn { padding: 10px 12px; font-size: 0.85rem; }
 }
@@ -1403,7 +1325,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 
     .board { gap: 4px; }
     .area { padding: 4px 6px; }
-    .area-title { font-size: 0.5rem; }
 
     .side-panel {
         flex: 1;
@@ -1412,50 +1333,46 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
         max-height: 100%;
     }
 
-    .scoreboard { padding: 6px; }
-    .scores-grid { grid-template-columns: repeat(2, 1fr); gap: 3px; }
-    .score-item { font-size: 0.6rem; padding: 2px; }
-
-    .leaderboard { padding: 6px; margin-top: 4px; }
+    .leaderboard { padding: 6px; }
     .player-card { padding: 4px 6px; }
     .player-card-header { font-size: 0.7rem; }
 
     /* Gris landscape */
-    .gris-turno-cell { min-width: 28px; height: 30px; }
-    .turno-numero { font-size: 0.5rem; }
-    .turno-bonificacion { font-size: 0.4rem; }
-    .celda-habilidad { width: 18px; height: 18px; font-size: 0.45rem; }
-    .habilidad-simbolo { font-size: 0.6rem; min-width: 16px; }
-    .gris-fila-habilidad { min-height: 20px; gap: 2px; }
+    .gris-turno-cell { min-width: 30px; height: 34px; }
+    .turno-numero { font-size: 0.55rem; }
+    .turno-bonificacion { font-size: 0.45rem; }
+    .celda-habilidad { width: 20px; height: 20px; font-size: 0.5rem; }
+    .habilidad-simbolo { font-size: 0.65rem; min-width: 18px; }
+    .gris-fila-habilidad { min-height: 22px; gap: 2px; }
     .gris-etiqueta { font-size: 0.5rem; min-width: 35px; }
 
     /* Amarilla landscape */
-    .amarilla-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
-    .amarilla-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
-    .amarilla-puntajes .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
+    .amarilla-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
+    .amarilla-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
+    .amarilla-puntajes .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; }
 
     /* Azul landscape */
-    .azul-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .azul-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
-    .azul-columna-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
-    .azul-puntajes-fila .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
-    .azul-columnas .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
+    .azul-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
+    .azul-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
+    .azul-columna-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
+    .azul-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; }
+    .azul-columnas .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; }
 
     /* Verde landscape */
-    .verde-puntajes-fila .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
-    .verde-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .verde-bonus-item { min-width: 18px; height: 18px; }
-    .verde-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; }
+    .verde-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.45rem; }
+    .verde-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
+    .verde-bonus-item { min-width: 22px; height: 22px; }
+    .verde-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
 
     /* Naranja landscape */
-    .naranja-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .naranja-bonus-item { min-width: 18px; height: 18px; }
-    .naranja-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; }
+    .naranja-cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
+    .naranja-bonus-item { min-width: 22px; height: 22px; }
+    .naranja-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
 
     /* Morado landscape */
-    .morado-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .morado-bonus-item { min-width: 18px; height: 18px; }
-    .morado-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; }
+    .morado-cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
+    .morado-bonus-item { min-width: 22px; height: 22px; }
+    .morado-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
 }
 
 /* ============================================================

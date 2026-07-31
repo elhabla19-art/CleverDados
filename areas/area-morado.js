@@ -11,11 +11,11 @@ const MORADO_CONFIG = [
     // index 3: XAzul
     { index: 3, valor: '', bonus: 'XAzul', color: '#1e88e5', simbolo: '✖', tipo: 'x', indiceGris: 3, requiereNumero: true },
     // index 4: +1
-    { index: 4, valor: '', bonus: '+1', color: '#ffd700', simbolo: '+1', tipo: 'mas1', indiceGris: 5, requiereNumero: true },
+    { index: 4, valor: '', bonus: '+1', color: '#78909c', simbolo: '+1', tipo: 'mas1', indiceGris: 5, requiereNumero: true },
     // index 5: XAmarillo → AMARILLO (índice 9 en gris - el que funcionaba)
     { index: 5, valor: '', bonus: 'XAmarillo', color: '#fdd835', simbolo: '✖', tipo: 'x', indiceGris: 9, requiereNumero: true },
     // index 6: Lobo
-    { index: 6, valor: '', bonus: 'Lobo', color: '#7b1fa2', simbolo: '🐺', tipo: 'lobo', indiceGris: 0, requiereNumero: true },
+    { index: 6, valor: '', bonus: 'Lobo', color: '#d32f2f', simbolo: '♦', tipo: 'lobo', indiceGris: 0, requiereNumero: true },
     // index 7: Espiral
     { index: 7, valor: '', bonus: 'Espiral', color: '#78909c', simbolo: '♻', tipo: 'espiral', indiceGris: 6, requiereNumero: true },
     // index 8: XVerde → VERDE (índice 6 en gris)
@@ -23,7 +23,7 @@ const MORADO_CONFIG = [
     // index 9: 6Naranja
     { index: 9, valor: '', bonus: '6Naranja', color: '#ff6f00', simbolo: '6', tipo: 'seis', indiceGris: 3, requiereNumero: true },
     // index 10: +1
-    { index: 10, valor: '', bonus: '+1', color: '#ffd700', simbolo: '+1', tipo: 'mas1', indiceGris: 6, requiereNumero: true }
+    { index: 10, valor: '', bonus: '+1', color: '#78909c', simbolo: '+1', tipo: 'mas1', indiceGris: 6, requiereNumero: true }
 ];
 
 // Estado

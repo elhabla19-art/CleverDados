@@ -79,7 +79,6 @@
             <div class="board" id="game-board">
                 <!-- ÁREA GRIS (Fila 1) -->
                 <div class="area area-gris" id="area-gris">
-                    <div class="area-title">⬜ ÁREA GRIS</div>
                     <div id="area-gris-content"></div>
                 </div>
 
@@ -87,66 +86,40 @@
                 <div class="area-row">
                     <!-- ÁREA AMARILLA -->
                     <div class="area area-amarilla half" id="area-amarilla">
-                        <div class="area-title">🟨 ÁREA AMARILLA</div>
                         <div id="area-amarilla-content"></div>
                     </div>
 
                     <!-- ÁREA AZUL -->
                     <div class="area area-azul half" id="area-azul">
-                        <div class="area-title">🟦 ÁREA AZUL</div>
                         <div id="area-azul-content"></div>
                     </div>
                 </div>
 
                 <!-- ÁREA VERDE (Fila 3) -->
                 <div class="area area-verde" id="area-verde">
-                    <div class="area-title">🟩 ÁREA VERDE</div>
                     <div id="area-verde-content"></div>
                 </div>
 
                 <!-- ÁREA NARANJA (Fila 4) -->
                 <div class="area area-naranja" id="area-naranja">
-                    <div class="area-title">🟧 ÁREA NARANJA</div>
                     <div id="area-naranja-content"></div>
                 </div>
 
                 <!-- ÁREA MORADO (Fila 5) -->
                 <div class="area area-morado" id="area-morado">
-                    <div class="area-title">🟪 ÁREA MORADO</div>
                     <div id="area-morado-content"></div>
                 </div>
             </div>
         </div>
 
         <div class="side-panel">
-            <div class="scoreboard">
-                <div class="scores-grid">
-                    <div class="score-item gris"><span class="color-dot"></span><span id="score-gris">0</span></div>
-                    <div class="score-item amarilla"><span class="color-dot"></span><span id="score-amarilla">0</span></div>
-                    <div class="score-item azul"><span class="color-dot"></span><span id="score-azul">0</span></div>
-                    <div class="score-item verde"><span class="color-dot"></span><span id="score-verde">0</span></div>
-                    <div class="score-item naranja"><span class="color-dot"></span><span id="score-naranja">0</span></div>
-                    <div class="score-item morado"><span class="color-dot"></span><span id="score-morado">0</span></div>
-                </div>
-                
-                <div class="bonus-section">
-                    <span class="bonus-label">⭐ Bonificación:</span>
-                    <span id="bonus-display">0</span>
-                </div>
-
-                <div class="total-score">
-                    TOTAL: <span id="score-total">0</span>
-                </div>
-                
-                <div class="controls">
-                    <button class="modal-btn btn-danger" onclick="mostrarModalReinicio()">🔄 Reiniciar Mi Tablero</button>
-                </div>
-            </div>
-
             <!-- TABLA DE POSICIONES -->
             <div class="leaderboard" id="leaderboardPanel">
                 <h3>🏆 Posiciones</h3>
                 <div id="playersList"></div>
+                <div class="controls">
+                    <button class="modal-btn btn-danger" onclick="mostrarModalReinicio()">Reiniciar</button>
+                </div>
             </div>
         </div>
     </div>

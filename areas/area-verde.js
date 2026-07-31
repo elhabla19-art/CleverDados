@@ -13,7 +13,7 @@ const TABLA_VERDE = [
     { valor: '≥4', bonus: '+1' },           // +1 índice 3
     { valor: '≥5', bonus: null },
     { valor: '≥1', bonus: 'XAzul' },        // ✖ índice 2
-    { valor: '≥2', bonus: 'Lobo' },         // 🐺 índice 2
+    { valor: '≥2', bonus: 'Lobo' },         // ♦ índice 2
     { valor: '≥3', bonus: null },
     { valor: '≥4', bonus: '6Morado' },      // 6 índice 5
     { valor: '≥5', bonus: 'Espiral' },      // ♻ índice 3
@@ -22,11 +22,11 @@ const TABLA_VERDE = [
 
 // Mapeo de bonificaciones de Verde - CORREGIDO
 const BONUS_MAP = {
-    '+1': { color: '#ffd700', simbolo: '+1', tipo: 'mas1', indiceGris: 3 }, // <--- CAMBIADO de 0 a 3
+    '+1': { color: '#78909c', simbolo: '+1', tipo: 'mas1', indiceGris: 3 },
     'XAzul': { color: '#1e88e5', simbolo: '✖', tipo: 'x', indiceGris: 2 },
-    'Lobo': { color: '#7b1fa2', simbolo: '🐺', tipo: 'lobo', indiceGris: 2 },
+    'Lobo': { color: '#d32f2f', simbolo: '♦', tipo: 'lobo', indiceGris: 2 },
     '6Morado': { color: '#7b1fa2', simbolo: '6', tipo: 'seis', indiceGris: 5 },
-    'Espiral': { color: '#78909c', simbolo: '♻', tipo: 'espiral', indiceGris: 3 } // <--- CAMBIADO de 0 a 3
+    'Espiral': { color: '#78909c', simbolo: '♻', tipo: 'espiral', indiceGris: 3 }
 };
 
 // Índices que tienen bonificación
