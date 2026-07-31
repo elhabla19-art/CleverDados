@@ -1,5 +1,5 @@
 // ============================================================
-// PUNTAJES.JS - CLEVERDADOS (CORREGIDO - AZUL PROGRESIVO)
+// PUNTAJES.JS - CLEVERDADOS (CORREGIDO - CON LOBOS)
 // ============================================================
 
 /**
@@ -11,14 +11,12 @@ const PUNTAJES = {
     // ============================================================
     // ÁREA AMARILLA
     // SOLO puntos por columnas completadas: [10, 14, 16, 20]
-    // NO da puntos por casillas individuales
     // ============================================================
     amarilla: {
         columnas: [10, 14, 16, 20],
         calcular: function() {
             let puntos = 0;
             
-            // SOLO puntos por columnas completadas
             if (typeof columnasCompletadas !== 'undefined' && columnasCompletadas) {
                 columnasCompletadas.forEach((completada, index) => {
                     if (completada) {
@@ -32,23 +30,16 @@ const PUNTAJES = {
     },
 
     // ============================================================
-    // ÁREA AZUL - CORREGIDO
-    // Puntajes PROGRESIVOS por CANTIDAD de casillas llenas
-    // 1 casilla = 1pt, 2 casillas = 1+2=3pts, 3 casillas = 1+2+4=7pts
-    // NO importa el valor de la casilla, solo la cantidad
+    // ÁREA AZUL - Puntajes PROGRESIVOS por CANTIDAD de casillas llenas
     // ============================================================
     azul: {
         puntajes: [1, 2, 4, 7, 11, 16, 22, 29, 37, 46, 56],
         calcular: function() {
             let puntos = 0;
-            
-            // CONTAR MANUALMENTE las casillas marcadas en el área azul
             let casillasMarcadas = 0;
             
-            // Usar TABLA_AZUL para contar SOLO las casillas con valor
             if (typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL && typeof historialMovimientos !== 'undefined') {
                 TABLA_AZUL.forEach((celda, index) => {
-                    // Solo contar casillas que tienen valor (no vacías)
                     if (celda.valor !== '') {
                         const id = `azul-tabla-${index}`;
                         if (historialMovimientos.includes(id)) {
@@ -57,41 +48,32 @@ const PUNTAJES = {
                     }
                 });
             } else {
-                // Fallback: contar por el prefijo
                 casillasMarcadas = historialMovimientos ? historialMovimientos.filter(m => 
                     m.startsWith('azul-tabla-')
                 ).length : 0;
             }
             
-            // Actualizar la variable global
             window.progresoAzul = casillasMarcadas;
             
-            // Sumar los puntajes progresivos SEGÚN LA CANTIDAD de casillas marcadas
-            // Si hay 2 casillas, suma puntajes[0] + puntajes[1] = 1 + 2 = 3
             for (let i = 0; i < casillasMarcadas && i < this.puntajes.length; i++) {
                 puntos += this.puntajes[i];
             }
             
-            console.log(`Área Azul: ${casillasMarcadas} casillas marcadas = ${puntos} pts`);
             return puntos;
         }
     },
 
     // ============================================================
-    // ÁREA VERDE
-    // Puntajes progresivos: 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66
+    // ÁREA VERDE - Puntajes progresivos
     // ============================================================
     verde: {
         puntajes: [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66],
         calcular: function() {
             let puntos = 0;
-            
-            // Contar cuántas casillas están marcadas en el área verde
             const marcas = historialMovimientos ? historialMovimientos.filter(m => 
                 m.startsWith('verde-tabla-')
             ).length : 0;
             
-            // Sumar los puntajes progresivos según las casillas marcadas
             for (let i = 0; i < marcas && i < this.puntajes.length; i++) {
                 puntos += this.puntajes[i];
             }
@@ -101,15 +83,12 @@ const PUNTAJES = {
     },
 
     // ============================================================
-    // ÁREA NARANJA
-    // Puntaje = (número elegido × multiplicador) sumado por cada casilla
-    // Multiplicadores: ×1 (normal), ×2, ×3
+    // ÁREA NARANJA - Suma de valores × multiplicadores
     // ============================================================
     naranja: {
         calcular: function() {
             let puntos = 0;
             
-            // Obtener los valores guardados de area-naranja.js
             if (typeof valoresNaranja !== 'undefined' && valoresNaranja && typeof NARANJA_CONFIG !== 'undefined' && NARANJA_CONFIG) {
                 NARANJA_CONFIG.forEach((celda, index) => {
                     const id = `naranja-${index}`;
@@ -125,14 +104,12 @@ const PUNTAJES = {
     },
 
     // ============================================================
-    // ÁREA MORADO
-    // Puntaje = suma de los números elegidos en cada casilla
+    // ÁREA MORADO - Suma de números elegidos
     // ============================================================
     morado: {
         calcular: function() {
             let puntos = 0;
             
-            // Obtener los valores guardados de area-morado.js
             if (typeof valoresMorado !== 'undefined' && valoresMorado && typeof MORADO_CONFIG !== 'undefined' && MORADO_CONFIG) {
                 MORADO_CONFIG.forEach((celda, index) => {
                     const id = `morado-${index}`;
@@ -148,12 +125,10 @@ const PUNTAJES = {
     },
 
     // ============================================================
-    // ÁREA GRIS
-    // Puntaje = número de habilidades usadas (suma triangular)
+    // ÁREA GRIS - Suma triangular de habilidades usadas
     // ============================================================
     gris: {
         calcular: function() {
-            // Contar habilidades usadas (excluyendo turnos)
             const marcas = historialMovimientos ? historialMovimientos.filter(m => 
                 m.startsWith('gris-') && !m.includes('turno')
             ).length : 0;
@@ -183,9 +158,7 @@ const PUNTAJES = {
         let total = 0;
         const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
         
-        // Asegurar que historialMovimientos existe
         if (typeof historialMovimientos === 'undefined') {
-            console.warn('historialMovimientos no definido, creando array vacío');
             window.historialMovimientos = [];
         }
         
@@ -193,7 +166,6 @@ const PUNTAJES = {
             if (this[area] && typeof this[area].calcular === 'function') {
                 try {
                     const puntos = this[area].calcular();
-                    // Actualizar el puntaje en el objeto global
                     if (typeof puntajesAreas !== 'undefined' && puntajesAreas) {
                         puntajesAreas[area] = puntos;
                     }
@@ -204,22 +176,19 @@ const PUNTAJES = {
             }
         });
         
-        // Agregar bonificaciones
         const bonus = this.bonificaciones.calcular();
         total += bonus;
         
-        // Actualizar variable global
         if (typeof puntajeTotal !== 'undefined') {
             window.puntajeTotal = total;
         }
         
-        // Actualizar UI - verificar que los elementos existan
+        // ACTUALIZAR PUNTAJES EN LA UI
         const totalElement = document.getElementById('score-total');
         const bonusElement = document.getElementById('bonus-display');
         if (totalElement) totalElement.textContent = total;
         if (bonusElement) bonusElement.textContent = bonus;
         
-        // Actualizar puntajes individuales
         if (typeof puntajesAreas !== 'undefined' && puntajesAreas) {
             const areasList = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
             areasList.forEach(area => {
@@ -230,6 +199,14 @@ const PUNTAJES = {
             });
         }
         
+        // ACTUALIZAR LOBOS DESPUÉS DE CALCULAR
+        if (typeof actualizarValorLobo === 'function') {
+            actualizarValorLobo();
+        }
+        if (typeof actualizarUI === 'function') {
+            actualizarUI();
+        }
+        
         return total;
     },
 
@@ -237,10 +214,8 @@ const PUNTAJES = {
     // OBTENER PUNTAJE POR ÁREA (para leaderboard)
     // ============================================================
     obtenerPuntajesPorArea: function() {
-        // Primero calcular para asegurar que los valores están actualizados
         const total = this.calcularTotal();
         
-        // Devolver los valores de puntajesAreas (que ya fueron actualizados por calcularTotal)
         return {
             gris: (typeof puntajesAreas !== 'undefined' && puntajesAreas) ? puntajesAreas.gris || 0 : 0,
             amarilla: (typeof puntajesAreas !== 'undefined' && puntajesAreas) ? puntajesAreas.amarilla || 0 : 0,
@@ -249,7 +224,13 @@ const PUNTAJES = {
             naranja: (typeof puntajesAreas !== 'undefined' && puntajesAreas) ? puntajesAreas.naranja || 0 : 0,
             morado: (typeof puntajesAreas !== 'undefined' && puntajesAreas) ? puntajesAreas.morado || 0 : 0,
             bonificacion: puntosBonificacion || 0,
-            total: total
+            total: total,
+            lobos: {
+                cantidad: (typeof lobos !== 'undefined' && lobos) ? lobos.cantidad || 0 : 0,
+                valorActual: (typeof lobos !== 'undefined' && lobos) ? lobos.valorActual || 0 : 0,
+                totalPuntos: (typeof lobos !== 'undefined' && lobos) ? lobos.totalPuntos || 0 : 0,
+                colorMenor: (typeof lobos !== 'undefined' && lobos) ? lobos.colorMenor || 'amarilla' : 'amarilla'
+            }
         };
     }
 };

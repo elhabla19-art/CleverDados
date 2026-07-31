@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA MORADO - CLEVERDADOS (CORREGIDO FINAL)
+// ÁREA MORADO - CLEVERDADOS (CORREGIDO FINAL CON LOBOS)
 // ============================================================
 
 // Configuración del área morado
@@ -296,7 +296,15 @@ function verificarBonificacionMorado(index) {
     if (!celda.bonus) return;
     
     bonificacionesMorado[bonusIdx] = true;
-    aplicarBonificacionMorado(celda);
+    
+    // Si es Lobo, registrar en lugar de desbloquear en Gris
+    if (celda.bonus === 'Lobo') {
+        if (typeof registrarLobo === 'function') {
+            registrarLobo('morado');
+        }
+    } else {
+        aplicarBonificacionMorado(celda);
+    }
 }
 
 // ============================================================
@@ -328,7 +336,7 @@ function aplicarBonificacionMorado(celda) {
             }
             break;
         case 'lobo':
-            // Lobo fue eliminado de Gris
+            // Los lobos ya se manejan en verificarBonificacionMorado
             break;
     }
     

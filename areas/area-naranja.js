@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA NARANJA - CLEVERDADOS (CORREGIDO - CON VALORES NUMÉRICOS)
+// ÁREA NARANJA - CLEVERDADOS (CORREGIDO - CON VALORES NUMÉRICOS Y LOBOS)
 // ============================================================
 
 // Configuración del área naranja
@@ -246,7 +246,7 @@ function marcarNaranja(index, numero) {
     // Actualizar progreso
     actualizarProgresoNaranja();
     
-    // Verificar bonificación (desbloquea en gris)
+    // Verificar bonificación (desbloquea en gris o registra lobo)
     verificarBonificacionNaranja(index);
     
     // Recalcular puntajes
@@ -266,7 +266,7 @@ function marcarNaranja(index, numero) {
 }
 
 // ============================================================
-// VERIFICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
+// VERIFICAR BONIFICACIÓN - DESBLOQUEA EN GRIS O REGISTRA LOBO
 // ============================================================
 
 function verificarBonificacionNaranja(index) {
@@ -278,7 +278,15 @@ function verificarBonificacionNaranja(index) {
     if (!celda.bonus) return;
     
     bonificacionesNaranja[bonusIdx] = true;
-    aplicarBonificacionNaranja(celda);
+    
+    // Si es Lobo, registrar en lugar de desbloquear en Gris
+    if (celda.bonus === 'Lobo') {
+        if (typeof registrarLobo === 'function') {
+            registrarLobo('naranja');
+        }
+    } else {
+        aplicarBonificacionNaranja(celda);
+    }
 }
 
 // ============================================================
@@ -310,7 +318,7 @@ function aplicarBonificacionNaranja(celda) {
             }
             break;
         case 'lobo':
-            // Lobo fue eliminado de Gris
+            // Los lobos ya se manejan en verificarBonificacionNaranja
             break;
     }
     

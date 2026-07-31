@@ -1,5 +1,5 @@
 // ============================================================
-// LEADERBOARD.JS - CLEVERDADOS (CORREGIDO)
+// LEADERBOARD.JS - CLEVERDADOS (CON LOBOS CORREGIDO)
 // ============================================================
 
 // Colores de las áreas para los dots
@@ -211,7 +211,7 @@ function cerrarZoom() {
 }
 
 // ============================================================
-// GENERAR TAGS DE PUNTAJES POR ÁREA - SIN GRIS
+// GENERAR TAGS DE PUNTAJES POR ÁREA - CON LOBOS SIEMPRE VISIBLE
 // ============================================================
 function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valoresMorado) {
     // SOLO 5 áreas (excluyendo Gris)
@@ -225,6 +225,7 @@ function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valor
     
     let html = '<div class="puntajes-tags">';
     
+    // Tags de colores
     areas.forEach(area => {
         let puntos = 0;
         if (puntajesPorArea && puntajesPorArea[area.id] !== undefined) {
@@ -232,7 +233,6 @@ function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valor
         }
         const color = area.color;
         
-        // Para el área roja (verde+naranja+morado)
         let areaId = area.id;
         if (area.id === 'verde' || area.id === 'naranja' || area.id === 'morado') {
             areaId = 'rojo';
@@ -251,6 +251,56 @@ function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valor
             </span>
         `;
     });
+    
+    // ============================================================
+    // TAG DE LOBOS - SIEMPRE VISIBLE CON PUNTAJE CORRECTO
+    // ============================================================
+    let cantidadLobos = 0;
+    let puntosLobos = 0;
+    let valorLobo = 0;
+    let colorMenor = 'amarilla';
+    
+    if (typeof lobos !== 'undefined' && lobos) {
+        // Asegurar que el valor esté actualizado
+        if (typeof actualizarValorLobo === 'function') {
+            actualizarValorLobo();
+        }
+        cantidadLobos = lobos.cantidad || 0;
+        puntosLobos = lobos.totalPuntos || 0;
+        valorLobo = lobos.valorActual || 0;
+        colorMenor = lobos.colorMenor || 'amarilla';
+    }
+    
+    // Si no hay lobos, mostrar 0
+    if (cantidadLobos === 0) {
+        html += `
+            <span class="puntaje-tag lobos-tag" style="border-color: #d32f2f; cursor: default; opacity: 0.6;">
+                <span class="tag-dot" style="background: #d32f2f; font-size: 0.8rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;">
+                    ♦
+                </span>
+                0pts
+            </span>
+        `;
+    } else {
+        // Obtener el color del área menor para el dot
+        const coloresMap = {
+            'amarilla': '#fdd835',
+            'azul': '#1e88e5',
+            'verde': '#43a047',
+            'naranja': '#ff6f00',
+            'morado': '#7b1fa2'
+        };
+        const colorDot = coloresMap[colorMenor] || '#d32f2f';
+        
+        html += `
+            <span class="puntaje-tag lobos-tag" style="border-color: #d32f2f; cursor: default;">
+                <span class="tag-dot" style="background: ${colorDot}; font-size: 1rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;">
+                    ♦
+                </span>
+                ${cantidadLobos} × ${valorLobo}pts = ${puntosLobos}pts
+            </span>
+        `;
+    }
     
     html += '</div>';
     return html;
@@ -438,6 +488,31 @@ const LEADERBOARD_STYLES = `
     border-radius: 50%;
     display: inline-block;
     flex-shrink: 0;
+}
+
+/* ============================================================
+   TAG DE LOBOS
+   ============================================================ */
+
+.lobos-tag {
+    border-color: #d32f2f !important;
+    background: rgba(211, 47, 47, 0.08) !important;
+    font-weight: bold !important;
+    cursor: default !important;
+}
+
+.lobos-tag:hover {
+    transform: none !important;
+    background: rgba(211, 47, 47, 0.15) !important;
+}
+
+.lobos-tag .tag-dot {
+    background: #d32f2f !important;
+    font-size: 1rem !important;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ============================================================

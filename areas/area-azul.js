@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA AZUL - CLEVERDADOS (CORREGIDO - PUNTAJES ESTÁTICOS)
+// ÁREA AZUL - CLEVERDADOS (CORREGIDO - PUNTAJES ESTÁTICOS Y LOBOS)
 // ============================================================
 
 // Puntajes visuales (se actualizan automáticamente)
@@ -214,7 +214,7 @@ function manejarClickAzul(index) {
 }
 
 // ============================================================
-// VERIFICAR FILAS - DESBLOQUEA EN GRIS
+// VERIFICAR FILAS - DESBLOQUEA EN GRIS O REGISTRA LOBO
 // ============================================================
 
 function verificarFilasAzul() {
@@ -231,7 +231,15 @@ function verificarFilasAzul() {
         
         if (todasMarcadas) {
             filasCompletadasAzul[filaIndex] = true;
-            desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
+            
+            // Verificar si es Lobo
+            if (bonif.bonificacion === 'Lobo') {
+                if (typeof registrarLobo === 'function') {
+                    registrarLobo('azul');
+                }
+            } else {
+                desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
+            }
         }
     });
 }

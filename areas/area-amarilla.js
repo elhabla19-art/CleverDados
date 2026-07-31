@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA AMARILLA - CLEVERDADOS (CORREGIDO - CON PUNTAJES)
+// ÁREA AMARILLA - CLEVERDADOS (CORREGIDO - CON PUNTAJES Y LOBOS)
 // ============================================================
 
 // Configuración del área amarilla
@@ -187,8 +187,14 @@ function verificarFilaCompleta(filaIndex) {
         
         bonificacionesAmarilla[`fila${filaIndex}`] = true;
         
-        // Desbloquear en Gris con índice específico
-        desbloquearEnGris(config.habilidadGris, config.indiceGris);
+        // Desbloquear en Gris o registrar Lobo según corresponda
+        if (config.habilidadGris === 'lobo') {
+            if (typeof registrarLobo === 'function') {
+                registrarLobo('amarilla');
+            }
+        } else {
+            desbloquearEnGris(config.habilidadGris, config.indiceGris);
+        }
     }
 }
 

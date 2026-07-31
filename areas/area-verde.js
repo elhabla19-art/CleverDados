@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA VERDE - CLEVERDADOS (CORREGIDO - PUNTAJES ESTÁTICOS)
+// ÁREA VERDE - CLEVERDADOS (CORREGIDO - PUNTAJES ESTÁTICOS Y LOBOS)
 // ============================================================
 
 // Puntajes visuales (siempre estáticos)
@@ -168,7 +168,7 @@ function manejarClickVerde(index) {
     // Actualizar progreso
     actualizarProgresoVerde();
     
-    // Verificar bonificación individual (desbloquea en gris)
+    // Verificar bonificación individual (desbloquea en gris o registra lobo)
     verificarBonificacionIndividual(index);
     
     // Recalcular puntajes
@@ -184,7 +184,7 @@ function manejarClickVerde(index) {
 }
 
 // ============================================================
-// VERIFICAR BONIFICACIÓN INDIVIDUAL - DESBLOQUEA EN GRIS
+// VERIFICAR BONIFICACIÓN INDIVIDUAL - DESBLOQUEA EN GRIS O REGISTRA LOBO
 // ============================================================
 
 function verificarBonificacionIndividual(index) {
@@ -196,7 +196,15 @@ function verificarBonificacionIndividual(index) {
     if (!celda.bonus) return;
     
     bonificacionesVerde[bonusIdx] = true;
-    aplicarBonificacionVerde(celda.bonus);
+    
+    // Si es Lobo, registrar en lugar de desbloquear en Gris
+    if (celda.bonus === 'Lobo') {
+        if (typeof registrarLobo === 'function') {
+            registrarLobo('verde');
+        }
+    } else {
+        aplicarBonificacionVerde(celda.bonus);
+    }
 }
 
 // ============================================================
@@ -223,7 +231,7 @@ function aplicarBonificacionVerde(bonus) {
             desbloquearEnGrisVerde('seis', indiceGris);
             break;
         case 'lobo':
-            desbloquearEnGrisVerde('lobo', indiceGris);
+            // Los lobos ya se manejan en verificarBonificacionIndividual
             break;
     }
     
