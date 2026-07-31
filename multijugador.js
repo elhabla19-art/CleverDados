@@ -18,11 +18,25 @@ function obtenerNombre() {
 }
 
 function mostrarUnirse() {
+    // LIMPIAR EL CAMPO DE CÓDIGO CADA VEZ QUE SE ABRE
+    const roomCodeInput = document.getElementById('roomCodeInput');
+    if (roomCodeInput) {
+        roomCodeInput.value = '';
+        roomCodeInput.placeholder = 'ABCD';
+    }
+    
     document.getElementById('lobbyModal').style.display = 'none';
     document.getElementById('joinModal').style.display = 'flex';
 }
 
 function volverLobby() {
+    // LIMPIAR EL CAMPO AL VOLVER
+    const roomCodeInput = document.getElementById('roomCodeInput');
+    if (roomCodeInput) {
+        roomCodeInput.value = '';
+        roomCodeInput.placeholder = 'ABCD';
+    }
+    
     document.getElementById('joinModal').style.display = 'none';
     document.getElementById('lobbyModal').style.display = 'flex';
 }
@@ -40,6 +54,10 @@ function unirseSala() {
         alert("El código debe tener 4 letras/números.");
         return;
     }
+    
+    // LIMPIAR DESPUÉS DE USAR
+    document.getElementById('roomCodeInput').value = '';
+    
     conectarSala(codigo);
 }
 
