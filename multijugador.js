@@ -1,5 +1,5 @@
 // ============================================================
-// MULTIJUGADOR - CLEVERDADOS
+// MULTIJUGADOR.JS - CORREGIDO
 // ============================================================
 
 let clienteMQTT = null;
@@ -57,11 +57,8 @@ function conectarSala(codigo) {
         const topic = `cleverdados_app/room/${codigo}`;
         clienteMQTT.subscribe(topic);
         
-        datosJugadores[miId] = { 
-            nombre: miNombre, 
-            puntaje: puntajeTotal, 
-            movimientos: [...historialMovimientos]
-        };
+        // Inicializar datos del jugador con todos los valores necesarios
+        actualizarDatosPropios();
         
         unirseExitoso(codigo);
         broadcastPuntaje('join');
@@ -70,14 +67,24 @@ function conectarSala(codigo) {
     clienteMQTT.on('message', (topic, message) => {
         try {
             const data = JSON.parse(message.toString());
-            if (data.id === miId) return;
-
+            
+            // NO ignoramos el mensaje propio, lo procesamos para actualizar el leaderboard
+            // pero solo si es un mensaje de sincronización o si es de otro jugador
+            
+            // Actualizar datos del jugador (incluso si es propio, para mantener consistencia)
             datosJugadores[data.id] = { 
                 nombre: data.nombre, 
                 puntaje: data.puntaje,
-                movimientos: data.movimientos || []
+                movimientos: data.movimientos || [],
+                valoresNaranja: data.valoresNaranja || null,
+                valoresMorado: data.valoresMorado || null,
+                puntajesPorArea: data.puntajesPorArea || null
             };
-            renderizarTablaPosiciones();
+            
+            // Renderizar leaderboard con los datos actualizados
+            if (typeof renderizarLeaderboard === 'function') {
+                renderizarLeaderboard();
+            }
 
             if (data.accion === 'join') {
                 broadcastPuntaje('sync');
@@ -94,20 +101,100 @@ function conectarSala(codigo) {
 }
 
 // ============================================================
-// BROADCAST
+// ACTUALIZAR DATOS PROPIOS
+// ============================================================
+
+function actualizarDatosPropios() {
+    // Obtener puntajes por área
+    let puntajesPorArea = null;
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        puntajesPorArea = PUNTAJES.obtenerPuntajesPorArea();
+    } else {
+        puntajesPorArea = {
+            gris: typeof puntajesAreas !== 'undefined' ? puntajesAreas.gris || 0 : 0,
+            amarilla: typeof puntajesAreas !== 'undefined' ? puntajesAreas.amarilla || 0 : 0,
+            azul: typeof puntajesAreas !== 'undefined' ? puntajesAreas.azul || 0 : 0,
+            verde: typeof puntajesAreas !== 'undefined' ? puntajesAreas.verde || 0 : 0,
+            naranja: typeof puntajesAreas !== 'undefined' ? puntajesAreas.naranja || 0 : 0,
+            morado: typeof puntajesAreas !== 'undefined' ? puntajesAreas.morado || 0 : 0,
+            bonificacion: puntosBonificacion || 0,
+            total: puntajeTotal || 0
+        };
+    }
+    
+    datosJugadores[miId] = { 
+        nombre: miNombre, 
+        puntaje: puntajeTotal || 0, 
+        movimientos: [...historialMovimientos],
+        valoresNaranja: typeof valoresNaranja !== 'undefined' ? [...valoresNaranja] : null,
+        valoresMorado: typeof valoresMorado !== 'undefined' ? [...valoresMorado] : null,
+        puntajesPorArea: puntajesPorArea
+    };
+}
+
+// ============================================================
+// BROADCAST - CORREGIDO
 // ============================================================
 
 function broadcastPuntaje(accion = 'sync') {
+    // Primero actualizar datos propios
+    actualizarDatosPropios();
+    
+    // Obtener puntajes por área SIEMPRE actualizados
+    let puntajesPorArea = null;
+    let miPuntajeTotal = 0;
+    
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        puntajesPorArea = PUNTAJES.obtenerPuntajesPorArea();
+        miPuntajeTotal = puntajesPorArea.total || 0;
+    } else {
+        puntajesPorArea = {
+            gris: typeof puntajesAreas !== 'undefined' ? puntajesAreas.gris || 0 : 0,
+            amarilla: typeof puntajesAreas !== 'undefined' ? puntajesAreas.amarilla || 0 : 0,
+            azul: typeof puntajesAreas !== 'undefined' ? puntajesAreas.azul || 0 : 0,
+            verde: typeof puntajesAreas !== 'undefined' ? puntajesAreas.verde || 0 : 0,
+            naranja: typeof puntajesAreas !== 'undefined' ? puntajesAreas.naranja || 0 : 0,
+            morado: typeof puntajesAreas !== 'undefined' ? puntajesAreas.morado || 0 : 0,
+            bonificacion: puntosBonificacion || 0,
+            total: puntajeTotal || 0
+        };
+        miPuntajeTotal = puntajeTotal || 0;
+    }
+    
+    // Actualizar el puntaje total global
+    if (typeof puntajeTotal !== 'undefined') {
+        window.puntajeTotal = miPuntajeTotal;
+    }
+    
+    // Actualizar datos del jugador en memoria local
+    datosJugadores[miId] = { 
+        nombre: miNombre, 
+        puntaje: miPuntajeTotal,
+        movimientos: [...historialMovimientos],
+        valoresNaranja: typeof valoresNaranja !== 'undefined' ? [...valoresNaranja] : null,
+        valoresMorado: typeof valoresMorado !== 'undefined' ? [...valoresMorado] : null,
+        puntajesPorArea: puntajesPorArea
+    };
+    
     if (clienteMQTT && salaActual) {
         const topic = `cleverdados_app/room/${salaActual}`;
+        
         const payload = JSON.stringify({
             accion: accion,
             id: miId,
             nombre: miNombre,
-            puntaje: puntajeTotal,
-            movimientos: [...historialMovimientos]
+            puntaje: miPuntajeTotal,  // <--- USAR EL TOTAL CALCULADO
+            movimientos: [...historialMovimientos],
+            valoresNaranja: typeof valoresNaranja !== 'undefined' ? [...valoresNaranja] : null,
+            valoresMorado: typeof valoresMorado !== 'undefined' ? [...valoresMorado] : null,
+            puntajesPorArea: puntajesPorArea
         });
         clienteMQTT.publish(topic, payload);
+    }
+    
+    // Siempre renderizar el leaderboard localmente
+    if (typeof renderizarLeaderboard === 'function') {
+        renderizarLeaderboard();
     }
 }
 
@@ -124,39 +211,16 @@ function unirseExitoso(codigo) {
     info.style.display = 'inline-block';
     info.textContent = `SALA: ${codigo}`;
     
-    document.getElementById('leaderboardPanel').style.display = 'flex';
-    renderizarTablaPosiciones();
-}
-
-function renderizarTablaPosiciones() {
-    const list = document.getElementById('playersList');
-    list.innerHTML = '';
+    // Mostrar el leaderboard
+    const leaderboardPanel = document.getElementById('leaderboardPanel');
+    if (leaderboardPanel) {
+        leaderboardPanel.style.display = 'flex';
+    }
     
-    const jugadores = Object.keys(datosJugadores).map(id => ({
-        id: id,
-        ...datosJugadores[id]
-    })).sort((a, b) => b.puntaje - a.puntaje);
-
-    jugadores.forEach(j => {
-        const soyYo = j.id === miId;
-        const card = document.createElement('div');
-        card.className = `player-card ${soyYo ? 'me' : ''}`;
-        
-        const movimientos = j.movimientos || [];
-        const totalMarcas = movimientos.filter(m => !m.startsWith('penalty-')).length;
-        
-        card.innerHTML = `
-            <div class="player-card-header">
-                <span>${j.nombre}${soyYo ? ' (Tú)' : ''}</span>
-                <span>${j.puntaje} pts</span>
-            </div>
-            <div class="player-stats">
-                <span>Marcas: ${totalMarcas}</span>
-            </div>
-        `;
-        
-        list.appendChild(card);
-    });
+    // Renderizar leaderboard
+    if (typeof renderizarLeaderboard === 'function') {
+        renderizarLeaderboard();
+    }
 }
 
 // ============================================================
@@ -164,10 +228,34 @@ function renderizarTablaPosiciones() {
 // ============================================================
 
 function mostrarCargando(texto) {
-    document.getElementById('loadingText').textContent = texto;
-    document.getElementById('loadingModal').style.display = 'flex';
+    const loadingText = document.getElementById('loadingText');
+    const loadingModal = document.getElementById('loadingModal');
+    if (loadingText) loadingText.textContent = texto;
+    if (loadingModal) loadingModal.style.display = 'flex';
 }
 
 function ocultarCargando() {
-    document.getElementById('loadingModal').style.display = 'none';
+    const loadingModal = document.getElementById('loadingModal');
+    if (loadingModal) loadingModal.style.display = 'none';
 }
+
+// ============================================================
+// EXPORTAR
+// ============================================================
+
+window.clienteMQTT = clienteMQTT;
+window.miId = miId;
+window.salaActual = salaActual;
+window.datosJugadores = datosJugadores;
+window.miNombre = miNombre;
+window.obtenerNombre = obtenerNombre;
+window.mostrarUnirse = mostrarUnirse;
+window.volverLobby = volverLobby;
+window.crearSala = crearSala;
+window.unirseSala = unirseSala;
+window.conectarSala = conectarSala;
+window.unirseExitoso = unirseExitoso;
+window.mostrarCargando = mostrarCargando;
+window.ocultarCargando = ocultarCargando;
+window.broadcastPuntaje = broadcastPuntaje;
+window.actualizarDatosPropios = actualizarDatosPropios;

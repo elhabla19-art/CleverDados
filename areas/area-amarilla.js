@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA AMARILLA - CLEVERDADOS (CORREGIDO)
+// ÁREA AMARILLA - CLEVERDADOS (CORREGIDO - CON PUNTAJES)
 // ============================================================
 
 // Configuración del área amarilla
@@ -12,7 +12,7 @@ const AMARILLA_CONFIG = {
     ],
     columnas: [10, 14, 16, 20],
     bonusTotal: '+1',
-    indiceBonusTotal: 1 // <--- CAMBIADO DE 2 A 1
+    indiceBonusTotal: 1
 };
 
 // Estado de bonificaciones desbloqueadas
@@ -61,7 +61,7 @@ function inicializarAreaAmarilla() {
             `;
         });
         
-        // Círculo de bonificación de fila (5ª columna) - SIEMPRE VISIBLE CON SU SÍMBOLO Y COLOR
+        // Círculo de bonificación de fila (5ª columna)
         const bonifDesbloqueada = bonificacionesAmarilla[`fila${filaIndex}`];
         const clase = bonifDesbloqueada ? 'puntaje-completado' : 'puntaje-pendiente';
         
@@ -137,10 +137,15 @@ function manejarClickAmarilla(filaIndex, colIndex) {
     // Verificar si todo está completo
     verificarTodoCompleto();
     
-    // Recalcular puntajes
-    recalcularPuntajesAmarilla();
+    // ACTUALIZAR PUNTAJES SIEMPRE usando el sistema de puntuación
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesAmarilla();
+    }
     actualizarVisuales();
     
+    // Sincronizar con otros jugadores
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
     }
@@ -238,14 +243,21 @@ function verificarColumnaCompleta(colIndex) {
             circulos[colIndex].textContent = '✓';
         }
         
-        const puntos = AMARILLA_CONFIG.columnas[colIndex];
-        puntosBonificacion += puntos;
-        recalcularPuntajesAmarilla();
+        // ACTUALIZAR PUNTAJES INMEDIATAMENTE
+        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+            PUNTAJES.calcularTotal();
+            // Actualizar leaderboard
+            if (typeof renderizarLeaderboard === 'function') {
+                renderizarLeaderboard();
+            }
+        } else {
+            recalcularPuntajesAmarilla();
+        }
     }
 }
 
 // ============================================================
-// VERIFICAR TODO COMPLETO - CORREGIDO
+// VERIFICAR TODO COMPLETO
 // ============================================================
 
 function verificarTodoCompleto() {
@@ -266,29 +278,34 @@ function verificarTodoCompleto() {
             ultimoCirculo.textContent = '✓';
         }
         
-        // DESBLOQUEAR +1 EN EL ÍNDICE CORRECTO (1)
-        const indiceCorrecto = AMARILLA_CONFIG.indiceBonusTotal || 1; // <--- DEFAULT 1
+        // Desbloquear +1 en el índice correcto
+        const indiceCorrecto = AMARILLA_CONFIG.indiceBonusTotal || 1;
         desbloquearEnGris('mas1', indiceCorrecto);
         
-        puntosBonificacion += 1;
-        recalcularPuntajesAmarilla();
+        // ACTUALIZAR PUNTAJES INMEDIATAMENTE
+        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+            PUNTAJES.calcularTotal();
+            if (typeof renderizarLeaderboard === 'function') {
+                renderizarLeaderboard();
+            }
+        } else {
+            recalcularPuntajesAmarilla();
+        }
     }
 }
 
 // ============================================================
-// RECALCULAR PUNTAJES
+// RECALCULAR PUNTAJES (FALLBACK - usado solo si PUNTAJES no existe)
 // ============================================================
 
 function recalcularPuntajesAmarilla() {
-    const marcasAmarilla = historialMovimientos.filter(m => 
-        m.startsWith('amarilla-') && !m.includes('bonif')
-    ).length;
-    
-    let puntos = 0;
-    if (marcasAmarilla > 0) {
-        puntos = marcasAmarilla * (marcasAmarilla + 1) / 2;
+    // Si existe PUNTAJES, usarlo
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+        return;
     }
     
+    // Fallback: solo columnas, sin puntos por casillas
     let puntosColumnas = 0;
     columnasCompletadas.forEach((completada, index) => {
         if (completada) {
@@ -296,7 +313,7 @@ function recalcularPuntajesAmarilla() {
         }
     });
     
-    const totalAmarilla = puntos + puntosColumnas;
+    const totalAmarilla = puntosColumnas;
     
     puntajesAreas.amarilla = totalAmarilla;
     document.getElementById('score-amarilla').textContent = totalAmarilla;
@@ -342,3 +359,4 @@ function resetAreaAmarilla() {
 window.inicializarAreaAmarilla = inicializarAreaAmarilla;
 window.resetAreaAmarilla = resetAreaAmarilla;
 window.recalcularPuntajesAmarilla = recalcularPuntajesAmarilla;
+window.columnasCompletadas = columnasCompletadas;

@@ -1,5 +1,5 @@
 // ============================================================
-// MAIN - CLEVERDADOS
+// MAIN - CLEVERDADOS (CORREGIDO)
 // ============================================================
 
 // Estado global del juego
@@ -18,8 +18,45 @@ let puntajesAreas = {
 // Configuración de áreas
 const AREAS = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
 
-// Sistema de puntuación
+// ============================================================
+// SISTEMA DE PUNTUACIÓN - CORREGIDO
+// ============================================================
+
 function calcularPuntajes() {
+    // Si existe el sistema de puntuación, usarlo
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        // Esto actualiza puntajesAreas y puntajeTotal internamente
+        const total = PUNTAJES.calcularTotal();
+        
+        // Asegurar que la variable global se actualice
+        window.puntajeTotal = total;
+        
+        // Asegurar que puntajesAreas tenga los valores correctos
+        const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
+        areas.forEach(area => {
+            const element = document.getElementById(`score-${area}`);
+            if (element) {
+                element.textContent = puntajesAreas[area] || 0;
+            }
+        });
+        
+        // Actualizar total
+        document.getElementById('score-total').textContent = total;
+        document.getElementById('bonus-display').textContent = puntosBonificacion || 0;
+        
+        // Actualizar leaderboard local
+        if (typeof renderizarLeaderboard === 'function') {
+            renderizarLeaderboard();
+        }
+        
+        // Sincronizar con otros jugadores
+        if (typeof broadcastPuntaje === 'function') {
+            broadcastPuntaje('sync');
+        }
+        return;
+    }
+ 
+    // Fallback: sistema antiguo (solo por si acaso)
     let total = 0;
     let bonus = 0;
 
@@ -27,7 +64,6 @@ function calcularPuntajes() {
         const marks = historialMovimientos.filter(m => m.startsWith(area));
         const count = marks.length;
         
-        // Puntos base: suma triangular
         let puntos = count > 0 ? count * (count + 1) / 2 : 0;
         
         // Verificar multiplicadores (×2, ×3) en el área
@@ -49,16 +85,28 @@ function calcularPuntajes() {
         document.getElementById(`score-${area}`).textContent = puntos;
     });
 
-    // Bonificaciones
     bonus = puntosBonificacion;
     total += bonus;
     
     puntajeTotal = total;
     document.getElementById('score-total').textContent = total;
     document.getElementById('bonus-display').textContent = bonus;
+    
+    // Actualizar leaderboard después de calcular
+    if (typeof renderizarLeaderboard === 'function') {
+        renderizarLeaderboard();
+    }
+    
+    // Sincronizar con otros jugadores
+    if (typeof broadcastPuntaje === 'function') {
+        broadcastPuntaje('sync');
+    }
 }
 
-// Actualizar visuales del tablero
+// ============================================================
+// ACTUALIZAR VISUALES
+// ============================================================
+
 function actualizarVisuales() {
     document.querySelectorAll('.cell').forEach(cell => {
         cell.classList.remove('marcada', 'deshabilitada');
@@ -74,43 +122,39 @@ function actualizarVisuales() {
     });
 }
 
-// Manejar clic en celda
+// ============================================================
+// MANEJAR CLICK EN CELDA
+// ============================================================
+
 function manejarClickCelda(cell) {
     const area = cell.dataset.area;
     const fila = cell.dataset.fila;
     const col = cell.dataset.col;
     const id = `${area}-${fila}-${col}`;
     
-    // Si ya está marcada o es pre-marcada, no hacer nada
     if (cell.classList.contains('marcada') || cell.classList.contains('pre-marcada')) {
         return;
     }
     
-    // Verificar si se puede marcar según las reglas del área
     const puedeMarcar = window[`puedeMarcar${capitalize(area)}`] 
         ? window[`puedeMarcar${capitalize(area)}`](fila, col) 
         : true;
     
     if (!puedeMarcar) return;
     
-    // Marcar la celda
     cell.classList.add('marcada');
     historialMovimientos.push(id);
     
-    // Aplicar efecto de bonificación
     aplicarBonificacion(area, fila, col);
     
-    // Actualizar puntuación
     calcularPuntajes();
     actualizarVisuales();
-    
-    // Broadcast a otros jugadores
-    if (typeof broadcastPuntaje === 'function') {
-        broadcastPuntaje('sync');
-    }
 }
 
-// Aplicar bonificaciones
+// ============================================================
+// APLICAR BONIFICACIONES
+// ============================================================
+
 function aplicarBonificacion(area, fila, col) {
     const cell = document.querySelector(`[data-area="${area}"][data-fila="${fila}"][data-col="${col}"]`);
     if (!cell) return;
@@ -118,43 +162,84 @@ function aplicarBonificacion(area, fila, col) {
     const texto = cell.textContent.trim();
     
     switch(texto) {
-        case '🌀': // Espiral
+        case '🌀':
+        case '♻':
             puntosBonificacion += 1;
             break;
         case '+1':
             puntosBonificacion += 1;
             break;
         case '×2':
-            // Se aplica en el cálculo
             break;
         case '×3':
-            // Se aplica en el cálculo
             break;
-        case '🐺': // Lobo
-            // Efecto especial
+        case '🐺':
             break;
         case '6':
-            // Efecto especial
             break;
     }
 }
 
-// Capitalizar primera letra
+// ============================================================
+// CAPITALIZAR
+// ============================================================
+
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// Reiniciar tablero
+// ============================================================
+// REINICIAR TABLERO
+// ============================================================
+
 function reiniciarTablero() {
     historialMovimientos = [];
     puntosBonificacion = 0;
+    puntajesAreas = {
+        gris: 0,
+        amarilla: 0,
+        azul: 0,
+        verde: 0,
+        naranja: 0,
+        morado: 0
+    };
+    
+    // Resetear valores de áreas
+    if (typeof valoresNaranja !== 'undefined') {
+        valoresNaranja = new Array(11).fill(null);
+    }
+    if (typeof valoresMorado !== 'undefined') {
+        valoresMorado = new Array(11).fill(null);
+    }
+    if (typeof resetAreaGris === 'function') resetAreaGris();
+    if (typeof resetAreaAmarilla === 'function') resetAreaAmarilla();
+    if (typeof resetAreaAzul === 'function') resetAreaAzul();
+    if (typeof resetAreaVerde === 'function') resetAreaVerde();
+    if (typeof resetAreaNaranja === 'function') resetAreaNaranja();
+    if (typeof resetAreaMorado === 'function') resetAreaMorado();
     
     document.querySelectorAll('.cell.marcada').forEach(cell => {
         cell.classList.remove('marcada');
     });
     
-    calcularPuntajes();
+    // Recalcular puntajes después de reiniciar
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        calcularPuntajes();
+    }
+    
     actualizarVisuales();
+    
+    // Actualizar leaderboard
+    if (typeof renderizarLeaderboard === 'function') {
+        renderizarLeaderboard();
+    }
+    
+    // Sincronizar con otros jugadores
+    if (typeof broadcastPuntaje === 'function') {
+        broadcastPuntaje('sync');
+    }
 }
 
 // ============================================================
@@ -172,14 +257,42 @@ function cerrarModal() {
 function confirmarReinicio() {
     reiniciarTablero();
     cerrarModal();
-    if (typeof broadcastPuntaje === 'function') {
-        broadcastPuntaje('sync');
-    }
 }
 
 function jugarSolo() {
     document.getElementById('lobbyModal').style.display = 'none';
+    // Inicializar leaderboard en modo local
+    if (typeof datosJugadores !== 'undefined') {
+        datosJugadores = {};
+        datosJugadores['local'] = {
+            nombre: miNombre || 'Jugador',
+            puntaje: 0,
+            movimientos: [],
+            valoresNaranja: null,
+            valoresMorado: null,
+            puntajesPorArea: null
+        };
+        // Actualizar miId para modo local
+        miId = 'local';
+    }
+    if (typeof renderizarLeaderboard === 'function') {
+        renderizarLeaderboard();
+    }
 }
+
+// ============================================================
+// EXPONER FUNCIONES GLOBALMENTE
+// ============================================================
+
+window.calcularPuntajes = calcularPuntajes;
+window.actualizarVisuales = actualizarVisuales;
+window.manejarClickCelda = manejarClickCelda;
+window.aplicarBonificacion = aplicarBonificacion;
+window.reiniciarTablero = reiniciarTablero;
+window.mostrarModalReinicio = mostrarModalReinicio;
+window.cerrarModal = cerrarModal;
+window.confirmarReinicio = confirmarReinicio;
+window.jugarSolo = jugarSolo;
 
 // ============================================================
 // INICIALIZACIÓN
@@ -199,5 +312,17 @@ document.addEventListener('DOMContentLoaded', () => {
         cell.addEventListener('click', () => manejarClickCelda(cell));
     });
     
-    calcularPuntajes();
+    // Calcular puntajes iniciales
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        calcularPuntajes();
+    }
+    
+    // Inicializar leaderboard si está disponible
+    if (typeof renderizarLeaderboard === 'function') {
+        renderizarLeaderboard();
+    }
+    
+    console.log('🧠 CleverDados inicializado correctamente');
 });
