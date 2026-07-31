@@ -18,7 +18,7 @@ const HABILIDADES_CONFIG = {
         id: 'espiral',
         simbolo: '♻',
         celdas: 7,
-        turnosDesbloqueo: [1, 3],  // Índices 0 y 1
+        turnosDesbloqueo: [1, 3],
         columna: 1,
         fila: 0
     },
@@ -26,43 +26,8 @@ const HABILIDADES_CONFIG = {
         id: 'mas1',
         simbolo: '+1',
         celdas: 7,
-        turnosDesbloqueo: [2],  // Índice 0
+        turnosDesbloqueo: [2],
         columna: 1,
-        fila: 1
-    },
-    x: {
-        id: 'x',
-        simbolo: '✖',
-        celdas: [
-            { color: '#78909c' },  // 0: Gris (Turno 4)
-            { color: '#1e88e5' },  // 1: Azul (Amarilla F0)
-            { color: '#1e88e5' },  // 2: Azul (Verde)
-            { color: '#1e88e5' },  // 3: Azul (Morado)
-            { color: '#43a047' },  // 4: Verde (Amarilla F2)
-            { color: '#43a047' },  // 5: Verde (Azul Col2)
-            { color: '#43a047' },  // 6: Verde (Morado)
-            { color: '#fdd835' },  // 7: Amarilla (Azul F1)
-            { color: '#fdd835' },  // 8: Amarilla (Naranja)
-            { color: '#fdd835' }   // 9: Amarilla (Morado)
-        ],
-        turnosDesbloqueo: [4],  // Índice 0
-        columna: 2,
-        fila: 0
-    },
-    seis: {
-        id: 'seis',
-        simbolo: '#',
-        celdas: [
-            { color: '#78909c' },  // 0: Gris (Turno 4)
-            { color: '#ff6f00' },  // 1: Naranja (Amarilla F1)
-            { color: '#ff6f00' },  // 2: Naranja (Azul F0)
-            { color: '#ff6f00' },  // 3: Naranja (Morado)
-            { color: '#7b1fa2' },  // 4: Morado (Azul Col3)
-            { color: '#7b1fa2' },  // 5: Morado (Verde)
-            { color: '#7b1fa2' }   // 6: Morado (Naranja)
-        ],
-        turnosDesbloqueo: [4],  // Índice 0
-        columna: 2,
         fila: 1
     },
     dados1: {
@@ -81,22 +46,47 @@ const HABILIDADES_CONFIG = {
         columna: 2,
         fila: 2
     },
-    lobo: {
-        id: 'lobo',
-        simbolo: '🐺',
+    x: {
+        id: 'x',
+        simbolo: '✖',
         celdas: [
-            { color: '#7b1fa2' },  // 0: Amarilla (Fila 3)
-            { color: '#7b1fa2' },  // 1: Azul (Fila 2)
-            { color: '#7b1fa2' }   // 2: Verde (Casilla 6)
+            { color: '#78909c' },  // 0: Gris (Turno 4)
+            { color: '#1e88e5' },  // 1: Azul (Amarilla F0)
+            { color: '#1e88e5' },  // 2: Azul (Verde)
+            { color: '#1e88e5' },  // 3: Azul (Morado)
+            { color: '#43a047' },  // 4: Verde (Amarilla F2)
+            { color: '#43a047' },  // 5: Verde (Azul Col2)
+            { color: '#43a047' },  // 6: Verde (Morado)
+            { color: '#fdd835' },  // 7: Amarilla (Azul F1)
+            { color: '#fdd835' },  // 8: Amarilla (Naranja)
+            { color: '#fdd835' }   // 9: Amarilla (Morado)
         ],
-        turnosDesbloqueo: [],
+        turnosDesbloqueo: [4],
         columna: 2,
-        fila: 2
+        fila: 0
+    },
+    seis: {
+        id: 'seis',
+        simbolo: '#',
+        celdas: [
+            { color: '#78909c' },  // 0: Gris (Turno 4)
+            { color: '#ff6f00' },  // 1: Naranja (Amarilla F1)
+            { color: '#ff6f00' },  // 2: Naranja (Azul F0)
+            { color: '#ff6f00' },  // 3: Naranja (Morado)
+            { color: '#7b1fa2' },  // 4: Morado (Azul Col3)
+            { color: '#7b1fa2' },  // 5: Morado (Verde)
+            { color: '#7b1fa2' }   // 6: Morado (Naranja)
+        ],
+        turnosDesbloqueo: [4],
+        columna: 2,
+        fila: 1
     }
+    // LOBO ELIMINADO
 };
 
-// Estado de desbloqueo de turnos
+// Estado
 let turnosCompletados = [];
+let desbloqueosExternos = {};
 
 // ============================================================
 // INICIALIZACIÓN
@@ -108,7 +98,6 @@ function inicializarAreaGris() {
     
     let html = `
         <div class="gris-section">
-            <!-- TURNOS -->
             <div class="gris-turnos">
                 <div class="gris-etiqueta">Turnos</div>
                 <div class="gris-turnos-grid">
@@ -135,8 +124,6 @@ function inicializarAreaGris() {
     html += `
                 </div>
             </div>
-            
-            <!-- HABILIDADES -->
             <div class="gris-habilidades">
                 <div class="gris-etiqueta">Habilidades</div>
                 <div class="gris-habilidades-grid">
@@ -149,7 +136,7 @@ function inicializarAreaGris() {
     html += generarFilaHabilidad('dados1');
     html += `</div>`;
     
-    // COLUMNA 2: ✖, 6, •|••
+    // COLUMNA 2: ✖, #, •|••
     html += `<div class="gris-columna">`;
     html += generarFilaHabilidad('x');
     html += generarFilaHabilidad('seis');
@@ -178,7 +165,6 @@ function generarFilaHabilidad(habilidadId) {
     html += `<span class="habilidad-simbolo">${config.simbolo}</span>`;
     
     if (Array.isArray(config.celdas)) {
-        // Para ✖, 6 (celdas con colores)
         config.celdas.forEach((celda, index) => {
             const id = `gris-${habilidadId}-${index}`;
             const estaMarcada = historialMovimientos.includes(id);
@@ -201,7 +187,6 @@ function generarFilaHabilidad(habilidadId) {
             `;
         });
     } else {
-        // Para ♻, +1, •••, •|•• (celdas vacías)
         for (let i = 0; i < config.celdas; i++) {
             const id = `gris-${habilidadId}-${i}`;
             const estaMarcada = historialMovimientos.includes(id);
@@ -226,13 +211,20 @@ function generarFilaHabilidad(habilidadId) {
 }
 
 // ============================================================
-// VERIFICAR DESBLOQUEO
+// VERIFICAR DESBLOQUEO (CONSIDERANDO EXTERNOS)
 // ============================================================
 
 function estaDesbloqueadaGris(habilidadId, index) {
     const config = HABILIDADES_CONFIG[habilidadId];
     if (!config) return false;
     
+    // 1. Verificar si fue desbloqueada externamente
+    const clave = `${habilidadId}-${index}`;
+    if (desbloqueosExternos[clave]) {
+        return true;
+    }
+    
+    // 2. Verificar desbloqueo por turnos
     if (config.turnosDesbloqueo && config.turnosDesbloqueo.length > 0) {
         let totalDesbloqueadas = 0;
         config.turnosDesbloqueo.forEach(turnoNum => {
@@ -245,6 +237,75 @@ function estaDesbloqueadaGris(habilidadId, index) {
     
     return false;
 }
+
+// ============================================================
+// DESBLOQUEAR EXTERNAMENTE (desde otras áreas)
+// ============================================================
+
+function desbloquearExterno(habilidadId, indice) {
+    const clave = `${habilidadId}-${indice}`;
+    desbloqueosExternos[clave] = true;
+    
+    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
+    const cell = document.querySelector(selector);
+    if (cell) {
+        cell.classList.remove('bloqueada');
+        cell.classList.add('desbloqueada');
+        if (cell.dataset.color) {
+            cell.style.opacity = '1';
+            cell.style.filter = 'none';
+        }
+        return true;
+    }
+    return false;
+}
+
+function desbloquearSiguienteExterno(habilidadId) {
+    const celdas = document.querySelectorAll(`.celda-habilidad[data-habilidad="${habilidadId}"].bloqueada`);
+    const celdasOrdenadas = Array.from(celdas).sort((a, b) => {
+        return parseInt(a.dataset.col) - parseInt(b.dataset.col);
+    });
+    
+    if (celdasOrdenadas.length === 0) return false;
+    
+    const cell = celdasOrdenadas[0];
+    const index = parseInt(cell.dataset.col);
+    const clave = `${habilidadId}-${index}`;
+    desbloqueosExternos[clave] = true;
+    
+    cell.classList.remove('bloqueada');
+    cell.classList.add('desbloqueada');
+    if (cell.dataset.color) {
+        cell.style.opacity = '1';
+        cell.style.filter = 'none';
+    }
+    return true;
+}
+
+// Funciones específicas para cada habilidad
+function desbloquearEspiralExterno(indice) {
+    if (indice !== undefined) {
+        return desbloquearExterno('espiral', indice);
+    }
+    return desbloquearSiguienteExterno('espiral');
+}
+
+function desbloquearMas1Externo(indice) {
+    if (indice !== undefined) {
+        return desbloquearExterno('mas1', indice);
+    }
+    return desbloquearSiguienteExterno('mas1');
+}
+
+function desbloquearXExterno(indice) {
+    return desbloquearExterno('x', indice);
+}
+
+function desbloquearSeisExterno(indice) {
+    return desbloquearExterno('seis', indice);
+}
+
+// LOBO ELIMINADO
 
 // ============================================================
 // MANEJAR CLICKS
@@ -310,10 +371,8 @@ function aplicarBonificacionGris(habilidadId) {
             puntosBonificacion += 1;
             break;
         case 'dados1':
-            // ••• - 1 dado adicional
             break;
         case 'dados2':
-            // •|•• - 2 dados adicionales
             break;
         case 'x':
             puntosBonificacion += 2;
@@ -334,62 +393,25 @@ function actualizarEstadosGris() {
         const habilidadId = cell.dataset.habilidad;
         const index = parseInt(cell.dataset.col);
         const id = `gris-${habilidadId}-${index}`;
-        
-        cell.classList.remove('bloqueada', 'desbloqueada', 'usada');
+        const clave = `${habilidadId}-${index}`;
         
         if (historialMovimientos.includes(id)) {
+            cell.classList.remove('bloqueada', 'desbloqueada');
             cell.classList.add('usada');
             cell.textContent = '✓';
-        } else if (estaDesbloqueadaGris(habilidadId, index)) {
+            return;
+        }
+        
+        if (desbloqueosExternos[clave] || estaDesbloqueadaGris(habilidadId, index)) {
+            cell.classList.remove('bloqueada', 'usada');
             cell.classList.add('desbloqueada');
             cell.textContent = '';
         } else {
+            cell.classList.remove('desbloqueada', 'usada');
             cell.classList.add('bloqueada');
             cell.textContent = '';
         }
     });
-}
-
-// ============================================================
-// FUNCIONES PARA DESBLOQUEO EXTERNO (desde otras áreas)
-// ============================================================
-
-function desbloquearEspiralExterno() {
-    const celdas = document.querySelectorAll('.celda-habilidad[data-habilidad="espiral"].bloqueada');
-    const celdasOrdenadas = Array.from(celdas).sort((a, b) => {
-        return parseInt(a.dataset.col) - parseInt(b.dataset.col);
-    });
-    
-    if (celdasOrdenadas.length === 0) return false;
-    
-    const cell = celdasOrdenadas[0];
-    cell.classList.remove('bloqueada');
-    cell.classList.add('desbloqueada');
-    cell.textContent = '';
-    if (cell.dataset.color) {
-        cell.style.opacity = '1';
-        cell.style.filter = 'none';
-    }
-    return true;
-}
-
-function desbloquearMas1Externo() {
-    const celdas = document.querySelectorAll('.celda-habilidad[data-habilidad="mas1"].bloqueada');
-    const celdasOrdenadas = Array.from(celdas).sort((a, b) => {
-        return parseInt(a.dataset.col) - parseInt(b.dataset.col);
-    });
-    
-    if (celdasOrdenadas.length === 0) return false;
-    
-    const cell = celdasOrdenadas[0];
-    cell.classList.remove('bloqueada');
-    cell.classList.add('desbloqueada');
-    cell.textContent = '';
-    if (cell.dataset.color) {
-        cell.style.opacity = '1';
-        cell.style.filter = 'none';
-    }
-    return true;
 }
 
 // ============================================================
@@ -425,9 +447,12 @@ function recalcularPuntajes() {
 
 function resetAreaGris() {
     turnosCompletados = [];
+    desbloqueosExternos = {};
+    
     document.querySelectorAll('.gris-turno-cell.marcada').forEach(cell => {
         cell.classList.remove('marcada');
     });
+    
     actualizarEstadosGris();
 }
 
@@ -439,3 +464,5 @@ window.inicializarAreaGris = inicializarAreaGris;
 window.resetAreaGris = resetAreaGris;
 window.desbloquearEspiralExterno = desbloquearEspiralExterno;
 window.desbloquearMas1Externo = desbloquearMas1Externo;
+window.desbloquearXExterno = desbloquearXExterno;
+window.desbloquearSeisExterno = desbloquearSeisExterno;

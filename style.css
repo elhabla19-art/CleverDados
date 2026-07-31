@@ -915,50 +915,164 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     gap: var(--cell-gap);
 }
 
+.naranja-tabla-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .naranja-fila {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
 }
 
-.naranja-fila .cell {
-    min-width: 24px;
-    height: 24px;
-    font-size: 0.5rem;
+.naranja-celda-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.naranja-fila .cell.bonus-cell {
+.naranja-cell {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-cell);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    cursor: pointer;
+    user-select: none;
+    padding: 0 2px;
+    transition: all 0.15s;
+}
+
+.naranja-cell:not(.marcada):hover {
+    border-color: rgba(255,255,255,0.3);
+    transform: scale(1.05);
+}
+
+.naranja-cell.marcada {
+    background: var(--bg-box);
+    border-color: rgba(255,255,255,0.5);
+    position: relative;
+    cursor: default;
+}
+
+.naranja-cell.marcada::after {
+    content: "✓";
+    position: absolute;
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: #4caf50;
+    top: -6px;
+    right: -6px;
+    background: var(--bg-main);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #4caf50;
+}
+
+.naranja-cell.multiplicador {
     background: rgba(255, 215, 0, 0.12);
+    border-color: #ffd700;
+    color: #ffd700;
+    font-weight: bold;
 }
 
-/* --- CÍRCULOS DE BONIFICACIÓN NARANJA --- */
-.naranja-bonificaciones {
+.naranja-cell.multiplicador:not(.marcada):hover {
+    border-color: #ffd700;
+}
+
+/* Fila de bonificaciones */
+.naranja-bonus-fila {
     display: flex;
     gap: var(--cell-gap);
     justify-content: center;
-    margin-top: 4px;
-    padding: 2px 0;
 }
 
-.naranja-bonificaciones .bonificacion-circulo {
-    width: 24px;
-    height: 24px;
-    font-size: 0.55rem;
-}
-
-/* --- CÍRCULOS DE PUNTAJES NARANJA --- */
-.naranja-puntajes {
+.naranja-bonus-item {
+    min-width: 28px;
+    height: 28px;
     display: flex;
-    gap: var(--cell-gap);
     justify-content: center;
-    margin-top: 2px;
-    padding: 2px 0;
+    align-items: center;
 }
 
-.naranja-puntajes .puntaje-circulo {
-    width: 24px;
-    height: 24px;
-    font-size: 0.5rem;
+.naranja-bonus-item.vacio {
+    opacity: 0;
+}
+
+/* Círculos de bonificación */
+.naranja-bonificacion-circulo {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: bold;
+    color: #fff;
+    transition: all 0.3s ease;
+    border: 2px solid var(--border-color);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .naranja-cell {
+        min-width: 22px;
+        height: 22px;
+        font-size: 0.5rem;
+    }
+    
+    .naranja-bonus-item {
+        min-width: 22px;
+        height: 22px;
+    }
+    
+    .naranja-bonificacion-circulo {
+        width: 18px;
+        height: 18px;
+        font-size: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .naranja-cell {
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.4rem;
+    }
+    
+    .naranja-cell.marcada::after {
+        font-size: 0.6rem;
+        width: 12px;
+        height: 12px;
+        top: -5px;
+        right: -5px;
+    }
+    
+    .naranja-bonus-item {
+        min-width: 18px;
+        height: 18px;
+    }
+    
+    .naranja-bonificacion-circulo {
+        width: 14px;
+        height: 14px;
+        font-size: 0.4rem;
+        border-width: 1.5px;
+    }
 }
 
 /* ============================================================
