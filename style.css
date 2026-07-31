@@ -129,6 +129,22 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
 }
 
 /* ============================================================
+   FILA DE ÁREAS EN PARALELO (AMARILLA | AZUL)
+   ============================================================ */
+
+.area-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.area.half {
+    width: 100%;
+    min-width: 0;
+}
+
+/* ============================================================
    ÁREAS - ESTILOS GLOBALES
    ============================================================ */
 
@@ -554,49 +570,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     height: 28px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .amarilla-fila .cell {
-        min-width: 22px;
-        height: 22px;
-        font-size: 0.5rem;
-    }
-    
-    .amarilla-bonificacion-circulo {
-        width: 22px;
-        height: 22px;
-        font-size: 0.55rem;
-    }
-    
-    .amarilla-puntajes .puntaje-circulo {
-        width: 22px;
-        height: 22px;
-        font-size: 0.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .amarilla-fila .cell {
-        min-width: 18px;
-        height: 18px;
-        font-size: 0.4rem;
-    }
-    
-    .amarilla-bonificacion-circulo {
-        width: 18px;
-        height: 18px;
-        font-size: 0.45rem;
-        border-width: 1.5px;
-    }
-    
-    .amarilla-puntajes .puntaje-circulo {
-        width: 18px;
-        height: 18px;
-        font-size: 0.4rem;
-        border-width: 1.5px;
-    }
-}
-
 /* ============================================================
    ÁREA AZUL
    ============================================================ */
@@ -681,62 +654,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     justify-content: center;
     margin-top: 4px;
     padding: 2px 0;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .azul-puntajes-fila .puntaje-circulo {
-        width: 22px;
-        height: 22px;
-        font-size: 0.5rem;
-    }
-    
-    .azul-fila .cell {
-        min-width: 22px;
-        height: 22px;
-        font-size: 0.5rem;
-    }
-    
-    .azul-bonificacion-circulo {
-        width: 22px;
-        height: 22px;
-        font-size: 0.55rem;
-    }
-    
-    .azul-columna-circulo {
-        width: 22px;
-        height: 22px;
-        font-size: 0.55rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .azul-puntajes-fila .puntaje-circulo {
-        width: 18px;
-        height: 18px;
-        font-size: 0.4rem;
-        border-width: 1.5px;
-    }
-    
-    .azul-fila .cell {
-        min-width: 18px;
-        height: 18px;
-        font-size: 0.4rem;
-    }
-    
-    .azul-bonificacion-circulo {
-        width: 18px;
-        height: 18px;
-        font-size: 0.45rem;
-        border-width: 1.5px;
-    }
-    
-    .azul-columna-circulo {
-        width: 18px;
-        height: 18px;
-        font-size: 0.45rem;
-        border-width: 1.5px;
-    }
 }
 
 /* ============================================================
@@ -850,59 +767,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     border: 2px solid var(--border-color);
     user-select: none;
     flex-shrink: 0;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .verde-puntajes-fila .puntaje-circulo {
-        width: 22px;
-        height: 22px;
-        font-size: 0.5rem;
-    }
-    
-    .verde-cell {
-        min-width: 22px;
-        height: 22px;
-        font-size: 0.4rem;
-    }
-    
-    .verde-bonus-item {
-        min-width: 22px;
-        height: 22px;
-    }
-    
-    .verde-bonificacion-circulo {
-        width: 18px;
-        height: 18px;
-        font-size: 0.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .verde-puntajes-fila .puntaje-circulo {
-        width: 18px;
-        height: 18px;
-        font-size: 0.4rem;
-        border-width: 1.5px;
-    }
-    
-    .verde-cell {
-        min-width: 18px;
-        height: 18px;
-        font-size: 0.35rem;
-    }
-    
-    .verde-bonus-item {
-        min-width: 18px;
-        height: 18px;
-    }
-    
-    .verde-bonificacion-circulo {
-        width: 14px;
-        height: 14px;
-        font-size: 0.4rem;
-        border-width: 1.5px;
-    }
 }
 
 /* ============================================================
@@ -1027,54 +891,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     flex-shrink: 0;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .naranja-cell {
-        min-width: 22px;
-        height: 22px;
-        font-size: 0.5rem;
-    }
-    
-    .naranja-bonus-item {
-        min-width: 22px;
-        height: 22px;
-    }
-    
-    .naranja-bonificacion-circulo {
-        width: 18px;
-        height: 18px;
-        font-size: 0.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .naranja-cell {
-        min-width: 18px;
-        height: 18px;
-        font-size: 0.4rem;
-    }
-    
-    .naranja-cell.marcada::after {
-        font-size: 0.6rem;
-        width: 12px;
-        height: 12px;
-        top: -5px;
-        right: -5px;
-    }
-    
-    .naranja-bonus-item {
-        min-width: 18px;
-        height: 18px;
-    }
-    
-    .naranja-bonificacion-circulo {
-        width: 14px;
-        height: 14px;
-        font-size: 0.4rem;
-        border-width: 1.5px;
-    }
-}
-
 /* ============================================================
    ÁREA MORADO
    ============================================================ */
@@ -1188,54 +1004,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     border: 2px solid var(--border-color);
     user-select: none;
     flex-shrink: 0;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .morado-cell {
-        min-width: 22px;
-        height: 22px;
-        font-size: 0.5rem;
-    }
-    
-    .morado-bonus-item {
-        min-width: 22px;
-        height: 22px;
-    }
-    
-    .morado-bonificacion-circulo {
-        width: 18px;
-        height: 18px;
-        font-size: 0.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .morado-cell {
-        min-width: 18px;
-        height: 18px;
-        font-size: 0.4rem;
-    }
-    
-    .morado-cell.marcada::after {
-        font-size: 0.6rem;
-        width: 12px;
-        height: 12px;
-        top: -5px;
-        right: -5px;
-    }
-    
-    .morado-bonus-item {
-        min-width: 18px;
-        height: 18px;
-    }
-    
-    .morado-bonificacion-circulo {
-        width: 14px;
-        height: 14px;
-        font-size: 0.4rem;
-        border-width: 1.5px;
-    }
 }
 
 /* ============================================================
@@ -1359,209 +1127,6 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
     color: #fff;
 }
 
-.player-stats {
-    display: flex;
-    gap: 12px;
-    font-size: 0.7rem;
-    color: var(--text-muted);
-}
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 768px) {
-    :root { --cell-size: 26px; --cell-gap: 1.5px; }
-    
-    .board-container { padding: 6px; }
-    .area { padding: 6px 8px; }
-    .area-title { font-size: 0.6rem; }
-
-    /* Gris */
-    .gris-turno-cell { min-width: 34px; height: 38px; }
-    .turno-numero { font-size: 0.65rem; }
-    .turno-bonificacion { font-size: 0.55rem; }
-    .celda-habilidad { width: 22px; height: 22px; font-size: 0.55rem; }
-    .habilidad-simbolo { font-size: 0.7rem; min-width: 20px; }
-    .gris-fila-habilidad { gap: 3px; min-height: 24px; }
-    .gris-etiqueta { font-size: 0.55rem; min-width: 45px; }
-
-    /* Amarilla */
-    .amarilla-fila .cell { min-width: 22px; height: 22px; font-size: 0.5rem; }
-    .amarilla-fila .bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
-    .amarilla-puntajes .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
-
-    /* Azul */
-    .azul-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
-    .azul-fila-inferior .cell { min-width: 22px; height: 22px; font-size: 0.5rem; }
-    .azul-bonificaciones .bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
-    .azul-puntajes .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
-
-    /* Verde */
-    .verde-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
-    .verde-bonificaciones .bonificacion-label { min-width: 26px; height: 20px; font-size: 0.45rem; }
-    .verde-puntajes .puntaje-label { min-width: 22px; height: 18px; font-size: 0.45rem; }
-
-    /* Naranja */
-    .naranja-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
-    .naranja-bonificaciones .bonificacion-circulo { width: 20px; height: 20px; font-size: 0.5rem; }
-    .naranja-puntajes .puntaje-circulo { width: 20px; height: 20px; font-size: 0.45rem; }
-
-    /* Morado */
-    .morado-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
-    .morado-bonificaciones .bonificacion-circulo { width: 20px; height: 20px; font-size: 0.5rem; }
-    .morado-puntajes .puntaje-circulo { width: 20px; height: 20px; font-size: 0.45rem; }
-
-    .scores-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
-    .score-item { font-size: 0.75rem; padding: 3px 2px; }
-}
-
-@media (max-width: 480px) {
-    :root { --cell-size: 20px; --cell-gap: 1px; }
-    
-    .board-container { padding: 4px; }
-    .area { padding: 4px 6px; }
-    .area-title { font-size: 0.5rem; }
-
-    /* Gris */
-    .gris-turno-cell { min-width: 28px; height: 32px; padding: 1px 2px; }
-    .turno-numero { font-size: 0.55rem; }
-    .turno-bonificacion { font-size: 0.45rem; }
-    .celda-habilidad { width: 18px; height: 18px; font-size: 0.45rem; border-radius: 2px; }
-    .habilidad-simbolo { font-size: 0.6rem; min-width: 16px; }
-    .gris-fila-habilidad { gap: 2px; min-height: 20px; }
-    .gris-etiqueta { font-size: 0.5rem; min-width: 35px; }
-
-    /* Amarilla */
-    .amarilla-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
-    .amarilla-fila .bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
-    .amarilla-puntajes .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
-
-    /* Azul */
-    .azul-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .azul-fila-inferior .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
-    .azul-bonificaciones .bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
-    .azul-puntajes .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
-
-    /* Verde */
-    .verde-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .verde-bonificaciones .bonificacion-label { min-width: 20px; height: 16px; font-size: 0.4rem; }
-    .verde-puntajes .puntaje-label { min-width: 18px; height: 14px; font-size: 0.4rem; }
-
-    /* Naranja */
-    .naranja-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .naranja-bonificaciones .bonificacion-circulo { width: 16px; height: 16px; font-size: 0.4rem; border-width: 1.5px; }
-    .naranja-puntajes .puntaje-circulo { width: 16px; height: 16px; font-size: 0.35rem; border-width: 1.5px; }
-
-    /* Morado */
-    .morado-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .morado-bonificaciones .bonificacion-circulo { width: 16px; height: 16px; font-size: 0.4rem; border-width: 1.5px; }
-    .morado-puntajes .puntaje-circulo { width: 16px; height: 16px; font-size: 0.35rem; border-width: 1.5px; }
-
-    .scores-grid { grid-template-columns: repeat(2, 1fr); }
-    .score-item { font-size: 0.7rem; }
-    .modal-box { padding: 20px; }
-    .modal-btn { padding: 10px 12px; font-size: 0.85rem; }
-}
-
-@media (orientation: landscape) and (max-height: 700px) {
-    body { padding: 4px; }
-    header { margin-bottom: 4px; }
-    h1 { font-size: 1.2rem; }
-
-    .app-container {
-        flex-direction: row;
-        max-width: 100%;
-        gap: 6px;
-        height: calc(100vh - 50px);
-    }
-
-    .board-container {
-        flex: 2;
-        padding: 6px;
-        overflow-y: auto;
-        max-height: 100%;
-    }
-
-    .board { gap: 4px; }
-    .area { padding: 4px 6px; }
-    .area-title { font-size: 0.5rem; }
-
-    .side-panel {
-        flex: 1;
-        max-width: 200px;
-        overflow-y: auto;
-        max-height: 100%;
-    }
-
-    .scoreboard { padding: 6px; }
-    .scores-grid { grid-template-columns: repeat(2, 1fr); gap: 3px; }
-    .score-item { font-size: 0.6rem; padding: 2px; }
-
-    .leaderboard { padding: 6px; margin-top: 4px; }
-    .player-card { padding: 4px 6px; }
-    .player-card-header { font-size: 0.7rem; }
-    .player-stats { font-size: 0.6rem; gap: 6px; }
-
-    /* Gris landscape */
-    .gris-turno-cell { min-width: 28px; height: 30px; }
-    .turno-numero { font-size: 0.5rem; }
-    .turno-bonificacion { font-size: 0.4rem; }
-    .celda-habilidad { width: 18px; height: 18px; font-size: 0.45rem; }
-    .habilidad-simbolo { font-size: 0.6rem; min-width: 16px; }
-    .gris-fila-habilidad { min-height: 20px; gap: 2px; }
-    .gris-etiqueta { font-size: 0.5rem; min-width: 35px; }
-
-    /* Amarilla landscape */
-    .amarilla-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
-    .amarilla-fila .bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
-    .amarilla-puntajes .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
-
-    /* Azul landscape */
-    .azul-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .azul-fila-inferior .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
-    .azul-bonificaciones .bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
-    .azul-puntajes .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
-
-    /* Verde landscape */
-    .verde-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .verde-bonificaciones .bonificacion-label { min-width: 20px; height: 16px; font-size: 0.4rem; }
-    .verde-puntajes .puntaje-label { min-width: 18px; height: 14px; font-size: 0.4rem; }
-
-    /* Naranja landscape */
-    .naranja-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .naranja-bonificaciones .bonificacion-circulo { width: 16px; height: 16px; font-size: 0.4rem; }
-    .naranja-puntajes .puntaje-circulo { width: 16px; height: 16px; font-size: 0.35rem; }
-
-    /* Morado landscape */
-    .morado-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
-    .morado-bonificaciones .bonificacion-circulo { width: 16px; height: 16px; font-size: 0.4rem; }
-    .morado-puntajes .puntaje-circulo { width: 16px; height: 16px; font-size: 0.35rem; }
-}
-
-/* ============================================================
-   SCROLLBAR
-   ============================================================ */
-
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg-main);
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--bg-box);
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--border-color);
-}
-
 /* ============================================================
    MODAL NUMÉRICO
    ============================================================ */
@@ -1680,4 +1245,238 @@ h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; text-transform: u
         padding: 14px 0;
         font-size: 1.4rem;
     }
+}
+
+/* ============================================================
+   RESPONSIVE - AMARILLA | AZUL EN PARALELO
+   ============================================================ */
+
+/* En móvil mantener paralelo */
+@media (max-width: 480px) {
+    .area-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+}
+
+@media (max-width: 380px) {
+    .area-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+    }
+}
+
+/* Landscape: mantener paralelo */
+@media (orientation: landscape) and (max-height: 700px) {
+    .area-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+    
+    .area.half {
+        padding: 4px 6px;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE GENERAL
+   ============================================================ */
+
+@media (max-width: 768px) {
+    :root { --cell-size: 26px; --cell-gap: 1.5px; }
+    
+    .board-container { padding: 6px; }
+    .area { padding: 6px 8px; }
+    .area-title { font-size: 0.6rem; }
+
+    /* Gris */
+    .gris-turno-cell { min-width: 34px; height: 38px; }
+    .turno-numero { font-size: 0.65rem; }
+    .turno-bonificacion { font-size: 0.55rem; }
+    .celda-habilidad { width: 22px; height: 22px; font-size: 0.55rem; }
+    .habilidad-simbolo { font-size: 0.7rem; min-width: 20px; }
+    .gris-fila-habilidad { gap: 3px; min-height: 24px; }
+    .gris-etiqueta { font-size: 0.55rem; min-width: 45px; }
+
+    /* Amarilla */
+    .amarilla-fila .cell { min-width: 22px; height: 22px; font-size: 0.5rem; }
+    .amarilla-fila .bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
+    .amarilla-puntajes .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
+
+    /* Azul */
+    .azul-fila .cell { min-width: 20px; height: 20px; font-size: 0.45rem; }
+    .azul-bonificacion-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
+    .azul-columna-circulo { width: 22px; height: 22px; font-size: 0.55rem; }
+    .azul-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
+    .azul-columnas .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
+
+    /* Verde */
+    .verde-puntajes-fila .puntaje-circulo { width: 22px; height: 22px; font-size: 0.5rem; }
+    .verde-cell { min-width: 22px; height: 22px; font-size: 0.4rem; }
+    .verde-bonus-item { min-width: 22px; height: 22px; }
+    .verde-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.5rem; }
+
+    /* Naranja */
+    .naranja-cell { min-width: 22px; height: 22px; font-size: 0.5rem; }
+    .naranja-bonus-item { min-width: 22px; height: 22px; }
+    .naranja-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.5rem; }
+
+    /* Morado */
+    .morado-cell { min-width: 22px; height: 22px; font-size: 0.5rem; }
+    .morado-bonus-item { min-width: 22px; height: 22px; }
+    .morado-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.5rem; }
+
+    .scores-grid { grid-template-columns: repeat(3, 1fr); gap: 4px; }
+    .score-item { font-size: 0.75rem; padding: 3px 2px; }
+}
+
+@media (max-width: 480px) {
+    :root { --cell-size: 20px; --cell-gap: 1px; }
+    
+    .board-container { padding: 4px; }
+    .area { padding: 4px 6px; }
+    .area-title { font-size: 0.5rem; }
+
+    /* Gris */
+    .gris-turno-cell { min-width: 28px; height: 32px; padding: 1px 2px; }
+    .turno-numero { font-size: 0.55rem; }
+    .turno-bonificacion { font-size: 0.45rem; }
+    .celda-habilidad { width: 18px; height: 18px; font-size: 0.45rem; border-radius: 2px; }
+    .habilidad-simbolo { font-size: 0.6rem; min-width: 16px; }
+    .gris-fila-habilidad { gap: 2px; min-height: 20px; }
+    .gris-etiqueta { font-size: 0.5rem; min-width: 35px; }
+
+    /* Amarilla */
+    .amarilla-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
+    .amarilla-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
+    .amarilla-puntajes .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
+
+    /* Azul */
+    .azul-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
+    .azul-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
+    .azul-columna-circulo { width: 18px; height: 18px; font-size: 0.45rem; border-width: 1.5px; }
+    .azul-puntajes-fila .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
+    .azul-columnas .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
+
+    /* Verde */
+    .verde-puntajes-fila .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; border-width: 1.5px; }
+    .verde-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
+    .verde-bonus-item { min-width: 18px; height: 18px; }
+    .verde-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; border-width: 1.5px; }
+
+    /* Naranja */
+    .naranja-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
+    .naranja-cell.marcada::after { font-size: 0.6rem; width: 12px; height: 12px; top: -5px; right: -5px; }
+    .naranja-bonus-item { min-width: 18px; height: 18px; }
+    .naranja-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; border-width: 1.5px; }
+
+    /* Morado */
+    .morado-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
+    .morado-cell.marcada::after { font-size: 0.6rem; width: 12px; height: 12px; top: -5px; right: -5px; }
+    .morado-bonus-item { min-width: 18px; height: 18px; }
+    .morado-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; border-width: 1.5px; }
+
+    .scores-grid { grid-template-columns: repeat(2, 1fr); }
+    .score-item { font-size: 0.7rem; }
+    .modal-box { padding: 20px; }
+    .modal-btn { padding: 10px 12px; font-size: 0.85rem; }
+}
+
+@media (orientation: landscape) and (max-height: 700px) {
+    body { padding: 4px; }
+    header { margin-bottom: 4px; }
+    h1 { font-size: 1.2rem; }
+
+    .app-container {
+        flex-direction: row;
+        max-width: 100%;
+        gap: 6px;
+        height: calc(100vh - 50px);
+    }
+
+    .board-container {
+        flex: 2;
+        padding: 6px;
+        overflow-y: auto;
+        max-height: 100%;
+    }
+
+    .board { gap: 4px; }
+    .area { padding: 4px 6px; }
+    .area-title { font-size: 0.5rem; }
+
+    .side-panel {
+        flex: 1;
+        max-width: 200px;
+        overflow-y: auto;
+        max-height: 100%;
+    }
+
+    .scoreboard { padding: 6px; }
+    .scores-grid { grid-template-columns: repeat(2, 1fr); gap: 3px; }
+    .score-item { font-size: 0.6rem; padding: 2px; }
+
+    .leaderboard { padding: 6px; margin-top: 4px; }
+    .player-card { padding: 4px 6px; }
+    .player-card-header { font-size: 0.7rem; }
+
+    /* Gris landscape */
+    .gris-turno-cell { min-width: 28px; height: 30px; }
+    .turno-numero { font-size: 0.5rem; }
+    .turno-bonificacion { font-size: 0.4rem; }
+    .celda-habilidad { width: 18px; height: 18px; font-size: 0.45rem; }
+    .habilidad-simbolo { font-size: 0.6rem; min-width: 16px; }
+    .gris-fila-habilidad { min-height: 20px; gap: 2px; }
+    .gris-etiqueta { font-size: 0.5rem; min-width: 35px; }
+
+    /* Amarilla landscape */
+    .amarilla-fila .cell { min-width: 18px; height: 18px; font-size: 0.4rem; }
+    .amarilla-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
+    .amarilla-puntajes .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
+
+    /* Azul landscape */
+    .azul-fila .cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
+    .azul-bonificacion-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
+    .azul-columna-circulo { width: 18px; height: 18px; font-size: 0.45rem; }
+    .azul-puntajes-fila .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
+    .azul-columnas .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
+
+    /* Verde landscape */
+    .verde-puntajes-fila .puntaje-circulo { width: 18px; height: 18px; font-size: 0.4rem; }
+    .verde-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
+    .verde-bonus-item { min-width: 18px; height: 18px; }
+    .verde-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; }
+
+    /* Naranja landscape */
+    .naranja-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
+    .naranja-bonus-item { min-width: 18px; height: 18px; }
+    .naranja-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; }
+
+    /* Morado landscape */
+    .morado-cell { min-width: 16px; height: 16px; font-size: 0.35rem; }
+    .morado-bonus-item { min-width: 18px; height: 18px; }
+    .morado-bonificacion-circulo { width: 14px; height: 14px; font-size: 0.4rem; }
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-main);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-box);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-color);
 }

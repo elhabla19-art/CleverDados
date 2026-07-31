@@ -77,37 +77,40 @@
         <div class="board-container">
             <!-- TABLERO COMPLETO -->
             <div class="board" id="game-board">
-                <!-- ÁREA GRIS -->
+                <!-- ÁREA GRIS (Fila 1) -->
                 <div class="area area-gris" id="area-gris">
                     <div class="area-title">⬜ ÁREA GRIS</div>
                     <div id="area-gris-content"></div>
                 </div>
 
-                <!-- ÁREA AMARILLA -->
-                <div class="area area-amarilla" id="area-amarilla">
-                    <div class="area-title">🟨 ÁREA AMARILLA</div>
-                    <div id="area-amarilla-content"></div>
+                <!-- FILA 2: AMARILLA | AZUL -->
+                <div class="area-row">
+                    <!-- ÁREA AMARILLA -->
+                    <div class="area area-amarilla half" id="area-amarilla">
+                        <div class="area-title">🟨 ÁREA AMARILLA</div>
+                        <div id="area-amarilla-content"></div>
+                    </div>
+
+                    <!-- ÁREA AZUL -->
+                    <div class="area area-azul half" id="area-azul">
+                        <div class="area-title">🟦 ÁREA AZUL</div>
+                        <div id="area-azul-content"></div>
+                    </div>
                 </div>
 
-                <!-- ÁREA AZUL -->
-                <div class="area area-azul" id="area-azul">
-                    <div class="area-title">🟦 ÁREA AZUL</div>
-                    <div id="area-azul-content"></div>
-                </div>
-
-                <!-- ÁREA VERDE -->
+                <!-- ÁREA VERDE (Fila 3) -->
                 <div class="area area-verde" id="area-verde">
                     <div class="area-title">🟩 ÁREA VERDE</div>
                     <div id="area-verde-content"></div>
                 </div>
 
-                <!-- ÁREA NARANJA -->
+                <!-- ÁREA NARANJA (Fila 4) -->
                 <div class="area area-naranja" id="area-naranja">
                     <div class="area-title">🟧 ÁREA NARANJA</div>
                     <div id="area-naranja-content"></div>
                 </div>
 
-                <!-- ÁREA MORADO -->
+                <!-- ÁREA MORADO (Fila 5) -->
                 <div class="area area-morado" id="area-morado">
                     <div class="area-title">🟪 ÁREA MORADO</div>
                     <div id="area-morado-content"></div>
