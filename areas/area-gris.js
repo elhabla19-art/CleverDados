@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA GRIS - CLEVERDADOS (SIN LOBO)
+// ÁREA GRIS - CLEVERDADOS (CORREGIDO - MANTIENE DESBLOQUEOS)
 // ============================================================
 
 // Configuración de turnos y sus bonificaciones
@@ -326,13 +326,54 @@ function manejarClickTurnoGris(index) {
     const cell = document.querySelector(`[data-area="gris"][data-fila="turno"][data-col="${index}"]`);
     if (cell) cell.classList.add('marcada');
     
-    actualizarEstadosGris();
+    // ACTUALIZAR SOLO LAS CASILLAS QUE CORRESPONDEN A ESTE TURNO
+    actualizarDesbloqueosPorTurno(turno.numero);
+    
     recalcularPuntajes();
     actualizarVisuales();
     
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
     }
+}
+
+// ============================================================
+// ACTUALIZAR DESBLOQUEOS POR TURNO (sin resetear externos)
+// ============================================================
+
+function actualizarDesbloqueosPorTurno(turnoNumero) {
+    // Para cada habilidad, verificar si este turno la desbloquea
+    Object.keys(HABILIDADES_CONFIG).forEach(habilidadId => {
+        const config = HABILIDADES_CONFIG[habilidadId];
+        if (!config.turnosDesbloqueo) return;
+        
+        // Verificar cuántos turnos de desbloqueo están completados
+        let totalDesbloqueados = 0;
+        config.turnosDesbloqueo.forEach(turno => {
+            if (turnosCompletados.includes(turno)) {
+                totalDesbloqueados++;
+            }
+        });
+        
+        // Desbloquear SOLO las casillas que corresponden al nuevo progreso
+        // PERO sin sobrescribir las que ya estaban desbloqueadas externamente
+        for (let i = 0; i < totalDesbloqueados; i++) {
+            const clave = `${habilidadId}-${i}`;
+            // Solo desbloquear si NO está ya desbloqueada externamente
+            if (!desbloqueosExternos[clave]) {
+                const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${i}"]`;
+                const cell = document.querySelector(selector);
+                if (cell && cell.classList.contains('bloqueada')) {
+                    cell.classList.remove('bloqueada');
+                    cell.classList.add('desbloqueada');
+                    if (cell.dataset.color) {
+                        cell.style.opacity = '1';
+                        cell.style.filter = 'none';
+                    }
+                }
+            }
+        }
+    });
 }
 
 function manejarClickHabilidadGris(habilidadId, index) {
@@ -383,7 +424,7 @@ function aplicarBonificacionGris(habilidadId) {
 }
 
 // ============================================================
-// ACTUALIZAR ESTADOS VISUALES
+// ACTUALIZAR ESTADOS VISUALES (mantiene desbloqueos externos)
 // ============================================================
 
 function actualizarEstadosGris() {
@@ -393,6 +434,7 @@ function actualizarEstadosGris() {
         const id = `gris-${habilidadId}-${index}`;
         const clave = `${habilidadId}-${index}`;
         
+        // Si está marcada/usada
         if (historialMovimientos.includes(id)) {
             cell.classList.remove('bloqueada', 'desbloqueada');
             cell.classList.add('usada');
@@ -400,14 +442,26 @@ function actualizarEstadosGris() {
             return;
         }
         
-        if (desbloqueosExternos[clave] || estaDesbloqueadaGris(habilidadId, index)) {
+        // Si está desbloqueada externamente o por turnos
+        const estaDesbloqueada = desbloqueosExternos[clave] || estaDesbloqueadaGris(habilidadId, index);
+        
+        if (estaDesbloqueada) {
             cell.classList.remove('bloqueada', 'usada');
             cell.classList.add('desbloqueada');
             cell.textContent = '';
+            // Asegurar que el color se mantenga
+            if (cell.dataset.color) {
+                cell.style.opacity = '1';
+                cell.style.filter = 'none';
+            }
         } else {
             cell.classList.remove('desbloqueada', 'usada');
             cell.classList.add('bloqueada');
             cell.textContent = '';
+            if (cell.dataset.color) {
+                cell.style.opacity = '0.3';
+                cell.style.filter = 'grayscale(0.8)';
+            }
         }
     });
 }
