@@ -1,5 +1,5 @@
 // ============================================================
-// PUNTAJES.JS - CLEVERDADOS (CORREGIDO - CON VERIFICACIONES)
+// PUNTAJES.JS - CLEVERDADOS (CORREGIDO - AZUL PROGRESIVO)
 // ============================================================
 
 /**
@@ -19,7 +19,6 @@ const PUNTAJES = {
             let puntos = 0;
             
             // SOLO puntos por columnas completadas
-            // Verificar si la variable existe y está definida
             if (typeof columnasCompletadas !== 'undefined' && columnasCompletadas) {
                 columnasCompletadas.forEach((completada, index) => {
                     if (completada) {
@@ -33,32 +32,47 @@ const PUNTAJES = {
     },
 
     // ============================================================
-    // ÁREA AZUL
-    // Puntajes progresivos: 1, 2, 4, 7, 11, 16, 22, 29, 37, 46, 56
+    // ÁREA AZUL - CORREGIDO
+    // Puntajes PROGRESIVOS por CANTIDAD de casillas llenas
+    // 1 casilla = 1pt, 2 casillas = 1+2=3pts, 3 casillas = 1+2+4=7pts
+    // NO importa el valor de la casilla, solo la cantidad
     // ============================================================
     azul: {
         puntajes: [1, 2, 4, 7, 11, 16, 22, 29, 37, 46, 56],
         calcular: function() {
             let puntos = 0;
             
-            // Contar cuántas casillas están marcadas en el área azul
-            const marcas = historialMovimientos ? historialMovimientos.filter(m => m.startsWith('azul-tabla-')).length : 0;
+            // CONTAR MANUALMENTE las casillas marcadas en el área azul
+            let casillasMarcadas = 0;
             
-            // Sumar los puntajes progresivos según las casillas marcadas
-            for (let i = 0; i < marcas && i < this.puntajes.length; i++) {
+            // Usar TABLA_AZUL para contar SOLO las casillas con valor
+            if (typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL && typeof historialMovimientos !== 'undefined') {
+                TABLA_AZUL.forEach((celda, index) => {
+                    // Solo contar casillas que tienen valor (no vacías)
+                    if (celda.valor !== '') {
+                        const id = `azul-tabla-${index}`;
+                        if (historialMovimientos.includes(id)) {
+                            casillasMarcadas++;
+                        }
+                    }
+                });
+            } else {
+                // Fallback: contar por el prefijo
+                casillasMarcadas = historialMovimientos ? historialMovimientos.filter(m => 
+                    m.startsWith('azul-tabla-')
+                ).length : 0;
+            }
+            
+            // Actualizar la variable global
+            window.progresoAzul = casillasMarcadas;
+            
+            // Sumar los puntajes progresivos SEGÚN LA CANTIDAD de casillas marcadas
+            // Si hay 2 casillas, suma puntajes[0] + puntajes[1] = 1 + 2 = 3
+            for (let i = 0; i < casillasMarcadas && i < this.puntajes.length; i++) {
                 puntos += this.puntajes[i];
             }
             
-            // Puntos por columnas completadas (bonificaciones de columna)
-            if (typeof columnasCompletadasAzul !== 'undefined' && columnasCompletadasAzul) {
-                columnasCompletadasAzul.forEach((completada, index) => {
-                    if (completada) {
-                        // Cada columna completada da 5 puntos
-                        puntos += 5;
-                    }
-                });
-            }
-            
+            console.log(`Área Azul: ${casillasMarcadas} casillas marcadas = ${puntos} pts`);
             return puntos;
         }
     },
@@ -73,7 +87,9 @@ const PUNTAJES = {
             let puntos = 0;
             
             // Contar cuántas casillas están marcadas en el área verde
-            const marcas = historialMovimientos ? historialMovimientos.filter(m => m.startsWith('verde-tabla-')).length : 0;
+            const marcas = historialMovimientos ? historialMovimientos.filter(m => 
+                m.startsWith('verde-tabla-')
+            ).length : 0;
             
             // Sumar los puntajes progresivos según las casillas marcadas
             for (let i = 0; i < marcas && i < this.puntajes.length; i++) {
@@ -192,6 +208,11 @@ const PUNTAJES = {
         const bonus = this.bonificaciones.calcular();
         total += bonus;
         
+        // Actualizar variable global
+        if (typeof puntajeTotal !== 'undefined') {
+            window.puntajeTotal = total;
+        }
+        
         // Actualizar UI - verificar que los elementos existan
         const totalElement = document.getElementById('score-total');
         const bonusElement = document.getElementById('bonus-display');
@@ -207,11 +228,6 @@ const PUNTAJES = {
                     element.textContent = puntajesAreas[area] || 0;
                 }
             });
-        }
-        
-        // Actualizar variable global
-        if (typeof puntajeTotal !== 'undefined') {
-            window.puntajeTotal = total;
         }
         
         return total;
@@ -233,10 +249,9 @@ const PUNTAJES = {
             naranja: (typeof puntajesAreas !== 'undefined' && puntajesAreas) ? puntajesAreas.naranja || 0 : 0,
             morado: (typeof puntajesAreas !== 'undefined' && puntajesAreas) ? puntajesAreas.morado || 0 : 0,
             bonificacion: puntosBonificacion || 0,
-            total: total  // <--- USAR EL TOTAL CALCULADO
+            total: total
         };
     }
-
 };
 
 // ============================================================

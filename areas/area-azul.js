@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA AZUL - CLEVERDADOS (CORREGIDO)
+// ÁREA AZUL - CLEVERDADOS (CORREGIDO - PUNTOS PROGRESIVOS)
 // ============================================================
 
 // Puntajes visuales (se actualizan automáticamente)
@@ -7,7 +7,7 @@ const PUNTAJES_AZUL = [1, 2, 4, 7, 11, 16, 22, 29, 37, 46, 56];
 
 // Tabla interactiva (11 casillas)
 const TABLA_AZUL = [
-    { fila: 0, col: 0, valor: '', esX: false },
+    { fila: 0, col: 0, valor: '', esX: false },  // VACÍA (no se cuenta)
     { fila: 0, col: 1, valor: 2, esX: false },
     { fila: 0, col: 2, valor: 3, esX: false },
     { fila: 0, col: 3, valor: 4, esX: false },
@@ -28,7 +28,7 @@ const BONIFICACIONES_FILA = [
     { fila: 2, celdas: [8, 9, 10, 11], bonificacion: 'Lobo', color: '#7b1fa2', simbolo: '🐺', habilidadGris: 'lobo', indiceGris: 1 }
 ];
 
-// Bonificaciones de columna - CORREGIDO
+// Bonificaciones de columna
 const BONIFICACIONES_COLUMNA = [
     { 
         col: 0, 
@@ -37,7 +37,7 @@ const BONIFICACIONES_COLUMNA = [
         simbolo: '♻', 
         color: '#78909c', 
         tipo: 'espiral',
-        indiceGris: 2 // <--- CAMBIADO de 0 a 2
+        indiceGris: 2
     },
     { 
         col: 1, 
@@ -66,7 +66,7 @@ const BONIFICACIONES_COLUMNA = [
         simbolo: '+1', 
         color: '#ffd700', 
         tipo: 'mas1',
-        indiceGris: 2 // <--- CAMBIADO de 0 a 2
+        indiceGris: 2
     }
 ];
 
@@ -164,15 +164,19 @@ function inicializarAreaAzul() {
     
     html += `</div>`;
     container.innerHTML = html;
+    
+    // Sincronizar el progreso global
+    window.progresoAzul = progresoAzul;
 }
 
 // ============================================================
-// ACTUALIZAR PROGRESO
+// ACTUALIZAR PROGRESO - SOLO CASILLAS CON VALOR
 // ============================================================
 
 function actualizarProgresoAzul() {
     let marcadas = 0;
     TABLA_AZUL.forEach((celda, index) => {
+        // SOLO contar si la celda tiene valor (no es vacía)
         if (celda.valor !== '') {
             const id = `azul-tabla-${index}`;
             if (historialMovimientos.includes(id)) {
@@ -181,6 +185,11 @@ function actualizarProgresoAzul() {
         }
     });
     progresoAzul = marcadas;
+    
+    // ACTUALIZAR LA VARIABLE GLOBAL para que PUNTAJES la vea
+    window.progresoAzul = marcadas;
+    
+    console.log(`Área Azul - Casillas marcadas: ${progresoAzul}`);
 }
 
 // ============================================================
@@ -194,6 +203,7 @@ function manejarClickAzul(index) {
     const id = `azul-tabla-${index}`;
     if (historialMovimientos.includes(id)) return;
     
+    // Marcar la celda
     historialMovimientos.push(id);
     
     const cell = document.querySelector(`[data-area="azul"][data-index="${index}"]`);
@@ -201,11 +211,23 @@ function manejarClickAzul(index) {
         cell.classList.add('marcada');
     }
     
+    // Actualizar progreso (cuenta las casillas marcadas)
     actualizarProgresoAzul();
+    
+    // Actualizar puntajes visuales
     actualizarPuntajesAzul();
+    
+    // Verificar bonificaciones de filas y columnas
     verificarFilasAzul();
     verificarColumnasAzul();
-    recalcularPuntajesAzul();
+    
+    // RECALCULAR PUNTAJES USANDO EL SISTEMA DE PUNTAJES
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesAzul();
+    }
+    
     actualizarVisuales();
     
     if (typeof broadcastPuntaje === 'function') {
@@ -214,7 +236,7 @@ function manejarClickAzul(index) {
 }
 
 // ============================================================
-// ACTUALIZAR PUNTAJES VISUALES
+// ACTUALIZAR PUNTAJES VISUALES (solo los círculos de la fila)
 // ============================================================
 
 function actualizarPuntajesAzul() {
@@ -246,7 +268,6 @@ function verificarFilasAzul() {
         if (todasMarcadas) {
             filasCompletadasAzul[filaIndex] = true;
             
-            // Actualizar círculo de bonificación de fila
             const circulo = document.querySelector(`.azul-bonificacion-circulo[data-azul-fila="${filaIndex}"]`);
             if (circulo) {
                 circulo.classList.remove('puntaje-pendiente');
@@ -254,7 +275,6 @@ function verificarFilasAzul() {
                 circulo.textContent = '✓';
             }
             
-            // Desbloquear en Gris
             desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
         }
     });
@@ -281,7 +301,6 @@ function verificarColumnasAzul() {
         if (todasMarcadas) {
             columnasCompletadasAzul[colIndex] = true;
             
-            // Actualizar círculo de bonificación de columna
             const circulo = document.querySelector(`.azul-columna-circulo[data-azul-columna="${colIndex}"]`);
             if (circulo) {
                 circulo.classList.remove('puntaje-pendiente');
@@ -289,31 +308,32 @@ function verificarColumnasAzul() {
                 circulo.textContent = '✓';
             }
             
-            // Aplicar efecto de la bonificación
             aplicarBonificacionColumnaAzul(bonif);
         }
     });
 }
 
 // ============================================================
-// APLICAR BONIFICACIÓN DE COLUMNA - CORREGIDO
+// APLICAR BONIFICACIÓN DE COLUMNA
 // ============================================================
 
 function aplicarBonificacionColumnaAzul(bonif) {
     switch(bonif.tipo) {
         case 'espiral':
-            // Desbloquear Espiral en el índice específico
             desbloquearEnGrisAzul('espiral', bonif.indiceGris);
             break;
         case 'mas1':
-            // Desbloquear +1 en el índice específico
             desbloquearEnGrisAzul('mas1', bonif.indiceGris);
             break;
         case 'gris':
             desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
             break;
     }
-    recalcularPuntajesAzul();
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesAzul();
+    }
 }
 
 // ============================================================
@@ -337,26 +357,28 @@ function desbloquearEnGrisAzul(habilidadId, indice) {
 }
 
 // ============================================================
-// RECALCULAR PUNTAJES
+// RECALCULAR PUNTAJES (FALLBACK - usado solo si PUNTAJES no existe)
 // ============================================================
 
 function recalcularPuntajesAzul() {
-    let puntos = 0;
-    if (progresoAzul > 0) {
-        for (let i = 0; i < progresoAzul && i < PUNTAJES_AZUL.length; i++) {
-            puntos += PUNTAJES_AZUL[i];
-        }
+    // Si existe PUNTAJES, usarlo
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+        return;
     }
     
+    // CALCULAR PUNTOS POR CANTIDAD DE CASILLAS (NO POR VALOR)
+    let puntos = 0;
+    // progresoAzul ya tiene la cantidad de casillas marcadas
+    for (let i = 0; i < progresoAzul && i < PUNTAJES_AZUL.length; i++) {
+        puntos += PUNTAJES_AZUL[i];
+    }
+    
+    // Puntos por columnas completadas (bonificaciones)
     let puntosColumnas = 0;
-    columnasCompletadasAzul.forEach((completada, index) => {
+    columnasCompletadasAzul.forEach((completada) => {
         if (completada) {
-            switch(index) {
-                case 0: puntosColumnas += 5; break;
-                case 1: puntosColumnas += 5; break;
-                case 2: puntosColumnas += 5; break;
-                case 3: puntosColumnas += 3; break;
-            }
+            puntosColumnas += 5;
         }
     });
     
@@ -378,6 +400,14 @@ function recalcularPuntajesAzul() {
 }
 
 // ============================================================
+// OBTENER CANTIDAD DE CASILLAS MARCADAS (para PUNTAJES)
+// ============================================================
+
+function obtenerProgresoAzul() {
+    return progresoAzul;
+}
+
+// ============================================================
 // RESET
 // ============================================================
 
@@ -385,6 +415,7 @@ function resetAreaAzul() {
     filasCompletadasAzul = [false, false, false];
     columnasCompletadasAzul = [false, false, false, false];
     progresoAzul = 0;
+    window.progresoAzul = 0;
     
     document.querySelectorAll('[data-area="azul"]').forEach(cell => {
         cell.classList.remove('marcada');
@@ -400,3 +431,6 @@ function resetAreaAzul() {
 window.inicializarAreaAzul = inicializarAreaAzul;
 window.resetAreaAzul = resetAreaAzul;
 window.recalcularPuntajesAzul = recalcularPuntajesAzul;
+window.columnasCompletadasAzul = columnasCompletadasAzul;
+window.progresoAzul = progresoAzul;
+window.obtenerProgresoAzul = obtenerProgresoAzul;

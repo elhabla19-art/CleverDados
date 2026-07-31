@@ -114,22 +114,31 @@ function actualizarVisuales() {
         const area = cell.dataset.area;
         const fila = cell.dataset.fila;
         const col = cell.dataset.col;
-        const id = `${area}-${fila}-${col}`;
         
-        if (historialMovimientos.includes(id)) {
-            cell.classList.add('marcada');
+        // Solo procesar si tiene area, fila y col
+        if (area && fila !== undefined && col !== undefined) {
+            const id = `${area}-${fila}-${col}`;
+            if (historialMovimientos.includes(id)) {
+                cell.classList.add('marcada');
+            }
         }
     });
 }
 
 // ============================================================
-// MANEJAR CLICK EN CELDA
+// MANEJAR CLICK EN CELDA (SOLO PARA CELDAS CON area, fila, col)
 // ============================================================
 
 function manejarClickCelda(cell) {
     const area = cell.dataset.area;
     const fila = cell.dataset.fila;
     const col = cell.dataset.col;
+    
+    // Si no tiene area, fila o col, ignorar (es una celda con manejador propio)
+    if (!area || fila === undefined || col === undefined) {
+        return;
+    }
+    
     const id = `${area}-${fila}-${col}`;
     
     if (cell.classList.contains('marcada') || cell.classList.contains('pre-marcada')) {
@@ -185,6 +194,7 @@ function aplicarBonificacion(area, fila, col) {
 // ============================================================
 
 function capitalize(str) {
+    if (!str || typeof str !== 'string') return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
@@ -307,9 +317,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof inicializarAreaNaranja === 'function') inicializarAreaNaranja();
     if (typeof inicializarAreaMorado === 'function') inicializarAreaMorado();
     
-    // Agregar event listeners a todas las celdas
+    // Agregar event listeners SOLO a celdas que tienen area, fila y col
     document.querySelectorAll('.cell:not(.pre-marcada)').forEach(cell => {
-        cell.addEventListener('click', () => manejarClickCelda(cell));
+        // Solo agregar si tiene los atributos necesarios
+        if (cell.dataset.area && cell.dataset.fila !== undefined && cell.dataset.col !== undefined) {
+            cell.addEventListener('click', () => manejarClickCelda(cell));
+        }
     });
     
     // Calcular puntajes iniciales
