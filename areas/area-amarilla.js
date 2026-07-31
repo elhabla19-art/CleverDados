@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA AMARILLA - CLEVERDADOS
+// ÁREA AMARILLA - CLEVERDADOS (CORREGIDO)
 // ============================================================
 
 // Configuración del área amarilla
@@ -11,7 +11,8 @@ const AMARILLA_CONFIG = {
         { numeros: ['X', 3, 4, 6], bonificacion: 'Lobo', color: '#7b1fa2', simbolo: '🐺', habilidadGris: 'lobo', indiceGris: 0 }
     ],
     columnas: [10, 14, 16, 20],
-    bonusTotal: '+1'
+    bonusTotal: '+1',
+    indiceBonusTotal: 1 // <--- CAMBIADO DE 2 A 1
 };
 
 // Estado de bonificaciones desbloqueadas
@@ -244,7 +245,7 @@ function verificarColumnaCompleta(colIndex) {
 }
 
 // ============================================================
-// VERIFICAR TODO COMPLETO
+// VERIFICAR TODO COMPLETO - CORREGIDO
 // ============================================================
 
 function verificarTodoCompleto() {
@@ -265,10 +266,9 @@ function verificarTodoCompleto() {
             ultimoCirculo.textContent = '✓';
         }
         
-        // Desbloquear +1 en Gris (siguiente disponible)
-        if (typeof window.desbloquearMas1Externo === 'function') {
-            window.desbloquearMas1Externo();
-        }
+        // DESBLOQUEAR +1 EN EL ÍNDICE CORRECTO (1)
+        const indiceCorrecto = AMARILLA_CONFIG.indiceBonusTotal || 1; // <--- DEFAULT 1
+        desbloquearEnGris('mas1', indiceCorrecto);
         
         puntosBonificacion += 1;
         recalcularPuntajesAmarilla();

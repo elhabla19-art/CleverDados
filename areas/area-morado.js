@@ -1,28 +1,28 @@
 // ============================================================
-// ÁREA MORADO - CLEVERDADOS (CORREGIDO)
+// ÁREA MORADO - CLEVERDADOS (CORREGIDO FINAL)
 // ============================================================
 
 // Configuración del área morado
 const MORADO_CONFIG = [
     { index: 0, valor: '', bonus: null, requiereNumero: true },
     { index: 1, valor: '', bonus: null, requiereNumero: true },
-    // Espiral → desbloquea espiral índice 5 (6ª casilla de espiral)
+    // index 2: Espiral
     { index: 2, valor: '', bonus: 'Espiral', color: '#78909c', simbolo: '♻', tipo: 'espiral', indiceGris: 5, requiereNumero: true },
-    // XAzul → desbloquea x índice 3 (4ª casilla de x)
+    // index 3: XAzul
     { index: 3, valor: '', bonus: 'XAzul', color: '#1e88e5', simbolo: '✖', tipo: 'x', indiceGris: 3, requiereNumero: true },
-    // +1 → desbloquea mas1 índice 5 (6ª casilla de +1)
+    // index 4: +1
     { index: 4, valor: '', bonus: '+1', color: '#ffd700', simbolo: '+1', tipo: 'mas1', indiceGris: 5, requiereNumero: true },
-    // XAmarillo → desbloquea x índice 6 (7ª casilla de x)
+    // index 5: XAmarillo
     { index: 5, valor: '', bonus: 'XAmarillo', color: '#fdd835', simbolo: '✖', tipo: 'x', indiceGris: 6, requiereNumero: true },
-    // Lobo → desbloquea lobo índice 0 (1ª casilla de lobo)
+    // index 6: Lobo
     { index: 6, valor: '', bonus: 'Lobo', color: '#7b1fa2', simbolo: '🐺', tipo: 'lobo', indiceGris: 0, requiereNumero: true },
-    // Espiral → desbloquea espiral índice 6 (7ª casilla de espiral)
+    // index 7: Espiral
     { index: 7, valor: '', bonus: 'Espiral', color: '#78909c', simbolo: '♻', tipo: 'espiral', indiceGris: 6, requiereNumero: true },
-    // XVerde → desbloquea x índice 9 (10ª casilla de x)
+    // index 8: XVerde
     { index: 8, valor: '', bonus: 'XVerde', color: '#43a047', simbolo: '✖', tipo: 'x', indiceGris: 9, requiereNumero: true },
-    // 6Naranja → desbloquea seis índice 3 (4ª casilla de seis)
+    // index 9: 6Naranja
     { index: 9, valor: '', bonus: '6Naranja', color: '#ff6f00', simbolo: '6', tipo: 'seis', indiceGris: 3, requiereNumero: true },
-    // +1 → desbloquea mas1 índice 6 (7ª casilla de +1)
+    // index 10: +1
     { index: 10, valor: '', bonus: '+1', color: '#ffd700', simbolo: '+1', tipo: 'mas1', indiceGris: 6, requiereNumero: true }
 ];
 
@@ -264,30 +264,6 @@ function verificarBonificacionMorado(index) {
 function aplicarBonificacionMorado(celda) {
     if (!celda.bonus) return;
     
-    // Usar la función desbloquearExterno que ya existe en area-gris.js
-    // Esta función busca por data-habilidad y data-col
-    const selector = `.celda-habilidad[data-habilidad="${celda.tipo}"][data-col="${celda.indiceGris}"]`;
-    const cell = document.querySelector(selector);
-    
-    if (cell && cell.classList.contains('bloqueada')) {
-        cell.classList.remove('bloqueada');
-        cell.classList.add('desbloqueada');
-        if (cell.dataset.color) {
-            cell.style.opacity = '1';
-            cell.style.filter = 'none';
-        }
-        
-        // También actualizar el estado de desbloqueos externos
-        const clave = `${celda.tipo}-${celda.indiceGris}`;
-        if (typeof window.desbloqueosExternos !== 'undefined') {
-            window.desbloqueosExternos[clave] = true;
-        }
-        
-        recalcularPuntajesMorado();
-        return true;
-    }
-    
-    // Fallback: usar las funciones específicas si existen
     switch(celda.tipo) {
         case 'espiral':
             if (typeof window.desbloquearEspiralExterno === 'function') {
@@ -310,9 +286,7 @@ function aplicarBonificacionMorado(celda) {
             }
             break;
         case 'lobo':
-            if (typeof window.desbloquearLoboExterno === 'function') {
-                window.desbloquearLoboExterno(celda.indiceGris);
-            }
+            // Lobo fue eliminado de Gris, pero mantenemos la función por si acaso
             break;
     }
     recalcularPuntajesMorado();

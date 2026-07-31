@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA GRIS - CLEVERDADOS
+// ÁREA GRIS - CLEVERDADOS (SIN LOBO)
 // ============================================================
 
 // Configuración de turnos y sus bonificaciones
@@ -12,7 +12,7 @@ const TURNOS_CONFIG = [
     { numero: 6, bonificacion: '•|••', efecto: '2 dados adicionales', habilidad: 'dados2' }
 ];
 
-// Configuración de habilidades (todas las celdas)
+// Configuración de habilidades (todas las celdas) - SIN LOBO
 const HABILIDADES_CONFIG = {
     espiral: {
         id: 'espiral',
@@ -81,7 +81,6 @@ const HABILIDADES_CONFIG = {
         columna: 2,
         fila: 1
     }
-    // LOBO ELIMINADO
 };
 
 // Estado
@@ -296,7 +295,6 @@ function desbloquearMas1Externo(indice) {
     return desbloquearSiguienteExterno('mas1');
 }
 
-// CORREGIDO: Usan desbloquearExterno con índice específico
 function desbloquearXExterno(indice) {
     return desbloquearExterno('x', indice);
 }
@@ -305,7 +303,7 @@ function desbloquearSeisExterno(indice) {
     return desbloquearExterno('seis', indice);
 }
 
-// LOBO ELIMINADO
+// LOBO ELIMINADO - No hay función para lobo
 
 // ============================================================
 // MANEJAR CLICKS

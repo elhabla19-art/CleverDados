@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA VERDE - CLEVERDADOS
+// ÁREA VERDE - CLEVERDADOS (CORREGIDO)
 // ============================================================
 
 // Puntajes visuales (se actualizan automáticamente)
@@ -15,18 +15,18 @@ const TABLA_VERDE = [
     { valor: '≥1', bonus: 'XAzul' },        // ✖ índice 2
     { valor: '≥2', bonus: 'Lobo' },         // 🐺 índice 2
     { valor: '≥3', bonus: null },
-    { valor: '≥4', bonus: '6Morado' },      // 6 índice 5 (se muestra como 6 en Verde)
+    { valor: '≥4', bonus: '6Morado' },      // 6 índice 5
     { valor: '≥5', bonus: 'Espiral' },      // ♻ índice 3
     { valor: '≥6', bonus: null }
 ];
 
-// Mapeo de bonificaciones de Verde
+// Mapeo de bonificaciones de Verde - CORREGIDO
 const BONUS_MAP = {
-    '+1': { color: '#ffd700', simbolo: '+1', tipo: 'mas1' },
-    'XAzul': { color: '#1e88e5', simbolo: '✖', tipo: 'gris', habilidadGris: 'x', indiceGris: 2 },
-    'Lobo': { color: '#7b1fa2', simbolo: '🐺', tipo: 'gris', habilidadGris: 'lobo', indiceGris: 2 },
-    '6Morado': { color: '#7b1fa2', simbolo: '6', tipo: 'gris', habilidadGris: 'seis', indiceGris: 5 },
-    'Espiral': { color: '#78909c', simbolo: '♻', tipo: 'espiral' }
+    '+1': { color: '#ffd700', simbolo: '+1', tipo: 'mas1', indiceGris: 3 }, // <--- CAMBIADO de 0 a 3
+    'XAzul': { color: '#1e88e5', simbolo: '✖', tipo: 'x', indiceGris: 2 },
+    'Lobo': { color: '#7b1fa2', simbolo: '🐺', tipo: 'lobo', indiceGris: 2 },
+    '6Morado': { color: '#7b1fa2', simbolo: '6', tipo: 'seis', indiceGris: 5 },
+    'Espiral': { color: '#78909c', simbolo: '♻', tipo: 'espiral', indiceGris: 3 } // <--- CAMBIADO de 0 a 3
 };
 
 // Índices que tienen bonificación
@@ -189,26 +189,31 @@ function verificarBonificacionIndividual(index) {
 }
 
 // ============================================================
-// APLICAR BONIFICACIÓN
+// APLICAR BONIFICACIÓN - CORREGIDO
 // ============================================================
 
 function aplicarBonificacionVerde(bonus) {
     const info = BONUS_MAP[bonus];
     if (!info) return;
     
+    // Usar el índice específico de la configuración
+    const indiceGris = info.indiceGris;
+    
     switch(info.tipo) {
         case 'mas1':
-            if (typeof window.desbloquearMas1Externo === 'function') {
-                window.desbloquearMas1Externo();
-            }
+            desbloquearEnGrisVerde('mas1', indiceGris);
             break;
         case 'espiral':
-            if (typeof window.desbloquearEspiralExterno === 'function') {
-                window.desbloquearEspiralExterno();
-            }
+            desbloquearEnGrisVerde('espiral', indiceGris);
             break;
-        case 'gris':
-            desbloquearEnGrisVerde(info.habilidadGris, info.indiceGris);
+        case 'x':
+            desbloquearEnGrisVerde('x', indiceGris);
+            break;
+        case 'seis':
+            desbloquearEnGrisVerde('seis', indiceGris);
+            break;
+        case 'lobo':
+            desbloquearEnGrisVerde('lobo', indiceGris);
             break;
     }
     recalcularPuntajesVerde();

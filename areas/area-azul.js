@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA AZUL - CLEVERDADOS
+// ÁREA AZUL - CLEVERDADOS (CORREGIDO)
 // ============================================================
 
 // Puntajes visuales (se actualizan automáticamente)
@@ -28,12 +28,46 @@ const BONIFICACIONES_FILA = [
     { fila: 2, celdas: [8, 9, 10, 11], bonificacion: 'Lobo', color: '#7b1fa2', simbolo: '🐺', habilidadGris: 'lobo', indiceGris: 1 }
 ];
 
-// Bonificaciones de columna
+// Bonificaciones de columna - CORREGIDO
 const BONIFICACIONES_COLUMNA = [
-    { col: 0, celdas: [0, 4, 8], bonificacion: 'Espiral', simbolo: '♻', color: '#78909c', tipo: 'espiral' },
-    { col: 1, celdas: [1, 5, 9], bonificacion: 'XVerde', simbolo: '✖', color: '#43a047', tipo: 'gris', habilidadGris: 'x', indiceGris: 5 },
-    { col: 2, celdas: [2, 6, 10], bonificacion: '6Morado', simbolo: '6', color: '#7b1fa2', tipo: 'gris', habilidadGris: 'seis', indiceGris: 4 },
-    { col: 3, celdas: [3, 7, 11], bonificacion: '+1', simbolo: '+1', color: '#ffd700', tipo: 'mas1' }
+    { 
+        col: 0, 
+        celdas: [0, 4, 8], 
+        bonificacion: 'Espiral', 
+        simbolo: '♻', 
+        color: '#78909c', 
+        tipo: 'espiral',
+        indiceGris: 2 // <--- CAMBIADO de 0 a 2
+    },
+    { 
+        col: 1, 
+        celdas: [1, 5, 9], 
+        bonificacion: 'XVerde', 
+        simbolo: '✖', 
+        color: '#43a047', 
+        tipo: 'gris', 
+        habilidadGris: 'x', 
+        indiceGris: 5 
+    },
+    { 
+        col: 2, 
+        celdas: [2, 6, 10], 
+        bonificacion: '6Morado', 
+        simbolo: '6', 
+        color: '#7b1fa2', 
+        tipo: 'gris', 
+        habilidadGris: 'seis', 
+        indiceGris: 4 
+    },
+    { 
+        col: 3, 
+        celdas: [3, 7, 11], 
+        bonificacion: '+1', 
+        simbolo: '+1', 
+        color: '#ffd700', 
+        tipo: 'mas1',
+        indiceGris: 2 // <--- CAMBIADO de 0 a 2
+    }
 ];
 
 // Estado
@@ -262,20 +296,18 @@ function verificarColumnasAzul() {
 }
 
 // ============================================================
-// APLICAR BONIFICACIÓN DE COLUMNA
+// APLICAR BONIFICACIÓN DE COLUMNA - CORREGIDO
 // ============================================================
 
 function aplicarBonificacionColumnaAzul(bonif) {
     switch(bonif.tipo) {
         case 'espiral':
-            if (typeof window.desbloquearEspiralExterno === 'function') {
-                window.desbloquearEspiralExterno();
-            }
+            // Desbloquear Espiral en el índice específico
+            desbloquearEnGrisAzul('espiral', bonif.indiceGris);
             break;
         case 'mas1':
-            if (typeof window.desbloquearMas1Externo === 'function') {
-                window.desbloquearMas1Externo();
-            }
+            // Desbloquear +1 en el índice específico
+            desbloquearEnGrisAzul('mas1', bonif.indiceGris);
             break;
         case 'gris':
             desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
