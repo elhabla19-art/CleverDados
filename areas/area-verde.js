@@ -1,8 +1,8 @@
 // ============================================================
-// ÁREA VERDE - CLEVERDADOS (CORREGIDO)
+// ÁREA VERDE - CLEVERDADOS (CORREGIDO - PUNTAJES ESTÁTICOS)
 // ============================================================
 
-// Puntajes visuales (se actualizan automáticamente)
+// Puntajes visuales (siempre estáticos)
 const PUNTAJES_VERDE = [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66];
 
 // Tabla interactiva (11 casillas) - UNA SOLA FILA
@@ -10,17 +10,17 @@ const TABLA_VERDE = [
     { valor: '≥1', bonus: null },
     { valor: '≥2', bonus: null },
     { valor: '≥3', bonus: null },
-    { valor: '≥4', bonus: '+1' },           // +1 índice 3
+    { valor: '≥4', bonus: '+1' },
     { valor: '≥5', bonus: null },
-    { valor: '≥1', bonus: 'XAzul' },        // ✖ índice 2
-    { valor: '≥2', bonus: 'Lobo' },         // ♦ índice 2
+    { valor: '≥1', bonus: 'XAzul' },
+    { valor: '≥2', bonus: 'Lobo' },
     { valor: '≥3', bonus: null },
-    { valor: '≥4', bonus: '6Morado' },      // 6 índice 5
-    { valor: '≥5', bonus: 'Espiral' },      // ♻ índice 3
+    { valor: '≥4', bonus: '6Morado' },
+    { valor: '≥5', bonus: 'Espiral' },
     { valor: '≥6', bonus: null }
 ];
 
-// Mapeo de bonificaciones de Verde - CORREGIDO
+// Mapeo de bonificaciones de Verde
 const BONUS_MAP = {
     '+1': { color: '#78909c', simbolo: '+1', tipo: 'mas1', indiceGris: 3 },
     'XAzul': { color: '#1e88e5', simbolo: '✖', tipo: 'x', indiceGris: 2 },
@@ -48,14 +48,13 @@ function inicializarAreaVerde() {
     
     let html = `<div class="verde-grid">`;
     
-    // --- FILA DE PUNTAJES (VISUAL) ---
+    // --- FILA DE PUNTAJES (VISUAL) - SIEMPRE ESTÁTICOS ---
     html += `<div class="verde-puntajes-fila">`;
     PUNTAJES_VERDE.forEach((puntaje, index) => {
-        const completado = index < progresoVerde;
-        const clase = completado ? 'puntaje-completado' : 'puntaje-pendiente';
+        // SIEMPRE la misma clase, sin importar el progreso
         html += `
-            <div class="puntaje-circulo ${clase}" data-index="${index}">
-                ${completado ? '✓' : puntaje}
+            <div class="puntaje-circulo" data-verde-puntaje="${index}" style="opacity:0.5;">
+                ${puntaje}
             </div>
         `;
     });
@@ -72,7 +71,8 @@ function inicializarAreaVerde() {
         
         html += `
             <div class="verde-celda-wrapper">
-                <div class="verde-cell cell ${claseMarcada}" 
+                <div class="cell ${claseMarcada}" 
+                     data-area="verde"
                      data-index="${index}"
                      onclick="manejarClickVerde(${index})">
                     ${celda.valor}
@@ -82,21 +82,18 @@ function inicializarAreaVerde() {
     });
     html += `</div>`;
     
-    // --- BONIFICACIONES DEBAJO DE CADA CASILLA ---
+    // --- BONIFICACIONES DEBAJO DE CADA CASILLA - SIEMPRE ESTÁTICAS ---
     html += `<div class="verde-bonus-fila">`;
     TABLA_VERDE.forEach((celda, index) => {
         const tieneBonus = celda.bonus !== null && BONUS_MAP[celda.bonus];
         if (tieneBonus) {
-            const bonusIdx = BONUS_INDICES.indexOf(index);
-            const completada = bonificacionesVerde[bonusIdx];
             const info = BONUS_MAP[celda.bonus];
-            const clase = completada ? 'puntaje-completado' : 'puntaje-pendiente';
             html += `
                 <div class="verde-bonus-item">
-                    <div class="verde-bonificacion-circulo puntaje-circulo ${clase}" 
-                         data-bonus-index="${bonusIdx}"
-                         style="background-color: ${info.color}; border-color: ${info.color};">
-                        ${completada ? '✓' : info.simbolo}
+                    <div class="verde-bonificacion-circulo" 
+                         data-bonus-index="${index}"
+                         style="background-color: ${info.color}; border-color: ${info.color}; opacity:0.5;">
+                        ${info.simbolo}
                     </div>
                 </div>
             `;
@@ -110,6 +107,9 @@ function inicializarAreaVerde() {
     html += `</div>`;
     
     container.innerHTML = html;
+    
+    // Aplicar estado visual inicial
+    actualizarVisuales();
 }
 
 // ============================================================
@@ -118,12 +118,14 @@ function inicializarAreaVerde() {
 
 function actualizarProgresoVerde() {
     let marcadas = 0;
-    TABLA_VERDE.forEach((celda, index) => {
-        const id = `verde-tabla-${index}`;
-        if (historialMovimientos.includes(id)) {
-            marcadas++;
-        }
-    });
+    if (typeof TABLA_VERDE !== 'undefined' && TABLA_VERDE && typeof historialMovimientos !== 'undefined') {
+        TABLA_VERDE.forEach((celda, index) => {
+            const id = `verde-tabla-${index}`;
+            if (historialMovimientos.includes(id)) {
+                marcadas++;
+            }
+        });
+    }
     progresoVerde = marcadas;
 }
 
@@ -132,7 +134,7 @@ function actualizarProgresoVerde() {
 // ============================================================
 
 function manejarClickVerde(index) {
-    // SOLO permitir clicks si estamos en modo zoom
+    // SOLO permitir clicks en modo zoom
     if (typeof enModoZoom === 'undefined' || !enModoZoom) {
         return;
     }
@@ -142,7 +144,7 @@ function manejarClickVerde(index) {
     if (historialMovimientos.includes(id)) return;
     
     if (index !== progresoVerde) {
-        const cell = document.querySelector(`.verde-cell[data-index="${index}"]`);
+        const cell = document.querySelector(`.cell[data-area="verde"][data-index="${index}"]`);
         if (cell) {
             cell.style.borderColor = '#ff4444';
             setTimeout(() => {
@@ -152,15 +154,29 @@ function manejarClickVerde(index) {
         return;
     }
     
+    // Marcar la casilla
     historialMovimientos.push(id);
     
-    // Actualizar visual en el zoom
-    actualizarVisualesZoom();
+    // Actualizar visuales
+    actualizarVisuales();
     
+    // Actualizar visuales del zoom si está abierto
+    if (typeof actualizarVisualesZoom === 'function') {
+        actualizarVisualesZoom();
+    }
+    
+    // Actualizar progreso
     actualizarProgresoVerde();
-    actualizarPuntajesVerde();
+    
+    // Verificar bonificación individual (desbloquea en gris)
     verificarBonificacionIndividual(index);
-    recalcularPuntajesVerde();
+    
+    // Recalcular puntajes
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesVerde();
+    }
     
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
@@ -168,7 +184,7 @@ function manejarClickVerde(index) {
 }
 
 // ============================================================
-// VERIFICAR BONIFICACIÓN INDIVIDUAL
+// VERIFICAR BONIFICACIÓN INDIVIDUAL - DESBLOQUEA EN GRIS
 // ============================================================
 
 function verificarBonificacionIndividual(index) {
@@ -180,26 +196,17 @@ function verificarBonificacionIndividual(index) {
     if (!celda.bonus) return;
     
     bonificacionesVerde[bonusIdx] = true;
-    
-    const circulo = document.querySelector(`.verde-bonificacion-circulo[data-bonus-index="${bonusIdx}"]`);
-    if (circulo) {
-        circulo.classList.remove('puntaje-pendiente');
-        circulo.classList.add('puntaje-completado');
-        circulo.textContent = '✓';
-    }
-    
     aplicarBonificacionVerde(celda.bonus);
 }
 
 // ============================================================
-// APLICAR BONIFICACIÓN - CORREGIDO
+// APLICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
 // ============================================================
 
 function aplicarBonificacionVerde(bonus) {
     const info = BONUS_MAP[bonus];
     if (!info) return;
     
-    // Usar el índice específico de la configuración
     const indiceGris = info.indiceGris;
     
     switch(info.tipo) {
@@ -219,7 +226,12 @@ function aplicarBonificacionVerde(bonus) {
             desbloquearEnGrisVerde('lobo', indiceGris);
             break;
     }
-    recalcularPuntajesVerde();
+    
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesVerde();
+    }
 }
 
 // ============================================================
@@ -243,25 +255,10 @@ function desbloquearEnGrisVerde(habilidadId, indice) {
 }
 
 // ============================================================
-// ACTUALIZAR PUNTAJES VISUALES
-// ============================================================
-
-function actualizarPuntajesVerde() {
-    const circulos = document.querySelectorAll('.verde-puntajes-fila .puntaje-circulo');
-    circulos.forEach((circulo, index) => {
-        const completado = index < progresoVerde;
-        circulo.classList.remove('puntaje-pendiente', 'puntaje-completado');
-        circulo.classList.add(completado ? 'puntaje-completado' : 'puntaje-pendiente');
-        circulo.textContent = completado ? '✓' : PUNTAJES_VERDE[index];
-    });
-}
-
-// ============================================================
-// RECALCULAR PUNTAJES
+// RECALCULAR PUNTAJES (FALLBACK)
 // ============================================================
 
 function recalcularPuntajesVerde() {
-    // Si existe PUNTAJES, usarlo
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         PUNTAJES.calcularTotal();
         return;
@@ -300,7 +297,7 @@ function resetAreaVerde() {
     progresoVerde = 0;
     bonificacionesVerde = [false, false, false, false, false];
     
-    document.querySelectorAll('.verde-cell').forEach(cell => {
+    document.querySelectorAll('.cell[data-area="verde"]').forEach(cell => {
         cell.classList.remove('marcada');
         cell.style.borderColor = '';
     });
@@ -315,3 +312,4 @@ function resetAreaVerde() {
 window.inicializarAreaVerde = inicializarAreaVerde;
 window.resetAreaVerde = resetAreaVerde;
 window.recalcularPuntajesVerde = recalcularPuntajesVerde;
+window.manejarClickVerde = manejarClickVerde;
