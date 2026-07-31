@@ -2,9 +2,8 @@
 // LEADERBOARD.JS - CLEVERDADOS (CORREGIDO)
 // ============================================================
 
-// Colores de las áreas para los tags
+// Colores de las áreas para los dots
 const COLORES_AREA = {
-    gris: '#78909c',
     amarilla: '#fdd835',
     azul: '#1e88e5',
     verde: '#43a047',
@@ -12,32 +11,28 @@ const COLORES_AREA = {
     morado: '#7b1fa2'
 };
 
-// Nombres de las áreas para mostrar
-const NOMBRES_AREA = {
-    gris: 'Gris',
-    amarilla: 'Amarilla',
-    azul: 'Azul',
-    verde: 'Verde',
-    naranja: 'Naranja',
-    morado: 'Morado'
-};
-
 // ============================================================
-// GENERAR MINIATURA DE ÁREA AMARILLA
+// GENERAR MINIATURA AMARILLA ZOOM
 // ============================================================
-function generarMiniaturaAmarilla(marcas) {
+function generarMiniaturaAmarillaZoom(marcas) {
     const filas = 4;
-    const columnas = 5;
-    let html = '<div class="mini-area mini-amarilla">';
+    const columnas = 4;
+    let html = '<div class="zoom-area zoom-amarilla">';
     
     for (let f = 0; f < filas; f++) {
-        html += '<div class="mini-fila">';
+        html += '<div class="zoom-fila">';
         for (let c = 0; c < columnas; c++) {
             const id = `amarilla-${f}-${c}`;
             const estaMarcada = marcas.includes(id);
             const esX = f === 0 && c === 3 || f === 1 && c === 2 || f === 2 && c === 1 || f === 3 && c === 0;
-            const clase = estaMarcada ? 'mini-cell marcada' : (esX ? 'mini-cell pre-marcada' : 'mini-cell');
-            html += `<div class="${clase}"></div>`;
+            
+            let valor = '';
+            if (AMARILLA_CONFIG && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[f]) {
+                valor = AMARILLA_CONFIG.filas[f].numeros[c] || '';
+            }
+            
+            const clase = estaMarcada ? 'zoom-cell marcada' : (esX ? 'zoom-cell pre-marcada' : 'zoom-cell');
+            html += `<div class="${clase}">${valor}</div>`;
         }
         html += '</div>';
     }
@@ -46,22 +41,23 @@ function generarMiniaturaAmarilla(marcas) {
 }
 
 // ============================================================
-// GENERAR MINIATURA DE ÁREA AZUL
+// GENERAR MINIATURA AZUL ZOOM
 // ============================================================
-function generarMiniaturaAzul(marcas) {
+function generarMiniaturaAzulZoom(marcas) {
     const filas = 3;
     const columnas = 4;
-    let html = '<div class="mini-area mini-azul">';
+    let html = '<div class="zoom-area zoom-azul">';
     
     for (let f = 0; f < filas; f++) {
-        html += '<div class="mini-fila">';
+        html += '<div class="zoom-fila">';
         for (let c = 0; c < columnas; c++) {
             const index = f * 4 + c;
             const id = `azul-tabla-${index}`;
             const estaMarcada = marcas.includes(id);
             const esVacio = (f === 0 && c === 0);
-            const clase = estaMarcada ? 'mini-cell marcada' : (esVacio ? 'mini-cell vacia' : 'mini-cell');
-            html += `<div class="${clase}"></div>`;
+            const clase = estaMarcada ? 'zoom-cell marcada' : (esVacio ? 'zoom-cell vacia' : 'zoom-cell');
+            const texto = esVacio ? '' : (TABLA_AZUL && TABLA_AZUL[index] ? TABLA_AZUL[index].valor : '');
+            html += `<div class="${clase}">${texto}</div>`;
         }
         html += '</div>';
     }
@@ -70,18 +66,19 @@ function generarMiniaturaAzul(marcas) {
 }
 
 // ============================================================
-// GENERAR MINIATURA DE ÁREA VERDE
+// GENERAR MINIATURA VERDE ZOOM
 // ============================================================
-function generarMiniaturaVerde(marcas) {
+function generarMiniaturaVerdeZoom(marcas) {
     const total = 11;
-    let html = '<div class="mini-area mini-verde">';
-    html += '<div class="mini-fila">';
+    let html = '<div class="zoom-area zoom-verde">';
+    html += '<div class="zoom-fila">';
     
     for (let i = 0; i < total; i++) {
         const id = `verde-tabla-${i}`;
         const estaMarcada = marcas.includes(id);
-        const clase = estaMarcada ? 'mini-cell marcada' : 'mini-cell';
-        html += `<div class="${clase}"></div>`;
+        const clase = estaMarcada ? 'zoom-cell marcada' : 'zoom-cell';
+        const texto = TABLA_VERDE && TABLA_VERDE[i] ? TABLA_VERDE[i].valor : '';
+        html += `<div class="${clase}">${texto}</div>`;
     }
     
     html += '</div>';
@@ -90,20 +87,21 @@ function generarMiniaturaVerde(marcas) {
 }
 
 // ============================================================
-// GENERAR MINIATURA DE ÁREA NARANJA
+// GENERAR MINIATURA NARANJA ZOOM
 // ============================================================
-function generarMiniaturaNaranja(marcas, valores) {
+function generarMiniaturaNaranjaZoom(marcas, valores) {
     const total = 11;
-    let html = '<div class="mini-area mini-naranja">';
-    html += '<div class="mini-fila">';
+    let html = '<div class="zoom-area zoom-naranja">';
+    html += '<div class="zoom-fila">';
     
     for (let i = 0; i < total; i++) {
         const id = `naranja-${i}`;
         const estaMarcada = marcas.includes(id);
         const valor = valores && valores[i] ? valores[i] : '';
         const esMultiplicador = typeof NARANJA_CONFIG !== 'undefined' && NARANJA_CONFIG[i] && NARANJA_CONFIG[i].multiplicador > 1;
-        const clase = estaMarcada ? 'mini-cell marcada' : (esMultiplicador ? 'mini-cell multiplicador' : 'mini-cell');
-        html += `<div class="${clase}">${estaMarcada ? valor : ''}</div>`;
+        const clase = estaMarcada ? 'zoom-cell marcada' : (esMultiplicador ? 'zoom-cell multiplicador' : 'zoom-cell');
+        const texto = estaMarcada ? valor : (NARANJA_CONFIG && NARANJA_CONFIG[i] ? NARANJA_CONFIG[i].valor || '' : '');
+        html += `<div class="${clase}">${texto}</div>`;
     }
     
     html += '</div>';
@@ -112,19 +110,20 @@ function generarMiniaturaNaranja(marcas, valores) {
 }
 
 // ============================================================
-// GENERAR MINIATURA DE ÁREA MORADO
+// GENERAR MINIATURA MORADO ZOOM
 // ============================================================
-function generarMiniaturaMorado(marcas, valores) {
+function generarMiniaturaMoradoZoom(marcas, valores) {
     const total = 11;
-    let html = '<div class="mini-area mini-morado">';
-    html += '<div class="mini-fila">';
+    let html = '<div class="zoom-area zoom-morado">';
+    html += '<div class="zoom-fila">';
     
     for (let i = 0; i < total; i++) {
         const id = `morado-${i}`;
         const estaMarcada = marcas.includes(id);
         const valor = valores && valores[i] ? valores[i] : '';
-        const clase = estaMarcada ? 'mini-cell marcada' : 'mini-cell';
-        html += `<div class="${clase}">${estaMarcada ? valor : ''}</div>`;
+        const clase = estaMarcada ? 'zoom-cell marcada' : 'zoom-cell';
+        const texto = estaMarcada ? valor : '';
+        html += `<div class="${clase}">${texto}</div>`;
     }
     
     html += '</div>';
@@ -133,112 +132,132 @@ function generarMiniaturaMorado(marcas, valores) {
 }
 
 // ============================================================
-// GENERAR MINIATURA DE ÁREA GRIS
+// MOSTRAR ZOOM DE ÁREA
 // ============================================================
-function generarMiniaturaGris(marcas) {
-    let html = '<div class="mini-area mini-gris">';
+function mostrarAreaZoom(area, marcasJSON, valoresNaranjaJSON, valoresMoradoJSON) {
+    const marcas = JSON.parse(marcasJSON);
+    const valoresNaranja = valoresNaranjaJSON !== 'null' ? JSON.parse(valoresNaranjaJSON) : null;
+    const valoresMorado = valoresMoradoJSON !== 'null' ? JSON.parse(valoresMoradoJSON) : null;
     
-    // Turnos
-    html += '<div class="mini-fila mini-turnos">';
-    for (let i = 0; i < 6; i++) {
-        const id = `gris-turno-${i}`;
-        const estaMarcada = marcas.includes(id);
-        const clase = estaMarcada ? 'mini-cell marcada' : 'mini-cell';
-        html += `<div class="${clase}">${i + 1}</div>`;
+    let html = '';
+    let color = '';
+    
+    switch(area) {
+        case 'amarilla':
+            color = '#fdd835';
+            html = generarMiniaturaAmarillaZoom(marcas);
+            break;
+        case 'azul':
+            color = '#1e88e5';
+            html = generarMiniaturaAzulZoom(marcas);
+            break;
+        case 'verde':
+            color = '#43a047';
+            html = generarMiniaturaVerdeZoom(marcas);
+            break;
+        case 'naranja':
+            color = '#ff6f00';
+            html = generarMiniaturaNaranjaZoom(marcas, valoresNaranja);
+            break;
+        case 'morado':
+            color = '#7b1fa2';
+            html = generarMiniaturaMoradoZoom(marcas, valoresMorado);
+            break;
+        case 'rojo':
+            color = '#ff4444';
+            html = `
+                <div class="zoom-areas-container">
+                    <div class="zoom-area-group">
+                        <div class="zoom-area-label" style="color: #43a047;">🟩 Verde</div>
+                        ${generarMiniaturaVerdeZoom(marcas)}
+                    </div>
+                    <div class="zoom-area-group">
+                        <div class="zoom-area-label" style="color: #ff6f00;">🟧 Naranja</div>
+                        ${generarMiniaturaNaranjaZoom(marcas, valoresNaranja)}
+                    </div>
+                    <div class="zoom-area-group">
+                        <div class="zoom-area-label" style="color: #7b1fa2;">🟪 Morado</div>
+                        ${generarMiniaturaMoradoZoom(marcas, valoresMorado)}
+                    </div>
+                </div>
+            `;
+            break;
     }
-    html += '</div>';
     
-    // Habilidades
-    html += '<div class="mini-fila mini-habilidades">';
-    const habilidades = ['espiral', 'mas1', 'dados1', 'x', 'seis', 'dados2'];
-    habilidades.forEach(habilidad => {
-        const encontrada = marcas.some(m => m.startsWith(`gris-${habilidad}-`));
-        const clase = encontrada ? 'mini-cell marcada' : 'mini-cell';
-        html += `<div class="${clase}"></div>`;
-    });
-    html += '</div>';
-    
-    html += '</div>';
-    return html;
-}
-
-// ============================================================
-// GENERAR MINIATURA COMPLETA DE UN JUGADOR
-// ============================================================
-function generarMiniaturasJugador(movimientos, valoresNaranja, valoresMorado) {
-    const marcas = movimientos || [];
-    
-    return `
-        <div class="miniaturas-container">
-            <div class="mini-wrapper">
-                <span class="mini-label">Amarilla</span>
-                ${generarMiniaturaAmarilla(marcas)}
+    const overlay = document.createElement('div');
+    overlay.className = 'zoom-overlay';
+    overlay.innerHTML = `
+        <div class="zoom-modal" style="border-color: ${color};">
+            <div class="zoom-header">
+                <div></div>
+                <button class="zoom-close" onclick="cerrarZoom()">✕</button>
             </div>
-            <div class="mini-wrapper">
-                <span class="mini-label">Azul</span>
-                ${generarMiniaturaAzul(marcas)}
-            </div>
-            <div class="mini-wrapper">
-                <span class="mini-label">Verde</span>
-                ${generarMiniaturaVerde(marcas)}
-            </div>
-            <div class="mini-wrapper">
-                <span class="mini-label">Naranja</span>
-                ${generarMiniaturaNaranja(marcas, valoresNaranja)}
-            </div>
-            <div class="mini-wrapper">
-                <span class="mini-label">Morado</span>
-                ${generarMiniaturaMorado(marcas, valoresMorado)}
-            </div>
-            <div class="mini-wrapper">
-                <span class="mini-label">Gris</span>
-                ${generarMiniaturaGris(marcas)}
+            <div class="zoom-body">
+                ${html}
             </div>
         </div>
     `;
+    document.body.appendChild(overlay);
 }
 
 // ============================================================
-// GENERAR TAGS DE PUNTAJES POR ÁREA - CORREGIDO
+// CERRAR ZOOM
 // ============================================================
-function generarTagsPuntajes(puntajesPorArea) {
-    const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
+function cerrarZoom() {
+    const overlay = document.querySelector('.zoom-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+// ============================================================
+// GENERAR TAGS DE PUNTAJES POR ÁREA - SIN GRIS
+// ============================================================
+function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valoresMorado) {
+    // SOLO 5 áreas (excluyendo Gris)
+    const areas = [
+        { id: 'amarilla', color: '#fdd835', label: '🟨' },
+        { id: 'azul', color: '#1e88e5', label: '🟦' },
+        { id: 'verde', color: '#43a047', label: '🟩' },
+        { id: 'naranja', color: '#ff6f00', label: '🟧' },
+        { id: 'morado', color: '#7b1fa2', label: '🟪' }
+    ];
+    
     let html = '<div class="puntajes-tags">';
     
     areas.forEach(area => {
-        // Usar puntajesPorArea que viene del jugador
         let puntos = 0;
-        if (puntajesPorArea && puntajesPorArea[area] !== undefined) {
-            puntos = puntajesPorArea[area];
+        if (puntajesPorArea && puntajesPorArea[area.id] !== undefined) {
+            puntos = puntajesPorArea[area.id];
         }
-        const color = COLORES_AREA[area];
-        const nombre = NOMBRES_AREA[area];
+        const color = area.color;
+        
+        // Para el área roja (verde+naranja+morado)
+        let areaId = area.id;
+        if (area.id === 'verde' || area.id === 'naranja' || area.id === 'morado') {
+            areaId = 'rojo';
+        }
+        
+        const marcasJSON = JSON.stringify(movimientos || []);
+        const valoresNaranjaJSON = JSON.stringify(valoresNaranja || null);
+        const valoresMoradoJSON = JSON.stringify(valoresMorado || null);
+        
         html += `
-            <span class="puntaje-tag" style="border-color: ${color}">
+            <span class="puntaje-tag" 
+                  style="border-color: ${color}; cursor: pointer;"
+                  onclick="mostrarAreaZoom('${areaId}', '${marcasJSON}', '${valoresNaranjaJSON}', '${valoresMoradoJSON}')">
                 <span class="tag-dot" style="background: ${color}"></span>
-                ${nombre}: ${puntos}pts
+                ${puntos}pts
             </span>
         `;
     });
     
-    // Bonus
-    let bonus = 0;
-    if (puntajesPorArea && puntajesPorArea.bonificacion !== undefined) {
-        bonus = puntajesPorArea.bonificacion;
-    }
-    html += `
-        <span class="puntaje-tag bonus-tag" style="border-color: #ffd700">
-            <span class="tag-dot" style="background: #ffd700">⭐</span>
-            Bonus: ${bonus}pts
-        </span>
-    `;
-    
     html += '</div>';
     return html;
 }
 
 // ============================================================
-// RENDERIZAR LEADERBOARD COMPLETO - CORREGIDO
+// RENDERIZAR LEADERBOARD COMPLETO
 // ============================================================
 function renderizarLeaderboard() {
     const list = document.getElementById('playersList');
@@ -246,13 +265,11 @@ function renderizarLeaderboard() {
     
     list.innerHTML = '';
     
-    // Verificar si datosJugadores existe
     if (typeof datosJugadores === 'undefined' || !datosJugadores || Object.keys(datosJugadores).length === 0) {
         list.innerHTML = '<div class="no-players">Esperando jugadores...</div>';
         return;
     }
     
-    // Obtener jugadores
     const jugadores = Object.keys(datosJugadores).map(id => ({
         id: id,
         ...datosJugadores[id]
@@ -267,44 +284,34 @@ function renderizarLeaderboard() {
         const soyYo = j.id === miId;
         const movimientos = j.movimientos || [];
         
-        // OBTENER PUNTAJES POR ÁREA DEL JUGADOR
         let puntajesPorArea = j.puntajesPorArea || null;
         
-        // Si no tiene puntajesPorArea, crear uno con el puntaje total
         if (!puntajesPorArea) {
             puntajesPorArea = {
-                gris: 0,
                 amarilla: 0,
                 azul: 0,
                 verde: 0,
                 naranja: 0,
                 morado: 0,
-                bonificacion: 0,
                 total: j.puntaje || 0
             };
         }
         
-        // Asegurar que el total coincida con j.puntaje
-        // Si el total en puntajesPorArea es diferente, usar j.puntaje
         if (j.puntaje !== undefined && j.puntaje !== null) {
             puntajesPorArea.total = j.puntaje;
         }
         
-        // Medalla para top 3
         let medalla = '';
         if (index === 0) medalla = '🥇';
         else if (index === 1) medalla = '🥈';
         else if (index === 2) medalla = '🥉';
         
-        // Miniaturas del jugador
-        const miniaturas = generarMiniaturasJugador(
+        const tags = generarTagsPuntajes(
+            puntajesPorArea, 
             movimientos,
             j.valoresNaranja || null,
             j.valoresMorado || null
         );
-        
-        // Tags de puntajes
-        const tags = generarTagsPuntajes(puntajesPorArea);
         
         const card = document.createElement('div');
         card.className = `player-card ${soyYo ? 'me' : ''}`;
@@ -318,7 +325,6 @@ function renderizarLeaderboard() {
                     🏆 ${puntajesPorArea.total || 0} pts
                 </div>
             </div>
-            ${miniaturas}
             ${tags}
         `;
         
@@ -334,11 +340,11 @@ function actualizarLeaderboard() {
 }
 
 // ============================================================
-// ESTILOS CSS PARA MINIATURAS
+// ESTILOS CSS
 // ============================================================
 const LEADERBOARD_STYLES = `
 /* ============================================================
-   LEADERBOARD - MINIATURAS
+   LEADERBOARD
    ============================================================ */
 
 .leaderboard {
@@ -378,7 +384,7 @@ const LEADERBOARD_STYLES = `
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .player-name {
@@ -394,126 +400,202 @@ const LEADERBOARD_STYLES = `
 }
 
 /* ============================================================
-   MINIATURAS DE ÁREAS
-   ============================================================ */
-
-.miniaturas-container {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 4px;
-    margin-bottom: 8px;
-}
-
-.mini-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.mini-label {
-    font-size: 0.45rem;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 0.3px;
-}
-
-.mini-area {
-    background: var(--bg-main);
-    border-radius: 3px;
-    padding: 2px;
-    border: 1px solid var(--border-color);
-    width: 100%;
-    max-width: 80px;
-    overflow: hidden;
-}
-
-.mini-fila {
-    display: flex;
-    gap: 1px;
-    justify-content: center;
-}
-
-.mini-cell {
-    width: 7px;
-    height: 7px;
-    background: var(--bg-cell);
-    border-radius: 1px;
-    font-size: 0.3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: transparent;
-    transition: all 0.1s;
-}
-
-.mini-cell.marcada {
-    background: #4caf50;
-    color: #4caf50;
-}
-
-.mini-cell.pre-marcada {
-    background: rgba(255, 0, 0, 0.15);
-}
-
-.mini-cell.vacia {
-    opacity: 0.2;
-}
-
-.mini-cell.multiplicador {
-    border: 1px solid #ffd700;
-}
-
-/* Gris - turnos especiales */
-.mini-turnos .mini-cell {
-    width: 9px;
-    height: 9px;
-    font-size: 0.35rem;
-    color: var(--text-muted);
-}
-
-.mini-turnos .mini-cell.marcada {
-    color: #4caf50;
-}
-
-.mini-habilidades .mini-cell {
-    width: 9px;
-    height: 9px;
-}
-
-/* ============================================================
-   TAGS DE PUNTAJES
+   TAGS DE PUNTAJES - CLICKABLES PARA ZOOM
    ============================================================ */
 
 .puntajes-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 3px;
+    gap: 4px;
     margin-top: 4px;
 }
 
 .puntaje-tag {
-    font-size: 0.55rem;
-    padding: 1px 6px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
+    font-size: 0.6rem;
+    padding: 3px 10px 3px 6px;
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
     background: var(--bg-main);
     color: var(--text-muted);
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
+    font-weight: bold;
+    transition: all 0.15s;
+    cursor: pointer;
+    user-select: none;
+}
+
+.puntaje-tag:hover {
+    transform: scale(1.08);
+    background: var(--bg-box);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 
 .tag-dot {
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     display: inline-block;
+    flex-shrink: 0;
 }
 
-.puntaje-tag.bonus-tag {
+/* ============================================================
+   ZOOM MODAL
+   ============================================================ */
+
+.zoom-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.92);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: zoomFadeIn 0.25s ease;
+}
+
+@keyframes zoomFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.zoom-modal {
+    background: var(--bg-panel);
+    border-radius: 16px;
+    padding: 20px 24px 24px 24px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+}
+
+.zoom-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.zoom-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0 8px;
+    transition: color 0.15s;
+    line-height: 1;
+}
+
+.zoom-close:hover {
+    color: #fff;
+}
+
+.zoom-body {
+    display: flex;
+    justify-content: center;
+}
+
+/* Zoom Áreas */
+.zoom-area {
+    background: var(--bg-main);
+    border-radius: 8px;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+}
+
+.zoom-fila {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.zoom-fila:last-child {
+    margin-bottom: 0;
+}
+
+.zoom-cell {
+    width: 45px;
+    height: 45px;
+    background: var(--bg-cell);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--text-main);
+    border: 1px solid transparent;
+}
+
+.zoom-cell.marcada {
+    background: var(--bg-box);
+    color: #4caf50 !important;
+    border-color: rgba(255,255,255,0.3);
+    position: relative;
+}
+
+.zoom-cell.marcada::after {
+    content: "✓";
+    position: absolute;
+    font-size: 1.2rem;
+    color: #4caf50;
+}
+
+.zoom-cell.pre-marcada {
+    background: rgba(255, 0, 0, 0.12);
+    color: var(--text-muted);
+}
+
+.zoom-cell.vacia {
+    opacity: 0.2;
+}
+
+.zoom-cell.multiplicador {
     border-color: #ffd700;
     color: #ffd700;
+}
+
+/* Zoom Áreas específicas */
+.zoom-amarilla .zoom-cell { min-width: 50px; }
+.zoom-azul .zoom-cell { min-width: 50px; }
+.zoom-verde .zoom-cell { min-width: 38px; height: 38px; font-size: 0.7rem; }
+.zoom-naranja .zoom-cell { min-width: 38px; height: 38px; font-size: 0.7rem; }
+.zoom-morado .zoom-cell { min-width: 38px; height: 38px; font-size: 0.7rem; }
+
+/* Zoom áreas contenedor para Rojo */
+.zoom-areas-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.zoom-area-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.zoom-area-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: bold;
 }
 
 /* ============================================================
@@ -521,90 +603,56 @@ const LEADERBOARD_STYLES = `
    ============================================================ */
 
 @media (max-width: 768px) {
-    .miniaturas-container {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
+    .zoom-cell {
+        width: 32px;
+        height: 32px;
+        font-size: 0.6rem;
     }
     
-    .mini-area {
-        max-width: 60px;
-    }
+    .zoom-amarilla .zoom-cell { min-width: 35px; }
+    .zoom-azul .zoom-cell { min-width: 35px; }
+    .zoom-verde .zoom-cell { min-width: 28px; height: 28px; font-size: 0.55rem; }
+    .zoom-naranja .zoom-cell { min-width: 28px; height: 28px; font-size: 0.55rem; }
+    .zoom-morado .zoom-cell { min-width: 28px; height: 28px; font-size: 0.55rem; }
     
-    .mini-cell {
-        width: 6px;
-        height: 6px;
-    }
-    
-    .mini-turnos .mini-cell {
-        width: 7px;
-        height: 7px;
-    }
-    
-    .mini-habilidades .mini-cell {
-        width: 7px;
-        height: 7px;
-    }
-    
-    .puntaje-tag {
-        font-size: 0.45rem;
-        padding: 1px 4px;
+    .zoom-modal {
+        padding: 16px;
+        max-width: 95%;
     }
 }
 
 @media (max-width: 480px) {
-    .miniaturas-container {
-        grid-template-columns: repeat(2, 1fr);
+    .zoom-cell {
+        width: 28px;
+        height: 28px;
+        font-size: 0.5rem;
     }
     
-    .mini-area {
-        max-width: 50px;
-    }
+    .zoom-amarilla .zoom-cell { min-width: 30px; }
+    .zoom-azul .zoom-cell { min-width: 30px; }
+    .zoom-verde .zoom-cell { min-width: 24px; height: 24px; font-size: 0.45rem; }
+    .zoom-naranja .zoom-cell { min-width: 24px; height: 24px; font-size: 0.45rem; }
+    .zoom-morado .zoom-cell { min-width: 24px; height: 24px; font-size: 0.45rem; }
     
-    .mini-cell {
-        width: 5px;
-        height: 5px;
-    }
-    
-    .mini-turnos .mini-cell {
-        width: 6px;
-        height: 6px;
-    }
-    
-    .mini-habilidades .mini-cell {
-        width: 6px;
-        height: 6px;
-    }
-    
-    .puntaje-tag {
-        font-size: 0.4rem;
-        padding: 1px 3px;
+    .zoom-modal {
+        padding: 12px;
+        max-width: 98%;
     }
 }
 
 /* Landscape */
 @media (orientation: landscape) and (max-height: 700px) {
-    .miniaturas-container {
-        grid-template-columns: repeat(6, 1fr);
-        gap: 2px;
+    .zoom-cell {
+        width: 24px;
+        height: 24px;
+        font-size: 0.45rem;
     }
     
-    .mini-area {
-        max-width: 55px;
-    }
-    
-    .mini-cell {
-        width: 5px;
-        height: 5px;
-    }
-    
-    .puntajes-tags {
-        gap: 2px;
-    }
-    
-    .puntaje-tag {
-        font-size: 0.4rem;
-        padding: 1px 3px;
-    }
+    .zoom-amarilla .zoom-cell { min-width: 26px; }
+    .zoom-azul .zoom-cell { min-width: 26px; }
+    .zoom-verde .zoom-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
+    .zoom-naranja .zoom-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
+    .zoom-morado .zoom-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
 }
 `;
 
@@ -623,4 +671,5 @@ const LEADERBOARD_STYLES = `
 
 window.renderizarLeaderboard = renderizarLeaderboard;
 window.actualizarLeaderboard = actualizarLeaderboard;
-window.generarMiniaturasJugador = generarMiniaturasJugador;
+window.mostrarAreaZoom = mostrarAreaZoom;
+window.cerrarZoom = cerrarZoom;
