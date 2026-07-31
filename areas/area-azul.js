@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA AZUL - CLEVERDADOS (CORREGIDO - PUNTOS PROGRESIVOS)
+// ÁREA AZUL - CLEVERDADOS (CORREGIDO - PUNTAJES ESTÁTICOS)
 // ============================================================
 
 // Puntajes visuales (se actualizan automáticamente)
@@ -7,7 +7,7 @@ const PUNTAJES_AZUL = [1, 2, 4, 7, 11, 16, 22, 29, 37, 46, 56];
 
 // Tabla interactiva (11 casillas)
 const TABLA_AZUL = [
-    { fila: 0, col: 0, valor: '', esX: false },  // VACÍA (no se cuenta)
+    { fila: 0, col: 0, valor: '', esX: false },
     { fila: 0, col: 1, valor: 2, esX: false },
     { fila: 0, col: 2, valor: 3, esX: false },
     { fila: 0, col: 3, valor: 4, esX: false },
@@ -30,44 +30,10 @@ const BONIFICACIONES_FILA = [
 
 // Bonificaciones de columna
 const BONIFICACIONES_COLUMNA = [
-    { 
-        col: 0, 
-        celdas: [0, 4, 8], 
-        bonificacion: 'Espiral', 
-        simbolo: '♻', 
-        color: '#78909c', 
-        tipo: 'espiral',
-        indiceGris: 2
-    },
-    { 
-        col: 1, 
-        celdas: [1, 5, 9], 
-        bonificacion: 'XVerde', 
-        simbolo: '✖', 
-        color: '#43a047', 
-        tipo: 'gris', 
-        habilidadGris: 'x', 
-        indiceGris: 5 
-    },
-    { 
-        col: 2, 
-        celdas: [2, 6, 10], 
-        bonificacion: '6Morado', 
-        simbolo: '6', 
-        color: '#7b1fa2', 
-        tipo: 'gris', 
-        habilidadGris: 'seis', 
-        indiceGris: 4 
-    },
-    { 
-        col: 3, 
-        celdas: [3, 7, 11], 
-        bonificacion: '+1', 
-        simbolo: '+1', 
-        color: '#78909c', 
-        tipo: 'mas1',
-        indiceGris: 2
-    }
+    { col: 0, celdas: [0, 4, 8], bonificacion: 'Espiral', simbolo: '♻', color: '#78909c', tipo: 'espiral', indiceGris: 2 },
+    { col: 1, celdas: [1, 5, 9], bonificacion: 'XVerde', simbolo: '✖', color: '#43a047', tipo: 'gris', habilidadGris: 'x', indiceGris: 5 },
+    { col: 2, celdas: [2, 6, 10], bonificacion: '6Morado', simbolo: '6', color: '#7b1fa2', tipo: 'gris', habilidadGris: 'seis', indiceGris: 4 },
+    { col: 3, celdas: [3, 7, 11], bonificacion: '+1', simbolo: '+1', color: '#78909c', tipo: 'mas1', indiceGris: 2 }
 ];
 
 // Estado
@@ -87,14 +53,13 @@ function inicializarAreaAzul() {
     
     let html = `<div class="azul-grid">`;
     
-    // --- FILA DE PUNTAJES (VISUAL) ---
+    // --- FILA DE PUNTAJES (VISUAL) - SIEMPRE ESTÁTICOS ---
     html += `<div class="azul-puntajes-fila">`;
     PUNTAJES_AZUL.forEach((puntaje, index) => {
-        const completado = index < progresoAzul;
-        const clase = completado ? 'puntaje-completado' : 'puntaje-pendiente';
+        // SIEMPRE la misma clase, sin importar el progreso
         html += `
-            <div class="puntaje-circulo ${clase}" data-index="${index}">
-                ${completado ? '✓' : puntaje}
+            <div class="puntaje-circulo" data-azul-puntaje="${index}" style="opacity:0.5;">
+                ${puntaje}
             </div>
         `;
     });
@@ -130,33 +95,28 @@ function inicializarAreaAzul() {
             `;
         }
         
-        // Bonificación de fila (5ª columna)
+        // Bonificación de fila (5ª columna) - SIEMPRE ESTÁTICA
         const bonifConfig = BONIFICACIONES_FILA[fila];
-        const bonifDesbloqueada = filasCompletadasAzul[fila];
-        const clase = bonifDesbloqueada ? 'puntaje-completado' : 'puntaje-pendiente';
-        
         html += `
-            <div class="azul-bonificacion-circulo puntaje-circulo ${clase}" 
+            <div class="azul-bonificacion-circulo" 
                  data-azul-fila="${fila}"
                  data-bonificacion="${bonifConfig.bonificacion}"
-                 style="background-color: ${bonifConfig.color}; border-color: ${bonifConfig.color};">
-                ${bonifDesbloqueada ? '✓' : bonifConfig.simbolo}
+                 style="background-color: ${bonifConfig.color}; border-color: ${bonifConfig.color}; opacity:0.5;">
+                ${bonifConfig.simbolo}
             </div>
         `;
         
         html += `</div>`;
     }
     
-    // --- BONIFICACIONES DE COLUMNA ---
+    // --- BONIFICACIONES DE COLUMNA - SIEMPRE ESTÁTICAS ---
     html += `<div class="azul-columnas">`;
     BONIFICACIONES_COLUMNA.forEach((bonif, colIndex) => {
-        const completada = columnasCompletadasAzul[colIndex];
-        const clase = completada ? 'puntaje-completado' : 'puntaje-pendiente';
         html += `
-            <div class="azul-columna-circulo puntaje-circulo ${clase}" 
+            <div class="azul-columna-circulo" 
                  data-azul-columna="${colIndex}"
-                 style="background-color: ${bonif.color}; border-color: ${bonif.color};">
-                ${completada ? '✓' : bonif.simbolo}
+                 style="background-color: ${bonif.color}; border-color: ${bonif.color}; opacity:0.5;">
+                ${bonif.simbolo}
             </div>
         `;
     });
@@ -167,6 +127,9 @@ function inicializarAreaAzul() {
     
     // Sincronizar el progreso global
     window.progresoAzul = progresoAzul;
+    
+    // Actualizar visuales de las celdas
+    actualizarVisuales();
 }
 
 // ============================================================
@@ -175,21 +138,60 @@ function inicializarAreaAzul() {
 
 function actualizarProgresoAzul() {
     let marcadas = 0;
-    TABLA_AZUL.forEach((celda, index) => {
-        // SOLO contar si la celda tiene valor (no es vacía)
-        if (celda.valor !== '') {
-            const id = `azul-tabla-${index}`;
-            if (historialMovimientos.includes(id)) {
-                marcadas++;
+    if (typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL && typeof historialMovimientos !== 'undefined') {
+        TABLA_AZUL.forEach((celda, index) => {
+            if (celda.valor !== '') {
+                const id = `azul-tabla-${index}`;
+                if (historialMovimientos.includes(id)) {
+                    marcadas++;
+                }
             }
-        }
-    });
+        });
+    }
     progresoAzul = marcadas;
-    
-    // ACTUALIZAR LA VARIABLE GLOBAL para que PUNTAJES la vea
     window.progresoAzul = marcadas;
+}
+
+// ============================================================
+// MARCAR CASILLA AZUL
+// ============================================================
+
+function marcarAzul(index) {
+    const celda = TABLA_AZUL[index];
+    if (!celda || celda.valor === '') return;
     
-    console.log(`Área Azul - Casillas marcadas: ${progresoAzul}`);
+    const id = `azul-tabla-${index}`;
+    if (historialMovimientos.includes(id)) return;
+    
+    // Marcar
+    historialMovimientos.push(id);
+    
+    // Actualizar progreso
+    actualizarProgresoAzul();
+    
+    // Verificar bonificaciones (desbloquean en gris)
+    verificarFilasAzul();
+    verificarColumnasAzul();
+    
+    // Actualizar visuales del tablero principal
+    actualizarVisuales();
+    
+    // Actualizar visuales del zoom si está abierto
+    if (typeof actualizarVisualesZoom === 'function') {
+        actualizarVisualesZoom();
+    }
+    
+    // Recalcular puntajes
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesAzul();
+    }
+    
+    // Sincronizar
+    if (typeof broadcastPuntaje === 'function') {
+        broadcastPuntaje('sync');
+    }
 }
 
 // ============================================================
@@ -197,60 +199,22 @@ function actualizarProgresoAzul() {
 // ============================================================
 
 function manejarClickAzul(index) {
+    // SOLO permitir clicks en modo zoom
+    if (typeof enModoZoom === 'undefined' || !enModoZoom) {
+        return;
+    }
+    
     const celda = TABLA_AZUL[index];
     if (!celda || celda.valor === '') return;
     
     const id = `azul-tabla-${index}`;
     if (historialMovimientos.includes(id)) return;
     
-    // Marcar la celda
-    historialMovimientos.push(id);
-    
-    const cell = document.querySelector(`[data-area="azul"][data-index="${index}"]`);
-    if (cell) {
-        cell.classList.add('marcada');
-    }
-    
-    // Actualizar progreso (cuenta las casillas marcadas)
-    actualizarProgresoAzul();
-    
-    // Actualizar puntajes visuales
-    actualizarPuntajesAzul();
-    
-    // Verificar bonificaciones de filas y columnas
-    verificarFilasAzul();
-    verificarColumnasAzul();
-    
-    // RECALCULAR PUNTAJES USANDO EL SISTEMA DE PUNTAJES
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    } else {
-        recalcularPuntajesAzul();
-    }
-    
-    actualizarVisuales();
-    
-    if (typeof broadcastPuntaje === 'function') {
-        broadcastPuntaje('sync');
-    }
+    marcarAzul(index);
 }
 
 // ============================================================
-// ACTUALIZAR PUNTAJES VISUALES (solo los círculos de la fila)
-// ============================================================
-
-function actualizarPuntajesAzul() {
-    const circulos = document.querySelectorAll('.azul-puntajes-fila .puntaje-circulo');
-    circulos.forEach((circulo, index) => {
-        const completado = index < progresoAzul;
-        circulo.classList.remove('puntaje-pendiente', 'puntaje-completado');
-        circulo.classList.add(completado ? 'puntaje-completado' : 'puntaje-pendiente');
-        circulo.textContent = completado ? '✓' : PUNTAJES_AZUL[index];
-    });
-}
-
-// ============================================================
-// VERIFICAR FILAS
+// VERIFICAR FILAS - DESBLOQUEA EN GRIS
 // ============================================================
 
 function verificarFilasAzul() {
@@ -267,21 +231,13 @@ function verificarFilasAzul() {
         
         if (todasMarcadas) {
             filasCompletadasAzul[filaIndex] = true;
-            
-            const circulo = document.querySelector(`.azul-bonificacion-circulo[data-azul-fila="${filaIndex}"]`);
-            if (circulo) {
-                circulo.classList.remove('puntaje-pendiente');
-                circulo.classList.add('puntaje-completado');
-                circulo.textContent = '✓';
-            }
-            
             desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
         }
     });
 }
 
 // ============================================================
-// VERIFICAR COLUMNAS
+// VERIFICAR COLUMNAS - DESBLOQUEA EN GRIS
 // ============================================================
 
 function verificarColumnasAzul() {
@@ -300,14 +256,6 @@ function verificarColumnasAzul() {
         
         if (todasMarcadas) {
             columnasCompletadasAzul[colIndex] = true;
-            
-            const circulo = document.querySelector(`.azul-columna-circulo[data-azul-columna="${colIndex}"]`);
-            if (circulo) {
-                circulo.classList.remove('puntaje-pendiente');
-                circulo.classList.add('puntaje-completado');
-                circulo.textContent = '✓';
-            }
-            
             aplicarBonificacionColumnaAzul(bonif);
         }
     });
@@ -343,7 +291,6 @@ function aplicarBonificacionColumnaAzul(bonif) {
 function desbloquearEnGrisAzul(habilidadId, indice) {
     const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
     const cell = document.querySelector(selector);
-    
     if (cell && cell.classList.contains('bloqueada')) {
         cell.classList.remove('bloqueada');
         cell.classList.add('desbloqueada');
@@ -357,35 +304,30 @@ function desbloquearEnGrisAzul(habilidadId, indice) {
 }
 
 // ============================================================
-// RECALCULAR PUNTAJES (FALLBACK - usado solo si PUNTAJES no existe)
+// RECALCULAR PUNTAJES (FALLBACK)
 // ============================================================
 
 function recalcularPuntajesAzul() {
-    // Si existe PUNTAJES, usarlo
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         PUNTAJES.calcularTotal();
         return;
     }
     
-    // CALCULAR PUNTOS POR CANTIDAD DE CASILLAS (NO POR VALOR)
     let puntos = 0;
-    // progresoAzul ya tiene la cantidad de casillas marcadas
     for (let i = 0; i < progresoAzul && i < PUNTAJES_AZUL.length; i++) {
         puntos += PUNTAJES_AZUL[i];
     }
     
-    // Puntos por columnas completadas (bonificaciones)
     let puntosColumnas = 0;
     columnasCompletadasAzul.forEach((completada) => {
-        if (completada) {
-            puntosColumnas += 5;
-        }
+        if (completada) puntosColumnas += 5;
     });
     
     const totalAzul = puntos + puntosColumnas;
-    
     puntajesAreas.azul = totalAzul;
-    document.getElementById('score-azul').textContent = totalAzul;
+    
+    const element = document.getElementById('score-azul');
+    if (element) element.textContent = totalAzul;
     
     let total = 0;
     const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
@@ -395,12 +337,14 @@ function recalcularPuntajesAzul() {
     total += puntosBonificacion;
     
     puntajeTotal = total;
-    document.getElementById('score-total').textContent = total;
-    document.getElementById('bonus-display').textContent = puntosBonificacion;
+    const totalElement = document.getElementById('score-total');
+    const bonusElement = document.getElementById('bonus-display');
+    if (totalElement) totalElement.textContent = total;
+    if (bonusElement) bonusElement.textContent = puntosBonificacion;
 }
 
 // ============================================================
-// OBTENER CANTIDAD DE CASILLAS MARCADAS (para PUNTAJES)
+// OBTENER PROGRESO
 // ============================================================
 
 function obtenerProgresoAzul() {
@@ -434,3 +378,5 @@ window.recalcularPuntajesAzul = recalcularPuntajesAzul;
 window.columnasCompletadasAzul = columnasCompletadasAzul;
 window.progresoAzul = progresoAzul;
 window.obtenerProgresoAzul = obtenerProgresoAzul;
+window.marcarAzul = marcarAzul;
+window.manejarClickAzul = manejarClickAzul;

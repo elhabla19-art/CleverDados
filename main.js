@@ -18,6 +18,9 @@ let puntajesAreas = {
 // Configuración de áreas
 const AREAS = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
 
+// Variable para controlar si estamos en modo zoom
+let enModoZoom = false;
+
 // ============================================================
 // SISTEMA DE PUNTUACIÓN - CORREGIDO
 // ============================================================
@@ -41,8 +44,10 @@ function calcularPuntajes() {
         });
         
         // Actualizar total
-        document.getElementById('score-total').textContent = total;
-        document.getElementById('bonus-display').textContent = puntosBonificacion || 0;
+        const totalElement = document.getElementById('score-total');
+        const bonusElement = document.getElementById('bonus-display');
+        if (totalElement) totalElement.textContent = total;
+        if (bonusElement) bonusElement.textContent = puntosBonificacion || 0;
         
         // Actualizar leaderboard local
         if (typeof renderizarLeaderboard === 'function') {
@@ -82,15 +87,18 @@ function calcularPuntajes() {
         puntajesAreas[area] = puntos;
         total += puntos;
         
-        document.getElementById(`score-${area}`).textContent = puntos;
+        const element = document.getElementById(`score-${area}`);
+        if (element) element.textContent = puntos;
     });
 
     bonus = puntosBonificacion;
     total += bonus;
     
     puntajeTotal = total;
-    document.getElementById('score-total').textContent = total;
-    document.getElementById('bonus-display').textContent = bonus;
+    const totalElement = document.getElementById('score-total');
+    const bonusElement = document.getElementById('bonus-display');
+    if (totalElement) totalElement.textContent = total;
+    if (bonusElement) bonusElement.textContent = bonus;
     
     // Actualizar leaderboard después de calcular
     if (typeof renderizarLeaderboard === 'function') {
@@ -104,60 +112,199 @@ function calcularPuntajes() {
 }
 
 // ============================================================
-// ACTUALIZAR VISUALES
+// ACTUALIZAR VISUALES - VERSIÓN UNIFICADA
 // ============================================================
 
 function actualizarVisuales() {
+    // Actualizar celdas de todas las áreas
     document.querySelectorAll('.cell').forEach(cell => {
-        cell.classList.remove('marcada', 'deshabilitada');
-        
         const area = cell.dataset.area;
+        if (!area) return;
+        
         const fila = cell.dataset.fila;
         const col = cell.dataset.col;
+        const index = cell.dataset.index;
         
-        // Solo procesar si tiene area, fila y col
-        if (area && fila !== undefined && col !== undefined) {
-            const id = `${area}-${fila}-${col}`;
-            if (historialMovimientos.includes(id)) {
-                cell.classList.add('marcada');
+        let id = '';
+        let estaMarcada = false;
+        
+        // Determinar el ID según el área y los atributos disponibles
+        if (area === 'amarilla' && fila !== undefined && col !== undefined) {
+            id = `amarilla-${fila}-${col}`;
+        } else if (area === 'azul' && index !== undefined) {
+            id = `azul-tabla-${index}`;
+        } else if (area === 'verde' && index !== undefined) {
+            id = `verde-tabla-${index}`;
+        } else if (area === 'naranja' && index !== undefined) {
+            id = `naranja-${index}`;
+        } else if (area === 'morado' && index !== undefined) {
+            id = `morado-${index}`;
+        } else if (area === 'gris' && fila !== undefined && col !== undefined) {
+            // Gris maneja sus propios estados
+            return;
+        }
+        
+        if (id) {
+            estaMarcada = historialMovimientos.includes(id);
+        }
+        
+        // Aplicar o quitar la clase marcada
+        if (estaMarcada) {
+            cell.classList.add('marcada');
+            // Para naranja y morado, mostrar el valor guardado
+            if (area === 'naranja' && typeof valoresNaranja !== 'undefined' && valoresNaranja[index] !== null && valoresNaranja[index] !== undefined) {
+                cell.textContent = valoresNaranja[index];
+            }
+            if (area === 'morado' && typeof valoresMorado !== 'undefined' && valoresMorado[index] !== null && valoresMorado[index] !== undefined) {
+                cell.textContent = valoresMorado[index];
+            }
+        } else {
+            cell.classList.remove('marcada');
+            // Restaurar valores originales para áreas que los tengan
+            if (area === 'azul' && typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL[index]) {
+                cell.textContent = TABLA_AZUL[index].valor || '';
+            }
+            if (area === 'verde' && typeof TABLA_VERDE !== 'undefined' && TABLA_VERDE[index]) {
+                cell.textContent = TABLA_VERDE[index].valor || '';
+            }
+            if (area === 'naranja' && typeof NARANJA_CONFIG !== 'undefined' && NARANJA_CONFIG[index]) {
+                cell.textContent = NARANJA_CONFIG[index].valor || '';
+            }
+            if (area === 'morado' && typeof MORADO_CONFIG !== 'undefined' && MORADO_CONFIG[index]) {
+                cell.textContent = MORADO_CONFIG[index].valor || '';
+            }
+            if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
+                cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
             }
         }
     });
 }
 
 // ============================================================
-// MANEJAR CLICK EN CELDA (SOLO PARA CELDAS CON area, fila, col)
+// ACTUALIZAR VISUALES EN EL ZOOM - VERSIÓN MEJORADA
+// ============================================================
+
+function actualizarVisualesZoom() {
+    const zoomContent = document.getElementById('zoomAreaContent');
+    if (!zoomContent) return;
+    
+    zoomContent.querySelectorAll('.cell').forEach(cell => {
+        const area = cell.dataset.area;
+        const fila = cell.dataset.fila;
+        const col = cell.dataset.col;
+        const index = cell.dataset.index;
+        
+        if (!area) return;
+        
+        let id = '';
+        let estaMarcada = false;
+        
+        // Determinar el ID según el área
+        if (area === 'amarilla' && fila !== undefined && col !== undefined) {
+            id = `amarilla-${fila}-${col}`;
+        } else if (area === 'azul' && index !== undefined) {
+            id = `azul-tabla-${index}`;
+        } else if (area === 'verde' && index !== undefined) {
+            id = `verde-tabla-${index}`;
+        } else if (area === 'naranja' && index !== undefined) {
+            id = `naranja-${index}`;
+        } else if (area === 'morado' && index !== undefined) {
+            id = `morado-${index}`;
+        }
+        
+        if (id) {
+            estaMarcada = historialMovimientos.includes(id);
+        }
+        
+        // Aplicar estado visual
+        if (estaMarcada) {
+            cell.classList.add('marcada');
+            
+            // Mostrar valores guardados para áreas con números
+            if (area === 'naranja' && typeof valoresNaranja !== 'undefined' && valoresNaranja[index] !== null && valoresNaranja[index] !== undefined) {
+                cell.textContent = valoresNaranja[index];
+            }
+            if (area === 'morado' && typeof valoresMorado !== 'undefined' && valoresMorado[index] !== null && valoresMorado[index] !== undefined) {
+                cell.textContent = valoresMorado[index];
+            }
+        } else {
+            cell.classList.remove('marcada');
+            
+            // Restaurar valores originales
+            if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
+                cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
+            }
+            if (area === 'azul' && typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL[index]) {
+                cell.textContent = TABLA_AZUL[index].valor || '';
+            }
+            if (area === 'verde' && typeof TABLA_VERDE !== 'undefined' && TABLA_VERDE[index]) {
+                cell.textContent = TABLA_VERDE[index].valor || '';
+            }
+            if (area === 'naranja' && typeof NARANJA_CONFIG !== 'undefined' && NARANJA_CONFIG[index]) {
+                cell.textContent = NARANJA_CONFIG[index].valor || '';
+            }
+            if (area === 'morado' && typeof MORADO_CONFIG !== 'undefined' && MORADO_CONFIG[index]) {
+                cell.textContent = MORADO_CONFIG[index].valor || '';
+            }
+        }
+    });
+}
+
+// ============================================================
+// MANEJAR CLICK EN CELDA
 // ============================================================
 
 function manejarClickCelda(cell) {
     const area = cell.dataset.area;
     const fila = cell.dataset.fila;
     const col = cell.dataset.col;
+    const index = cell.dataset.index;
     
-    // Si no tiene area, fila o col, ignorar (es una celda con manejador propio)
-    if (!area || fila === undefined || col === undefined) {
+    // Si no tiene area, ignorar
+    if (!area) return;
+    
+    // Si está en modo zoom, usar el manejador específico del área
+    if (enModoZoom) {
+        // Buscar el área correspondiente y usar su manejador
+        if (area === 'amarilla' && fila !== undefined && col !== undefined) {
+            if (typeof manejarClickAmarilla === 'function') {
+                manejarClickAmarilla(parseInt(fila), parseInt(col));
+            }
+            return;
+        }
+        if (area === 'azul' && index !== undefined) {
+            if (typeof manejarClickAzul === 'function') {
+                manejarClickAzul(parseInt(index));
+            }
+            return;
+        }
+        if (area === 'verde' && index !== undefined) {
+            if (typeof manejarClickVerde === 'function') {
+                manejarClickVerde(parseInt(index));
+            }
+            return;
+        }
+        if (area === 'naranja' && index !== undefined) {
+            if (typeof manejarClickNaranja === 'function') {
+                manejarClickNaranja(parseInt(index));
+            }
+            return;
+        }
+        if (area === 'morado' && index !== undefined) {
+            if (typeof manejarClickMorado === 'function') {
+                manejarClickMorado(parseInt(index));
+            }
+            return;
+        }
         return;
     }
     
-    const id = `${area}-${fila}-${col}`;
-    
-    if (cell.classList.contains('marcada') || cell.classList.contains('pre-marcada')) {
+    // Si NO está en modo zoom, solo permitir clicks en gris
+    if (area !== 'gris') {
         return;
     }
     
-    const puedeMarcar = window[`puedeMarcar${capitalize(area)}`] 
-        ? window[`puedeMarcar${capitalize(area)}`](fila, col) 
-        : true;
-    
-    if (!puedeMarcar) return;
-    
-    cell.classList.add('marcada');
-    historialMovimientos.push(id);
-    
-    aplicarBonificacion(area, fila, col);
-    
-    calcularPuntajes();
-    actualizarVisuales();
+    // Para gris, no hacer nada aquí (tiene sus propios manejadores)
 }
 
 // ============================================================
@@ -291,7 +438,7 @@ function jugarSolo() {
 }
 
 // ============================================================
-// ZOOM DE ÁREA - FUNCIONALIDAD
+// ZOOM DE ÁREA - FUNCIONALIDAD MEJORADA
 // ============================================================
 
 function abrirZoomArea(area) {
@@ -315,6 +462,16 @@ function abrirZoomArea(area) {
         if (area === 'verde' || area === 'naranja' || area === 'morado') {
             reorganizarEnDosFilas(content, area);
         }
+        
+        // Activar modo zoom
+        enModoZoom = true;
+        
+        // IMPORTANTE: Actualizar las visuales del zoom inmediatamente
+        // con el estado actual del historial
+        setTimeout(() => {
+            actualizarVisualesZoom();
+        }, 50);
+        
     } else {
         content.innerHTML = '<p style="color: var(--text-muted);">Contenido no disponible</p>';
     }
@@ -350,54 +507,124 @@ function reorganizarEnDosFilas(container, area) {
         }
         fila.appendChild(w);
     });
+    
+    // También reorganizar la fila de bonificaciones si existe
+    const bonusFila = container.querySelector(`.${area}-bonus-fila`);
+    if (bonusFila) {
+        const bonusItems = bonusFila.querySelectorAll(`.${area}-bonus-item`);
+        if (bonusItems.length > 0) {
+            bonusFila.innerHTML = '';
+            bonusFila.style.display = 'flex';
+            bonusFila.style.flexWrap = 'wrap';
+            bonusFila.style.gap = '6px';
+            bonusFila.style.justifyContent = 'center';
+            bonusFila.style.width = '100%';
+            bonusFila.style.maxWidth = '650px';
+            
+            bonusItems.forEach((item, index) => {
+                item.style.flex = '0 0 auto';
+                if (index >= 6) {
+                    item.style.marginTop = '6px';
+                }
+                bonusFila.appendChild(item);
+            });
+        }
+    }
 }
+
+// ============================================================
+// CERRAR ZOOM AREA
+// ============================================================
 
 function cerrarZoomArea() {
     const modal = document.getElementById('zoomAreaModal');
     if (modal) {
         modal.style.display = 'none';
         document.body.style.overflow = '';
+        enModoZoom = false;
+        
+        // Actualizar el área principal después de cerrar el zoom
+        actualizarVisuales();
+        
+        // Recalcular puntajes
+        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+            PUNTAJES.calcularTotal();
+        } else {
+            calcularPuntajes();
+        }
+        
+        // Actualizar leaderboard
+        if (typeof renderizarLeaderboard === 'function') {
+            renderizarLeaderboard();
+        }
     }
 }
 
 // ============================================================
-// PROPAGAR CLICKS DESDE EL ZOOM
+// PROPAGAR CLICKS DESDE EL ZOOM - CORREGIDO
 // ============================================================
 
 function propagarClickZoom(cell) {
-    // Buscar la celda correspondiente por data attributes
+    // Evitar propagación si ya está marcada
+    if (cell.classList.contains('marcada') || cell.classList.contains('pre-marcada')) {
+        return false;
+    }
+    
     const area = cell.dataset.area;
     const fila = cell.dataset.fila;
     const col = cell.dataset.col;
     const index = cell.dataset.index;
     
-    if (area && fila !== undefined && col !== undefined) {
-        const selector = `[data-area="${area}"][data-fila="${fila}"][data-col="${col}"]`;
-        const targetCell = document.querySelector(selector);
-        if (targetCell && !targetCell.classList.contains('marcada') && !targetCell.classList.contains('pre-marcada')) {
-            // Disparar el evento click
-            const clickEvent = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-            });
-            targetCell.dispatchEvent(clickEvent);
-            return true;
+    if (!area) return false;
+    
+    let resultado = false;
+    
+    // Llamar al manejador correspondiente según el área
+    try {
+        if (area === 'amarilla' && fila !== undefined && col !== undefined) {
+            if (typeof manejarClickAmarilla === 'function') {
+                manejarClickAmarilla(parseInt(fila), parseInt(col));
+                resultado = true;
+            }
+        } else if (area === 'azul' && index !== undefined) {
+            if (typeof manejarClickAzul === 'function') {
+                manejarClickAzul(parseInt(index));
+                resultado = true;
+            }
+        } else if (area === 'verde' && index !== undefined) {
+            if (typeof manejarClickVerde === 'function') {
+                manejarClickVerde(parseInt(index));
+                resultado = true;
+            }
+        } else if (area === 'naranja' && index !== undefined) {
+            if (typeof manejarClickNaranja === 'function') {
+                manejarClickNaranja(parseInt(index));
+                resultado = true;
+            }
+        } else if (area === 'morado' && index !== undefined) {
+            if (typeof manejarClickMorado === 'function') {
+                manejarClickMorado(parseInt(index));
+                resultado = true;
+            }
         }
-    } else if (area && index !== undefined) {
-        const selector = `[data-area="${area}"][data-index="${index}"]`;
-        const targetCell = document.querySelector(selector);
-        if (targetCell && !targetCell.classList.contains('marcada') && !targetCell.classList.contains('pre-marcada')) {
-            const clickEvent = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-            });
-            targetCell.dispatchEvent(clickEvent);
-            return true;
+    } catch(e) {
+        console.warn('Error al propagar click:', e);
+        return false;
+    }
+    
+    // Si se marcó correctamente, actualizar visuales del zoom
+    if (resultado) {
+        // Actualizar visuales del zoom inmediatamente
+        if (typeof actualizarVisualesZoom === 'function') {
+            actualizarVisualesZoom();
+        }
+        // También actualizar el tablero principal
+        if (typeof actualizarVisuales === 'function') {
+            actualizarVisuales();
         }
     }
-    return false;
+    
+    return resultado;
 }
 
 // ============================================================
@@ -406,6 +633,7 @@ function propagarClickZoom(cell) {
 
 window.calcularPuntajes = calcularPuntajes;
 window.actualizarVisuales = actualizarVisuales;
+window.actualizarVisualesZoom = actualizarVisualesZoom;
 window.manejarClickCelda = manejarClickCelda;
 window.aplicarBonificacion = aplicarBonificacion;
 window.reiniciarTablero = reiniciarTablero;
@@ -416,6 +644,8 @@ window.jugarSolo = jugarSolo;
 window.abrirZoomArea = abrirZoomArea;
 window.cerrarZoomArea = cerrarZoomArea;
 window.propagarClickZoom = propagarClickZoom;
+window.reorganizarEnDosFilas = reorganizarEnDosFilas;
+window.enModoZoom = enModoZoom;
 
 // ============================================================
 // INICIALIZACIÓN
@@ -430,9 +660,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof inicializarAreaNaranja === 'function') inicializarAreaNaranja();
     if (typeof inicializarAreaMorado === 'function') inicializarAreaMorado();
     
-    // Agregar event listeners SOLO a celdas que tienen area, fila y col
-    document.querySelectorAll('.cell:not(.pre-marcada)').forEach(cell => {
-        // Solo agregar si tiene los atributos necesarios
+    // Agregar event listeners SOLO a celdas del área gris (fuera del zoom)
+    document.querySelectorAll('.area-gris .cell:not(.pre-marcada)').forEach(cell => {
         if (cell.dataset.area && cell.dataset.fila !== undefined && cell.dataset.col !== undefined) {
             cell.addEventListener('click', () => manejarClickCelda(cell));
         }
@@ -448,6 +677,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (zoomModal && zoomModal.style.display === 'flex' && zoomModal.contains(cell)) {
             // Evitar que el click se propague al área principal
             e.stopPropagation();
+            e.preventDefault();
             propagarClickZoom(cell);
         }
     });

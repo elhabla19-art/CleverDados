@@ -106,6 +106,11 @@ function inicializarAreaAmarilla() {
 // ============================================================
 
 function manejarClickAmarilla(filaIndex, colIndex) {
+    // SOLO permitir clicks si estamos en modo zoom
+    if (typeof enModoZoom === 'undefined' || !enModoZoom) {
+        return;
+    }
+    
     const config = AMARILLA_CONFIG.filas[filaIndex];
     if (!config) return;
     
@@ -122,11 +127,8 @@ function manejarClickAmarilla(filaIndex, colIndex) {
     // Marcar la celda
     historialMovimientos.push(id);
     
-    // Actualizar visual
-    const cell = document.querySelector(`[data-area="amarilla"][data-fila="${filaIndex}"][data-col="${colIndex}"]`);
-    if (cell) {
-        cell.classList.add('marcada');
-    }
+    // Actualizar visual en el zoom
+    actualizarVisualesZoom();
     
     // Verificar si la fila está completa
     verificarFilaCompleta(filaIndex);

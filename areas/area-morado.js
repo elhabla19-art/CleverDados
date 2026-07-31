@@ -144,6 +144,11 @@ function actualizarProgresoMorado() {
 // ============================================================
 
 function manejarClickMorado(index) {
+    // SOLO permitir clicks si estamos en modo zoom
+    if (typeof enModoZoom === 'undefined' || !enModoZoom) {
+        return;
+    }
+    
     const celda = MORADO_CONFIG[index];
     const id = `morado-${index}`;
     
@@ -297,7 +302,13 @@ function aplicarBonificacionMorado(celda) {
 // ============================================================
 
 function recalcularPuntajesMorado() {
-    const marcasMorado = historialMovimientos.filter(m => m.startsWith('morado-')).length;
+    // Si existe PUNTAJES, usarlo
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+        return;
+    }
+    
+    const marcasMorado = historialMovimientos ? historialMovimientos.filter(m => m.startsWith('morado-')).length : 0;
     
     let puntos = 0;
     if (marcasMorado > 0) {
@@ -305,7 +316,8 @@ function recalcularPuntajesMorado() {
     }
     
     puntajesAreas.morado = puntos;
-    document.getElementById('score-morado').textContent = puntos;
+    const element = document.getElementById('score-morado');
+    if (element) element.textContent = puntos;
     
     let total = 0;
     const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
@@ -315,8 +327,10 @@ function recalcularPuntajesMorado() {
     total += puntosBonificacion;
     
     puntajeTotal = total;
-    document.getElementById('score-total').textContent = total;
-    document.getElementById('bonus-display').textContent = puntosBonificacion;
+    const totalElement = document.getElementById('score-total');
+    const bonusElement = document.getElementById('bonus-display');
+    if (totalElement) totalElement.textContent = total;
+    if (bonusElement) bonusElement.textContent = puntosBonificacion;
 }
 
 // ============================================================

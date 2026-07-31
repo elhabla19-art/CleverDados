@@ -136,6 +136,11 @@ function actualizarProgresoNaranja() {
 // ============================================================
 
 function manejarClickNaranja(index) {
+    // SOLO permitir clicks si estamos en modo zoom
+    if (typeof enModoZoom === 'undefined' || !enModoZoom) {
+        return;
+    }
+    
     const celda = NARANJA_CONFIG[index];
     const id = `naranja-${index}`;
     
@@ -273,7 +278,13 @@ function aplicarBonificacionNaranja(celda) {
 // ============================================================
 
 function recalcularPuntajesNaranja() {
-    const marcasNaranja = historialMovimientos.filter(m => m.startsWith('naranja-')).length;
+    // Si existe PUNTAJES, usarlo
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+        return;
+    }
+    
+    const marcasNaranja = historialMovimientos ? historialMovimientos.filter(m => m.startsWith('naranja-')).length : 0;
     
     let puntos = 0;
     if (marcasNaranja > 0) {
@@ -281,19 +292,22 @@ function recalcularPuntajesNaranja() {
     }
     
     let multiplicadorTotal = 1;
-    NARANJA_CONFIG.forEach((celda, index) => {
-        if (celda.multiplicador > 1) {
-            const id = `naranja-${index}`;
-            if (historialMovimientos.includes(id)) {
-                multiplicadorTotal *= celda.multiplicador;
+    if (typeof NARANJA_CONFIG !== 'undefined' && NARANJA_CONFIG) {
+        NARANJA_CONFIG.forEach((celda, index) => {
+            if (celda.multiplicador > 1) {
+                const id = `naranja-${index}`;
+                if (historialMovimientos && historialMovimientos.includes(id)) {
+                    multiplicadorTotal *= celda.multiplicador;
+                }
             }
-        }
-    });
+        });
+    }
     
     puntos *= multiplicadorTotal;
     
     puntajesAreas.naranja = puntos;
-    document.getElementById('score-naranja').textContent = puntos;
+    const element = document.getElementById('score-naranja');
+    if (element) element.textContent = puntos;
     
     let total = 0;
     const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
@@ -303,8 +317,10 @@ function recalcularPuntajesNaranja() {
     total += puntosBonificacion;
     
     puntajeTotal = total;
-    document.getElementById('score-total').textContent = total;
-    document.getElementById('bonus-display').textContent = puntosBonificacion;
+    const totalElement = document.getElementById('score-total');
+    const bonusElement = document.getElementById('bonus-display');
+    if (totalElement) totalElement.textContent = total;
+    if (bonusElement) bonusElement.textContent = puntosBonificacion;
 }
 
 // ============================================================

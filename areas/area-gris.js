@@ -310,6 +310,7 @@ function desbloquearSeisExterno(indice) {
 // ============================================================
 
 function manejarClickTurnoGris(index) {
+    // El área gris SIEMPRE se puede llenar (sin necesidad de zoom)
     const turno = TURNOS_CONFIG[index];
     const id = `gris-turno-${index}`;
     
@@ -336,6 +337,7 @@ function manejarClickTurnoGris(index) {
         broadcastPuntaje('sync');
     }
 }
+
 
 // ============================================================
 // ACTUALIZAR DESBLOQUEOS POR TURNO (sin resetear externos)
@@ -377,6 +379,7 @@ function actualizarDesbloqueosPorTurno(turnoNumero) {
 }
 
 function manejarClickHabilidadGris(habilidadId, index) {
+    // El área gris SIEMPRE se puede llenar (sin necesidad de zoom)
     const config = HABILIDADES_CONFIG[habilidadId];
     if (!config) return;
     
@@ -396,6 +399,7 @@ function manejarClickHabilidadGris(habilidadId, index) {
         broadcastPuntaje('sync');
     }
 }
+
 
 // ============================================================
 // APLICAR BONIFICACIONES

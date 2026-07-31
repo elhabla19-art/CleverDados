@@ -132,6 +132,11 @@ function actualizarProgresoVerde() {
 // ============================================================
 
 function manejarClickVerde(index) {
+    // SOLO permitir clicks si estamos en modo zoom
+    if (typeof enModoZoom === 'undefined' || !enModoZoom) {
+        return;
+    }
+    
     const id = `verde-tabla-${index}`;
     
     if (historialMovimientos.includes(id)) return;
@@ -149,10 +154,8 @@ function manejarClickVerde(index) {
     
     historialMovimientos.push(id);
     
-    const cell = document.querySelector(`.verde-cell[data-index="${index}"]`);
-    if (cell) {
-        cell.classList.add('marcada');
-    }
+    // Actualizar visual en el zoom
+    actualizarVisualesZoom();
     
     actualizarProgresoVerde();
     actualizarPuntajesVerde();
@@ -258,6 +261,12 @@ function actualizarPuntajesVerde() {
 // ============================================================
 
 function recalcularPuntajesVerde() {
+    // Si existe PUNTAJES, usarlo
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+        return;
+    }
+    
     let puntos = 0;
     if (progresoVerde > 0) {
         for (let i = 0; i < progresoVerde && i < PUNTAJES_VERDE.length; i++) {
@@ -266,7 +275,8 @@ function recalcularPuntajesVerde() {
     }
     
     puntajesAreas.verde = puntos;
-    document.getElementById('score-verde').textContent = puntos;
+    const element = document.getElementById('score-verde');
+    if (element) element.textContent = puntos;
     
     let total = 0;
     const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
@@ -276,8 +286,10 @@ function recalcularPuntajesVerde() {
     total += puntosBonificacion;
     
     puntajeTotal = total;
-    document.getElementById('score-total').textContent = total;
-    document.getElementById('bonus-display').textContent = puntosBonificacion;
+    const totalElement = document.getElementById('score-total');
+    const bonusElement = document.getElementById('bonus-display');
+    if (totalElement) totalElement.textContent = total;
+    if (bonusElement) bonusElement.textContent = puntosBonificacion;
 }
 
 // ============================================================
