@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA AZUL - CLEVERDADOS (CORREGIDO - PUNTAJES ESTÁTICOS Y LOBOS)
+// ÁREA AZUL - CLEVERDADOS (CON DESHACER CORREGIDO - SIN ORDEN)
 // ============================================================
 
 // Puntajes visuales (se actualizan automáticamente)
@@ -41,6 +41,9 @@ let filasCompletadasAzul = [false, false, false];
 let columnasCompletadasAzul = [false, false, false, false];
 let progresoAzul = 0;
 
+// Flag para evitar doble clic después de deshacer
+let deshacerEnProgresoAzul = false;
+
 // ============================================================
 // INICIALIZACIÓN
 // ============================================================
@@ -56,7 +59,6 @@ function inicializarAreaAzul() {
     // --- FILA DE PUNTAJES (VISUAL) - SIEMPRE ESTÁTICOS ---
     html += `<div class="azul-puntajes-fila">`;
     PUNTAJES_AZUL.forEach((puntaje, index) => {
-        // SIEMPRE la misma clase, sin importar el progreso
         html += `
             <div class="puntaje-circulo" data-azul-puntaje="${index}" style="opacity:0.5;">
                 ${puntaje}
@@ -87,6 +89,7 @@ function inicializarAreaAzul() {
                      data-fila="${fila}"
                      data-col="${col}"
                      data-index="${index}"
+                     data-id="${id}"
                      data-esvacio="${esVacio}"
                      onclick="${!esVacio ? `manejarClickAzul(${index})` : ''}"
                      style="${esVacio ? 'opacity:0.3; cursor:default;' : ''}">
@@ -133,10 +136,11 @@ function inicializarAreaAzul() {
 }
 
 // ============================================================
-// ACTUALIZAR PROGRESO - SOLO CASILLAS CON VALOR
+// ACTUALIZAR PROGRESO - CORREGIDO (SIN ORDEN)
 // ============================================================
 
 function actualizarProgresoAzul() {
+    // En azul NO hay orden, solo contamos las casillas marcadas
     let marcadas = 0;
     if (typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL && typeof historialMovimientos !== 'undefined') {
         TABLA_AZUL.forEach((celda, index) => {
@@ -150,33 +154,153 @@ function actualizarProgresoAzul() {
     }
     progresoAzul = marcadas;
     window.progresoAzul = marcadas;
+    console.log(`📊 progresoAzul actualizado: ${progresoAzul}`);
 }
 
 // ============================================================
-// MARCAR CASILLA AZUL
+// ACTUALIZAR ESTADOS DE AZUL (después de deshacer)
 // ============================================================
 
-function marcarAzul(index) {
+function actualizarEstadosAzul() {
+    // Recalcular filas completadas
+    BONIFICACIONES_FILA.forEach((bonif, filaIndex) => {
+        let todasMarcadas = true;
+        bonif.celdas.forEach(celdaIndex => {
+            const id = `azul-tabla-${celdaIndex}`;
+            if (!historialMovimientos.includes(id)) {
+                todasMarcadas = false;
+            }
+        });
+        filasCompletadasAzul[filaIndex] = todasMarcadas;
+    });
+    
+    // Recalcular columnas completadas
+    BONIFICACIONES_COLUMNA.forEach((bonif, colIndex) => {
+        let todasMarcadas = true;
+        bonif.celdas.forEach(celdaIndex => {
+            const celda = TABLA_AZUL[celdaIndex];
+            if (celda.valor === '') return;
+            const id = `azul-tabla-${celdaIndex}`;
+            if (!historialMovimientos.includes(id)) {
+                todasMarcadas = false;
+            }
+        });
+        columnasCompletadasAzul[colIndex] = todasMarcadas;
+    });
+}
+
+// ============================================================
+// MANEJAR CLICK EN CELDA - CON DESHACER CORREGIDO (SIN ORDEN)
+// ============================================================
+
+function manejarClickAzul(index) {
+    // SOLO permitir clicks en modo zoom
+    if (typeof enModoZoom === 'undefined' || !enModoZoom) {
+        return;
+    }
+    
+    // Si hay un deshacer en progreso, ignorar el click
+    if (deshacerEnProgresoAzul) {
+        console.log('⏳ Deshacer en progreso, ignorando click');
+        return;
+    }
+    
     const celda = TABLA_AZUL[index];
     if (!celda || celda.valor === '') return;
     
     const id = `azul-tabla-${index}`;
-    if (historialMovimientos.includes(id)) return;
+    
+    console.log(`🖱️ Click en azul[${index}], id: ${id}`);
+    console.log(`📋 historialMovimientos:`, historialMovimientos);
+    console.log(`📋 está marcada: ${historialMovimientos.includes(id)}`);
+    
+    // ============================================================
+    // VERIFICAR SI YA ESTÁ MARCADA → INTENTAR DESHACER
+    // ============================================================
+    if (historialMovimientos.includes(id)) {
+        console.log(`🔍 Intento deshacer ${id}`);
+        
+        // Marcar que estamos en proceso de deshacer
+        deshacerEnProgresoAzul = true;
+        
+        // Intentar deshacer
+        if (typeof window.intentarDeshacer === 'function') {
+            const resultado = window.intentarDeshacer(id);
+            console.log(`📊 Resultado de intentarDeshacer:`, resultado);
+            
+            if (resultado && resultado.exito) {
+                console.log(`✅ Deshacer exitoso para ${id}`);
+                // El deshacer fue exitoso
+                actualizarEstadosAzul();
+                actualizarProgresoAzul();
+                if (typeof actualizarVisuales === 'function') {
+                    actualizarVisuales();
+                }
+                if (typeof actualizarVisualesZoom === 'function') {
+                    actualizarVisualesZoom();
+                }
+                
+                // Recalcular puntajes
+                if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+                    PUNTAJES.calcularTotal();
+                } else {
+                    recalcularPuntajesAzul();
+                }
+                
+                if (typeof renderizarLeaderboard === 'function') {
+                    renderizarLeaderboard();
+                }
+                
+                // Liberar el flag después de un pequeño delay
+                setTimeout(() => {
+                    deshacerEnProgresoAzul = false;
+                }, 200);
+                
+                return;
+            } else {
+                console.log(`❌ No se pudo deshacer ${id}:`, resultado ? resultado.mensaje : 'resultado null');
+                // No se pudo deshacer (no es el último movimiento)
+                const cell = document.querySelector(`[data-area="azul"][data-index="${index}"]`);
+                if (typeof window.mostrarFeedbackError === 'function') {
+                    window.mostrarFeedbackError(cell);
+                }
+                
+                deshacerEnProgresoAzul = false;
+                return;
+            }
+        }
+        
+        deshacerEnProgresoAzul = false;
+        return;
+    }
+    
+    // ============================================================
+    // SI NO ESTÁ MARCADA → MARCAR (SIN RESTRICCIÓN DE ORDEN)
+    // ============================================================
     
     // Marcar
     historialMovimientos.push(id);
     
+    // ============================================================
+    // GUARDAR ACCIÓN PARA DESHACER
+    // ============================================================
+    if (typeof window.guardarAccion === 'function') {
+        window.guardarAccion('marcar', id, 'azul', {
+            index: index,
+            valor: celda.valor
+        });
+    }
+    
     // Actualizar progreso
     actualizarProgresoAzul();
     
-    // Verificar bonificaciones (desbloquean en gris)
+    // Verificar bonificaciones
     verificarFilasAzul();
     verificarColumnasAzul();
     
-    // Actualizar visuales del tablero principal
+    // Actualizar visuales
     actualizarVisuales();
     
-    // Actualizar visuales del zoom si está abierto
     if (typeof actualizarVisualesZoom === 'function') {
         actualizarVisualesZoom();
     }
@@ -192,25 +316,6 @@ function marcarAzul(index) {
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
     }
-}
-
-// ============================================================
-// MANEJAR CLICK EN CELDA
-// ============================================================
-
-function manejarClickAzul(index) {
-    // SOLO permitir clicks en modo zoom
-    if (typeof enModoZoom === 'undefined' || !enModoZoom) {
-        return;
-    }
-    
-    const celda = TABLA_AZUL[index];
-    if (!celda || celda.valor === '') return;
-    
-    const id = `azul-tabla-${index}`;
-    if (historialMovimientos.includes(id)) return;
-    
-    marcarAzul(index);
 }
 
 // ============================================================
@@ -236,6 +341,13 @@ function verificarFilasAzul() {
             if (bonif.bonificacion === 'Lobo') {
                 if (typeof registrarLobo === 'function') {
                     registrarLobo('azul');
+                    // Guardar acción de lobo
+                    if (typeof window.guardarAccion === 'function' && typeof lobos !== 'undefined') {
+                        window.guardarAccion('lobo', `lobo-azul-${filaIndex}`, 'azul', {
+                            cantidadAnterior: lobos.cantidad - 1,
+                            totalAnterior: (lobos.cantidad - 1) * (lobos.valorActual || 0)
+                        });
+                    }
                 }
             } else {
                 desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
@@ -368,6 +480,7 @@ function resetAreaAzul() {
     columnasCompletadasAzul = [false, false, false, false];
     progresoAzul = 0;
     window.progresoAzul = 0;
+    deshacerEnProgresoAzul = false;
     
     document.querySelectorAll('[data-area="azul"]').forEach(cell => {
         cell.classList.remove('marcada');
@@ -386,5 +499,5 @@ window.recalcularPuntajesAzul = recalcularPuntajesAzul;
 window.columnasCompletadasAzul = columnasCompletadasAzul;
 window.progresoAzul = progresoAzul;
 window.obtenerProgresoAzul = obtenerProgresoAzul;
-window.marcarAzul = marcarAzul;
 window.manejarClickAzul = manejarClickAzul;
+window.actualizarEstadosAzul = actualizarEstadosAzul;

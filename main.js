@@ -1,5 +1,5 @@
 // ============================================================
-// MAIN - CLEVERDADOS (CORREGIDO)
+// MAIN - CLEVERDADOS (CON DESHACER)
 // ============================================================
 
 // Estado global del juego
@@ -22,19 +22,14 @@ const AREAS = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
 let enModoZoom = false;
 
 // ============================================================
-// SISTEMA DE PUNTUACIÓN - CORREGIDO
+// SISTEMA DE PUNTUACIÓN
 // ============================================================
 
 function calcularPuntajes() {
-    // Si existe el sistema de puntuación, usarlo
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        // Esto actualiza puntajesAreas y puntajeTotal internamente
         const total = PUNTAJES.calcularTotal();
-        
-        // Asegurar que la variable global se actualice
         window.puntajeTotal = total;
         
-        // Asegurar que puntajesAreas tenga los valores correctos
         const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
         areas.forEach(area => {
             const element = document.getElementById(`score-${area}`);
@@ -43,25 +38,21 @@ function calcularPuntajes() {
             }
         });
         
-        // Actualizar total
         const totalElement = document.getElementById('score-total');
         const bonusElement = document.getElementById('bonus-display');
         if (totalElement) totalElement.textContent = total;
         if (bonusElement) bonusElement.textContent = puntosBonificacion || 0;
         
-        // Actualizar leaderboard local
         if (typeof renderizarLeaderboard === 'function') {
             renderizarLeaderboard();
         }
         
-        // Sincronizar con otros jugadores
         if (typeof broadcastPuntaje === 'function') {
             broadcastPuntaje('sync');
         }
         return;
     }
  
-    // Fallback: sistema antiguo (solo por si acaso)
     let total = 0;
     let bonus = 0;
 
@@ -71,7 +62,6 @@ function calcularPuntajes() {
         
         let puntos = count > 0 ? count * (count + 1) / 2 : 0;
         
-        // Verificar multiplicadores (×2, ×3) en el área
         const tieneX2 = historialMovimientos.some(m => {
             const cell = document.querySelector(`[data-area="${area}"] .cell.marcada`);
             return cell && cell.textContent.trim() === '×2';
@@ -100,19 +90,17 @@ function calcularPuntajes() {
     if (totalElement) totalElement.textContent = total;
     if (bonusElement) bonusElement.textContent = bonus;
     
-    // Actualizar leaderboard después de calcular
     if (typeof renderizarLeaderboard === 'function') {
         renderizarLeaderboard();
     }
     
-    // Sincronizar con otros jugadores
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
     }
 }
 
 // ============================================================
-// ACTUALIZAR VISUALES - VERSIÓN UNIFICADA
+// ACTUALIZAR VISUALES
 // ============================================================
 
 function actualizarVisuales() {
@@ -148,17 +136,14 @@ function actualizarVisuales() {
         if (estaMarcada) {
             cell.classList.add('marcada');
             
-            // Naranja: mostrar valor numérico
             if (area === 'naranja' && typeof valoresNaranja !== 'undefined' && valoresNaranja[index] !== null && valoresNaranja[index] !== undefined) {
                 cell.textContent = valoresNaranja[index];
                 cell.style.color = '#ffffff';
             } 
-            // Morado: mostrar valor numérico
             else if (area === 'morado' && typeof valoresMorado !== 'undefined' && valoresMorado[index] !== null && valoresMorado[index] !== undefined) {
                 cell.textContent = valoresMorado[index];
                 cell.style.color = '#ffffff';
             }
-            // Otras áreas: mantener su valor original
             else if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
                 cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
             } else if (area === 'azul' && typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL[index]) {
@@ -169,7 +154,6 @@ function actualizarVisuales() {
         } else {
             cell.classList.remove('marcada');
             
-            // Restaurar valores originales
             if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
                 cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
             }
@@ -191,9 +175,8 @@ function actualizarVisuales() {
     });
 }
 
-
 // ============================================================
-// ACTUALIZAR VISUALES EN EL ZOOM - VERSIÓN MEJORADA
+// ACTUALIZAR VISUALES EN EL ZOOM
 // ============================================================
 
 function actualizarVisualesZoom() {
@@ -230,17 +213,14 @@ function actualizarVisualesZoom() {
         if (estaMarcada) {
             cell.classList.add('marcada');
             
-            // Naranja: mostrar valor numérico
             if (area === 'naranja' && typeof valoresNaranja !== 'undefined' && valoresNaranja[index] !== null && valoresNaranja[index] !== undefined) {
                 cell.textContent = valoresNaranja[index];
                 cell.style.color = '#ffffff';
             } 
-            // Morado: mostrar valor numérico
             else if (area === 'morado' && typeof valoresMorado !== 'undefined' && valoresMorado[index] !== null && valoresMorado[index] !== undefined) {
                 cell.textContent = valoresMorado[index];
                 cell.style.color = '#ffffff';
             }
-            // Otras áreas: mantener su valor original
             else if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
                 cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
             } else if (area === 'azul' && typeof TABLA_AZUL !== 'undefined' && TABLA_AZUL[index]) {
@@ -251,7 +231,6 @@ function actualizarVisualesZoom() {
         } else {
             cell.classList.remove('marcada');
             
-            // Restaurar valores originales
             if (area === 'amarilla' && typeof AMARILLA_CONFIG !== 'undefined' && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila]) {
                 cell.textContent = AMARILLA_CONFIG.filas[fila].numeros[col] || '';
             }
@@ -274,7 +253,7 @@ function actualizarVisualesZoom() {
 }
 
 // ============================================================
-// MANEJAR CLICK EN CELDA
+// MANEJAR CLICK EN CELDA - CON DESHACER
 // ============================================================
 
 function manejarClickCelda(cell) {
@@ -283,51 +262,128 @@ function manejarClickCelda(cell) {
     const col = cell.dataset.col;
     const index = cell.dataset.index;
     
-    // Si no tiene area, ignorar
     if (!area) return;
     
-    // Si está en modo zoom, usar el manejador específico del área
+    // OBTENER EL ID DE LA CASILLA
+    let id = '';
+    let tipoAccion = 'marcar';
+    let areaId = area;
+    
+    if (area === 'amarilla' && fila !== undefined && col !== undefined) {
+        id = `amarilla-${fila}-${col}`;
+        // Verificar si es X (no se puede marcar)
+        const config = AMARILLA_CONFIG && AMARILLA_CONFIG.filas && AMARILLA_CONFIG.filas[fila];
+        if (config && config.numeros[col] === 'X') return;
+    } else if (area === 'azul' && index !== undefined) {
+        id = `azul-tabla-${index}`;
+        if (TABLA_AZUL && TABLA_AZUL[index] && TABLA_AZUL[index].valor === '') return;
+    } else if (area === 'verde' && index !== undefined) {
+        id = `verde-tabla-${index}`;
+    } else if (area === 'naranja' && index !== undefined) {
+        id = `naranja-${index}`;
+        tipoAccion = 'numero';
+    } else if (area === 'morado' && index !== undefined) {
+        id = `morado-${index}`;
+        tipoAccion = 'numero';
+    } else if (area === 'gris' && fila === 'turno' && col !== undefined) {
+        id = `gris-turno-${col}`;
+        tipoAccion = 'turno';
+    } else if (area === 'gris' && fila && fila !== 'turno' && col !== undefined) {
+        id = `gris-${fila}-${col}`;
+        tipoAccion = 'habilidad';
+    }
+    
+    if (!id) return;
+    
+    // ============================================================
+    // VERIFICAR SI LA CASILLA YA ESTÁ MARCADA → INTENTAR DESHACER
+    // ============================================================
+    if (historialMovimientos.includes(id)) {
+        // Intentar deshacer usando el sistema global
+        if (typeof window.intentarDeshacer === 'function') {
+            const resultado = window.intentarDeshacer(id);
+            if (resultado && resultado.exito) {
+                // El deshacer ya actualizó todo
+                return;
+            } else {
+                // No se pudo deshacer (no es el último movimiento)
+                mostrarFeedbackError(cell);
+                return;
+            }
+        }
+        // Fallback: mostrar error visual
+        mostrarFeedbackError(cell);
+        return;
+    }
+    
+    // ============================================================
+    // SI NO ESTÁ MARCADA → PROCEDER CON EL MARCADO NORMAL
+    // ============================================================
+    
+    // Si está en modo zoom, usar los manejadores específicos
     if (enModoZoom) {
-        // Buscar el área correspondiente y usar su manejador
         if (area === 'amarilla' && fila !== undefined && col !== undefined) {
             if (typeof manejarClickAmarilla === 'function') {
                 manejarClickAmarilla(parseInt(fila), parseInt(col));
+                // La acción se guarda dentro del manejador
+                return;
             }
-            return;
         }
         if (area === 'azul' && index !== undefined) {
             if (typeof manejarClickAzul === 'function') {
                 manejarClickAzul(parseInt(index));
+                return;
             }
-            return;
         }
         if (area === 'verde' && index !== undefined) {
             if (typeof manejarClickVerde === 'function') {
                 manejarClickVerde(parseInt(index));
+                return;
             }
-            return;
         }
         if (area === 'naranja' && index !== undefined) {
             if (typeof manejarClickNaranja === 'function') {
                 manejarClickNaranja(parseInt(index));
+                return;
             }
-            return;
         }
         if (area === 'morado' && index !== undefined) {
             if (typeof manejarClickMorado === 'function') {
                 manejarClickMorado(parseInt(index));
+                return;
             }
-            return;
         }
         return;
     }
     
     // Si NO está en modo zoom, solo permitir clicks en gris
-    if (area !== 'gris') {
+    if (area === 'gris') {
+        if (fila === 'turno' && col !== undefined) {
+            if (typeof manejarClickTurnoGris === 'function') {
+                manejarClickTurnoGris(parseInt(col));
+            }
+        } else if (fila && fila !== 'turno' && col !== undefined) {
+            if (typeof manejarClickHabilidadGris === 'function') {
+                manejarClickHabilidadGris(fila, parseInt(col));
+            }
+        }
         return;
     }
     
-    // Para gris, no hacer nada aquí (tiene sus propios manejadores)
+    // Para otras áreas fuera de zoom, no hacer nada (se marcan desde el zoom)
+}
+
+// ============================================================
+// MOSTRAR FEEDBACK DE ERROR
+// ============================================================
+
+function mostrarFeedbackError(cell) {
+    if (!cell) return;
+    cell.style.borderColor = '#ff4444';
+    cell.style.transition = 'border-color 0.3s';
+    setTimeout(() => {
+        cell.style.borderColor = '';
+    }, 600);
 }
 
 // ============================================================
@@ -384,7 +440,11 @@ function reiniciarTablero() {
         morado: 0
     };
     
-    // Resetear valores de áreas
+    // Limpiar pila de deshacer
+    if (typeof window.limpiarPilaMovimientos === 'function') {
+        window.limpiarPilaMovimientos();
+    }
+    
     if (typeof valoresNaranja !== 'undefined') {
         valoresNaranja = new Array(11).fill(null);
     }
@@ -402,7 +462,6 @@ function reiniciarTablero() {
         cell.classList.remove('marcada');
     });
     
-    // Recalcular puntajes después de reiniciar
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         PUNTAJES.calcularTotal();
     } else {
@@ -411,12 +470,10 @@ function reiniciarTablero() {
     
     actualizarVisuales();
     
-    // Actualizar leaderboard
     if (typeof renderizarLeaderboard === 'function') {
         renderizarLeaderboard();
     }
     
-    // Sincronizar con otros jugadores
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
     }
@@ -441,7 +498,6 @@ function confirmarReinicio() {
 
 function jugarSolo() {
     document.getElementById('lobbyModal').style.display = 'none';
-    // Inicializar leaderboard en modo local
     if (typeof datosJugadores !== 'undefined') {
         datosJugadores = {};
         datosJugadores['local'] = {
@@ -452,7 +508,6 @@ function jugarSolo() {
             valoresMorado: null,
             puntajesPorArea: null
         };
-        // Actualizar miId para modo local
         miId = 'local';
     }
     if (typeof renderizarLeaderboard === 'function') {
@@ -461,36 +516,29 @@ function jugarSolo() {
 }
 
 // ============================================================
-// ZOOM DE ÁREA - FUNCIONALIDAD MEJORADA
+// ZOOM DE ÁREA
 // ============================================================
 
 function abrirZoomArea(area) {
-    // No abrir zoom para área gris
     if (area === 'gris') return;
     
     const modal = document.getElementById('zoomAreaModal');
     const content = document.getElementById('zoomAreaContent');
     
-    // Obtener el contenido del área
     const areaElement = document.getElementById(`area-${area}`);
     const areaContent = areaElement ? areaElement.querySelector(`#area-${area}-content`) : null;
     
     if (areaContent) {
-        // Clonar el contenido para el zoom
         const clone = areaContent.cloneNode(true);
         content.innerHTML = '';
         content.appendChild(clone);
         
-        // Reorganizar verde, naranja y morado en 2 filas (6 + 5)
         if (area === 'verde' || area === 'naranja' || area === 'morado') {
             reorganizarEnDosFilas(content, area);
         }
         
-        // Activar modo zoom
         enModoZoom = true;
         
-        // IMPORTANTE: Actualizar las visuales del zoom inmediatamente
-        // con el estado actual del historial
         setTimeout(() => {
             actualizarVisualesZoom();
         }, 50);
@@ -504,15 +552,12 @@ function abrirZoomArea(area) {
 }
 
 function reorganizarEnDosFilas(container, area) {
-    // Buscar la fila principal
     const fila = container.querySelector(`.${area}-fila`);
     if (!fila) return;
     
-    // Obtener todos los wrappers de celdas
     const wrappers = fila.querySelectorAll(`.${area}-celda-wrapper`);
     if (wrappers.length === 0) return;
     
-    // Limpiar la fila original
     fila.innerHTML = '';
     fila.style.display = 'flex';
     fila.style.flexWrap = 'wrap';
@@ -521,17 +566,14 @@ function reorganizarEnDosFilas(container, area) {
     fila.style.width = '100%';
     fila.style.maxWidth = '650px';
     
-    // Añadir todos los wrappers en orden
     wrappers.forEach((w, index) => {
         w.style.flex = '0 0 auto';
-        // Los primeros 6 van a la primera fila, los siguientes 5 a la segunda
         if (index >= 6) {
             w.style.marginTop = '6px';
         }
         fila.appendChild(w);
     });
     
-    // También reorganizar la fila de bonificaciones si existe
     const bonusFila = container.querySelector(`.${area}-bonus-fila`);
     if (bonusFila) {
         const bonusItems = bonusFila.querySelectorAll(`.${area}-bonus-item`);
@@ -555,10 +597,6 @@ function reorganizarEnDosFilas(container, area) {
     }
 }
 
-// ============================================================
-// CERRAR ZOOM AREA
-// ============================================================
-
 function cerrarZoomArea() {
     const modal = document.getElementById('zoomAreaModal');
     if (modal) {
@@ -566,17 +604,14 @@ function cerrarZoomArea() {
         document.body.style.overflow = '';
         enModoZoom = false;
         
-        // Actualizar el área principal después de cerrar el zoom
         actualizarVisuales();
         
-        // Recalcular puntajes
         if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
             PUNTAJES.calcularTotal();
         } else {
             calcularPuntajes();
         }
         
-        // Actualizar leaderboard
         if (typeof renderizarLeaderboard === 'function') {
             renderizarLeaderboard();
         }
@@ -584,11 +619,10 @@ function cerrarZoomArea() {
 }
 
 // ============================================================
-// PROPAGAR CLICKS DESDE EL ZOOM - CORREGIDO
+// PROPAGAR CLICKS DESDE EL ZOOM
 // ============================================================
 
 function propagarClickZoom(cell) {
-    // Evitar propagación si ya está marcada
     if (cell.classList.contains('marcada') || cell.classList.contains('pre-marcada')) {
         return false;
     }
@@ -602,7 +636,6 @@ function propagarClickZoom(cell) {
     
     let resultado = false;
     
-    // Llamar al manejador correspondiente según el área
     try {
         if (area === 'amarilla' && fila !== undefined && col !== undefined) {
             if (typeof manejarClickAmarilla === 'function') {
@@ -635,13 +668,10 @@ function propagarClickZoom(cell) {
         return false;
     }
     
-    // Si se marcó correctamente, actualizar visuales del zoom
     if (resultado) {
-        // Actualizar visuales del zoom inmediatamente
         if (typeof actualizarVisualesZoom === 'function') {
             actualizarVisualesZoom();
         }
-        // También actualizar el tablero principal
         if (typeof actualizarVisuales === 'function') {
             actualizarVisuales();
         }
@@ -669,13 +699,13 @@ window.cerrarZoomArea = cerrarZoomArea;
 window.propagarClickZoom = propagarClickZoom;
 window.reorganizarEnDosFilas = reorganizarEnDosFilas;
 window.enModoZoom = enModoZoom;
+window.mostrarFeedbackError = mostrarFeedbackError;
 
 // ============================================================
 // INICIALIZACIÓN
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar cada área
     if (typeof inicializarAreaGris === 'function') inicializarAreaGris();
     if (typeof inicializarAreaAmarilla === 'function') inicializarAreaAmarilla();
     if (typeof inicializarAreaAzul === 'function') inicializarAreaAzul();
@@ -683,7 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof inicializarAreaNaranja === 'function') inicializarAreaNaranja();
     if (typeof inicializarAreaMorado === 'function') inicializarAreaMorado();
     
-    // Agregar event listeners SOLO a celdas del área gris (fuera del zoom)
+    // Event listeners para celdas del área gris
     document.querySelectorAll('.area-gris .cell:not(.pre-marcada)').forEach(cell => {
         if (cell.dataset.area && cell.dataset.fila !== undefined && cell.dataset.col !== undefined) {
             cell.addEventListener('click', () => manejarClickCelda(cell));
@@ -695,10 +725,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const cell = e.target.closest('.cell');
         if (!cell) return;
         
-        // Si está dentro del zoom
         const zoomModal = document.getElementById('zoomAreaModal');
         if (zoomModal && zoomModal.style.display === 'flex' && zoomModal.contains(cell)) {
-            // Evitar que el click se propague al área principal
             e.stopPropagation();
             e.preventDefault();
             propagarClickZoom(cell);
@@ -719,14 +747,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Calcular puntajes iniciales
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         PUNTAJES.calcularTotal();
     } else {
         calcularPuntajes();
     }
     
-    // Inicializar leaderboard si está disponible
     if (typeof renderizarLeaderboard === 'function') {
         renderizarLeaderboard();
     }

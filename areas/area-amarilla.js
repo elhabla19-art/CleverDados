@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA AMARILLA - CLEVERDADOS (CORREGIDO - CON PUNTAJES Y LOBOS)
+// ÁREA AMARILLA - CLEVERDADOS (CON DESHACER CORREGIDO)
 // ============================================================
 
 // Configuración del área amarilla
@@ -27,6 +27,9 @@ let columnasCompletadas = [false, false, false, false];
 let filasCompletadas = [false, false, false, false];
 let todoCompletado = false;
 
+// Flag para evitar doble clic después de deshacer
+let deshacerEnProgresoAmarilla = false;
+
 // ============================================================
 // INICIALIZACIÓN
 // ============================================================
@@ -49,14 +52,21 @@ function inicializarAreaAmarilla() {
             const clasePreMarcada = esX ? 'pre-marcada' : '';
             const claseMarcada = estaMarcada ? 'marcada' : '';
             
+            // Obtener el valor a mostrar (si está marcada y tiene valor)
+            let displayValue = valor;
+            if (estaMarcada && !esX) {
+                displayValue = valor;
+            }
+            
             html += `
                 <div class="cell ${clasePreMarcada} ${claseMarcada}" 
                      data-area="amarilla"
                      data-fila="${filaIndex}"
                      data-col="${colIndex}"
                      data-esx="${esX}"
+                     data-id="${id}"
                      onclick="manejarClickAmarilla(${filaIndex}, ${colIndex})">
-                    ${valor}
+                    ${displayValue}
                 </div>
             `;
         });
@@ -102,12 +112,74 @@ function inicializarAreaAmarilla() {
 }
 
 // ============================================================
-// MANEJAR CLICK EN CELDA
+// ACTUALIZAR ESTADOS DE AMARILLA (después de deshacer)
+// ============================================================
+
+function actualizarEstadosAmarilla() {
+    // Recalcular filas completadas
+    AMARILLA_CONFIG.filas.forEach((config, filaIndex) => {
+        let marcadas = 0;
+        let totalNumeros = 0;
+        
+        config.numeros.forEach((valor, colIndex) => {
+            if (valor !== 'X') {
+                totalNumeros++;
+                const id = `amarilla-${filaIndex}-${colIndex}`;
+                if (historialMovimientos.includes(id)) {
+                    marcadas++;
+                }
+            }
+        });
+        
+        const estabaCompletada = filasCompletadas[filaIndex];
+        filasCompletadas[filaIndex] = (marcadas === totalNumeros && totalNumeros > 0);
+        
+        // Si estaba completada y ahora no, revertir bonificación
+        if (estabaCompletada && !filasCompletadas[filaIndex]) {
+            bonificacionesAmarilla[`fila${filaIndex}`] = false;
+            // Actualizar círculo
+            const circulo = document.querySelector(`.amarilla-bonificacion-circulo[data-amarilla-fila="${filaIndex}"]`);
+            if (circulo) {
+                circulo.classList.remove('puntaje-completado');
+                circulo.classList.add('puntaje-pendiente');
+                circulo.textContent = config.simbolo;
+            }
+        }
+    });
+    
+    // Recalcular columnas completadas
+    for (let colIndex = 0; colIndex < 4; colIndex++) {
+        let todasMarcadas = true;
+        for (let fila = 0; fila < 4; fila++) {
+            const config = AMARILLA_CONFIG.filas[fila];
+            const valor = config.numeros[colIndex];
+            if (valor === 'X') continue;
+            const id = `amarilla-${fila}-${colIndex}`;
+            if (!historialMovimientos.includes(id)) {
+                todasMarcadas = false;
+                break;
+            }
+        }
+        columnasCompletadas[colIndex] = todasMarcadas;
+    }
+    
+    // Recalcular todo completado
+    todoCompletado = filasCompletadas.every(f => f === true) && columnasCompletadas.every(c => c === true);
+}
+
+// ============================================================
+// MANEJAR CLICK EN CELDA - CON DESHACER CORREGIDO
 // ============================================================
 
 function manejarClickAmarilla(filaIndex, colIndex) {
     // SOLO permitir clicks si estamos en modo zoom
     if (typeof enModoZoom === 'undefined' || !enModoZoom) {
+        return;
+    }
+    
+    // Si hay un deshacer en progreso, ignorar el click
+    if (deshacerEnProgresoAmarilla) {
+        console.log('⏳ Deshacer en progreso, ignorando click');
         return;
     }
     
@@ -121,14 +193,91 @@ function manejarClickAmarilla(filaIndex, colIndex) {
     
     const id = `amarilla-${filaIndex}-${colIndex}`;
     
-    // Si ya está marcada, no hacer nada
-    if (historialMovimientos.includes(id)) return;
+    console.log(`🖱️ Click en amarilla[${filaIndex}][${colIndex}], id: ${id}`);
+    console.log(`📋 historialMovimientos:`, historialMovimientos);
+    console.log(`📋 está marcada: ${historialMovimientos.includes(id)}`);
+    
+    // ============================================================
+    // VERIFICAR SI YA ESTÁ MARCADA → INTENTAR DESHACER
+    // ============================================================
+    if (historialMovimientos.includes(id)) {
+        console.log(`🔍 Intento deshacer ${id}`);
+        
+        // Marcar que estamos en proceso de deshacer
+        deshacerEnProgresoAmarilla = true;
+        
+        // Intentar deshacer
+        if (typeof window.intentarDeshacer === 'function') {
+            const resultado = window.intentarDeshacer(id);
+            console.log(`📊 Resultado de intentarDeshacer:`, resultado);
+            
+            if (resultado && resultado.exito) {
+                console.log(`✅ Deshacer exitoso para ${id}`);
+                // El deshacer fue exitoso
+                actualizarEstadosAmarilla();
+                if (typeof actualizarVisuales === 'function') {
+                    actualizarVisuales();
+                }
+                if (typeof actualizarVisualesZoom === 'function') {
+                    actualizarVisualesZoom();
+                }
+                
+                // Recalcular puntajes
+                if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+                    PUNTAJES.calcularTotal();
+                } else {
+                    recalcularPuntajesAmarilla();
+                }
+                
+                if (typeof renderizarLeaderboard === 'function') {
+                    renderizarLeaderboard();
+                }
+                
+                // Liberar el flag después de un pequeño delay
+                setTimeout(() => {
+                    deshacerEnProgresoAmarilla = false;
+                }, 200);
+                
+                return;
+            } else {
+                console.log(`❌ No se pudo deshacer ${id}:`, resultado ? resultado.mensaje : 'resultado null');
+                // No se pudo deshacer (no es el último movimiento)
+                const cell = document.querySelector(`[data-area="amarilla"][data-fila="${filaIndex}"][data-col="${colIndex}"]`);
+                if (typeof window.mostrarFeedbackError === 'function') {
+                    window.mostrarFeedbackError(cell);
+                }
+                
+                deshacerEnProgresoAmarilla = false;
+                return;
+            }
+        }
+        
+        deshacerEnProgresoAmarilla = false;
+        return;
+    }
+    
+    // ============================================================
+    // SI NO ESTÁ MARCADA → MARCAR
+    // ============================================================
     
     // Marcar la celda
     historialMovimientos.push(id);
     
+    // ============================================================
+    // GUARDAR ACCIÓN PARA DESHACER
+    // ============================================================
+    if (typeof window.guardarAccion === 'function') {
+        window.guardarAccion('marcar', id, 'amarilla', {
+            fila: filaIndex,
+            col: colIndex,
+            valor: valor
+        });
+    }
+    
     // Actualizar visual en el zoom
-    actualizarVisualesZoom();
+    if (typeof actualizarVisualesZoom === 'function') {
+        actualizarVisualesZoom();
+    }
     
     // Verificar si la fila está completa
     verificarFilaCompleta(filaIndex);
@@ -139,12 +288,13 @@ function manejarClickAmarilla(filaIndex, colIndex) {
     // Verificar si todo está completo
     verificarTodoCompleto();
     
-    // ACTUALIZAR PUNTAJES SIEMPRE usando el sistema de puntuación
+    // ACTUALIZAR PUNTAJES
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         PUNTAJES.calcularTotal();
     } else {
         recalcularPuntajesAmarilla();
     }
+    
     actualizarVisuales();
     
     // Sincronizar con otros jugadores
@@ -174,7 +324,7 @@ function verificarFilaCompleta(filaIndex) {
         }
     });
     
-    if (marcadas === totalNumeros && !filasCompletadas[filaIndex]) {
+    if (marcadas === totalNumeros && !filasCompletadas[filaIndex] && totalNumeros > 0) {
         filasCompletadas[filaIndex] = true;
         
         // Actualizar círculo de bonificación de fila
@@ -188,9 +338,16 @@ function verificarFilaCompleta(filaIndex) {
         bonificacionesAmarilla[`fila${filaIndex}`] = true;
         
         // Desbloquear en Gris o registrar Lobo según corresponda
-        if (config.habilidadGris === 'lobo') {
+        if (config.bonificacion === 'Lobo') {
             if (typeof registrarLobo === 'function') {
                 registrarLobo('amarilla');
+                // Guardar acción de lobo
+                if (typeof window.guardarAccion === 'function' && typeof lobos !== 'undefined') {
+                    window.guardarAccion('lobo', `lobo-amarilla-${filaIndex}`, 'amarilla', {
+                        cantidadAnterior: lobos.cantidad - 1,
+                        totalAnterior: (lobos.cantidad - 1) * (lobos.valorActual || 0)
+                    });
+                }
             }
         } else {
             desbloquearEnGris(config.habilidadGris, config.indiceGris);
@@ -251,10 +408,9 @@ function verificarColumnaCompleta(colIndex) {
             circulos[colIndex].textContent = '✓';
         }
         
-        // ACTUALIZAR PUNTAJES INMEDIATAMENTE
+        // ACTUALIZAR PUNTAJES
         if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
             PUNTAJES.calcularTotal();
-            // Actualizar leaderboard
             if (typeof renderizarLeaderboard === 'function') {
                 renderizarLeaderboard();
             }
@@ -290,7 +446,7 @@ function verificarTodoCompleto() {
         const indiceCorrecto = AMARILLA_CONFIG.indiceBonusTotal || 1;
         desbloquearEnGris('mas1', indiceCorrecto);
         
-        // ACTUALIZAR PUNTAJES INMEDIATAMENTE
+        // ACTUALIZAR PUNTAJES
         if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
             PUNTAJES.calcularTotal();
             if (typeof renderizarLeaderboard === 'function') {
@@ -303,17 +459,15 @@ function verificarTodoCompleto() {
 }
 
 // ============================================================
-// RECALCULAR PUNTAJES (FALLBACK - usado solo si PUNTAJES no existe)
+// RECALCULAR PUNTAJES (FALLBACK)
 // ============================================================
 
 function recalcularPuntajesAmarilla() {
-    // Si existe PUNTAJES, usarlo
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         PUNTAJES.calcularTotal();
         return;
     }
     
-    // Fallback: solo columnas, sin puntos por casillas
     let puntosColumnas = 0;
     columnasCompletadas.forEach((completada, index) => {
         if (completada) {
@@ -352,6 +506,7 @@ function resetAreaAmarilla() {
     columnasCompletadas = [false, false, false, false];
     filasCompletadas = [false, false, false, false];
     todoCompletado = false;
+    deshacerEnProgresoAmarilla = false;
     
     document.querySelectorAll('[data-area="amarilla"]').forEach(cell => {
         cell.classList.remove('marcada', 'desbloqueada', 'bloqueada', 'completada');
@@ -368,3 +523,5 @@ window.inicializarAreaAmarilla = inicializarAreaAmarilla;
 window.resetAreaAmarilla = resetAreaAmarilla;
 window.recalcularPuntajesAmarilla = recalcularPuntajesAmarilla;
 window.columnasCompletadas = columnasCompletadas;
+window.manejarClickAmarilla = manejarClickAmarilla;
+window.actualizarEstadosAmarilla = actualizarEstadosAmarilla;

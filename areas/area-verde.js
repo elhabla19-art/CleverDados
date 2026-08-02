@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA VERDE - CLEVERDADOS (CORREGIDO - PUNTAJES ESTÁTICOS Y LOBOS)
+// ÁREA VERDE - CLEVERDADOS (CON DESHACER CORREGIDO)
 // ============================================================
 
 // Puntajes visuales (siempre estáticos)
@@ -36,6 +36,9 @@ const BONUS_INDICES = [3, 5, 6, 8, 9];
 let progresoVerde = 0;
 let bonificacionesVerde = [false, false, false, false, false];
 
+// Flag para evitar doble clic después de deshacer
+let deshacerEnProgresoVerde = false;
+
 // ============================================================
 // INICIALIZACIÓN
 // ============================================================
@@ -51,7 +54,6 @@ function inicializarAreaVerde() {
     // --- FILA DE PUNTAJES (VISUAL) - SIEMPRE ESTÁTICOS ---
     html += `<div class="verde-puntajes-fila">`;
     PUNTAJES_VERDE.forEach((puntaje, index) => {
-        // SIEMPRE la misma clase, sin importar el progreso
         html += `
             <div class="puntaje-circulo" data-verde-puntaje="${index}" style="opacity:0.5;">
                 ${puntaje}
@@ -74,6 +76,7 @@ function inicializarAreaVerde() {
                 <div class="cell ${claseMarcada}" 
                      data-area="verde"
                      data-index="${index}"
+                     data-id="${id}"
                      onclick="manejarClickVerde(${index})">
                     ${celda.valor}
                 </div>
@@ -113,24 +116,44 @@ function inicializarAreaVerde() {
 }
 
 // ============================================================
-// ACTUALIZAR PROGRESO
+// ACTUALIZAR PROGRESO - CORREGIDO
 // ============================================================
 
 function actualizarProgresoVerde() {
-    let marcadas = 0;
+    // El progreso es la cantidad de casillas marcadas EN ORDEN consecutivo
+    let marcadasEnOrden = 0;
+    
     if (typeof TABLA_VERDE !== 'undefined' && TABLA_VERDE && typeof historialMovimientos !== 'undefined') {
-        TABLA_VERDE.forEach((celda, index) => {
-            const id = `verde-tabla-${index}`;
+        // Recorrer en orden y contar cuántas están marcadas consecutivamente
+        for (let i = 0; i < TABLA_VERDE.length; i++) {
+            const id = `verde-tabla-${i}`;
             if (historialMovimientos.includes(id)) {
-                marcadas++;
+                marcadasEnOrden++;
+            } else {
+                // Si encontramos una casilla NO marcada, nos detenemos
+                break;
             }
-        });
+        }
     }
-    progresoVerde = marcadas;
+    
+    progresoVerde = marcadasEnOrden;
+    console.log(`📊 progresoVerde actualizado: ${progresoVerde}`);
 }
 
 // ============================================================
-// MANEJAR CLICK EN CELDA - SOLO EN ORDEN
+// ACTUALIZAR ESTADOS DE VERDE (después de deshacer)
+// ============================================================
+
+function actualizarEstadosVerde() {
+    // Recalcular bonificaciones
+    BONUS_INDICES.forEach((index, bonusIdx) => {
+        const id = `verde-tabla-${index}`;
+        bonificacionesVerde[bonusIdx] = historialMovimientos.includes(id);
+    });
+}
+
+// ============================================================
+// MANEJAR CLICK EN CELDA - CON DESHACER CORREGIDO
 // ============================================================
 
 function manejarClickVerde(index) {
@@ -139,12 +162,76 @@ function manejarClickVerde(index) {
         return;
     }
     
+    // Si hay un deshacer en progreso, ignorar el click
+    if (deshacerEnProgresoVerde) {
+        console.log('⏳ Deshacer en progreso, ignorando click');
+        return;
+    }
+    
     const id = `verde-tabla-${index}`;
     
-    if (historialMovimientos.includes(id)) return;
+    console.log(`🖱️ Click en verde[${index}], id: ${id}`);
+    console.log(`📋 historialMovimientos:`, historialMovimientos);
+    console.log(`📋 está marcada: ${historialMovimientos.includes(id)}`);
+    
+    // ============================================================
+    // VERIFICAR SI YA ESTÁ MARCADA → INTENTAR DESHACER
+    // ============================================================
+    if (historialMovimientos.includes(id)) {
+        console.log(`🔍 Intento deshacer ${id}`);
+        
+        // Marcar que estamos en proceso de deshacer
+        deshacerEnProgresoVerde = true;
+        
+        // Intentar deshacer
+        if (typeof window.intentarDeshacer === 'function') {
+            const resultado = window.intentarDeshacer(id);
+            console.log(`📊 Resultado de intentarDeshacer:`, resultado);
+            
+            if (resultado && resultado.exito) {
+                console.log(`✅ Deshacer exitoso para ${id}`);
+                // El deshacer fue exitoso
+                actualizarEstadosVerde();
+                actualizarProgresoVerde();
+                if (typeof actualizarVisuales === 'function') {
+                    actualizarVisuales();
+                }
+                if (typeof actualizarVisualesZoom === 'function') {
+                    actualizarVisualesZoom();
+                }
+                
+                // Liberar el flag después de un pequeño delay
+                setTimeout(() => {
+                    deshacerEnProgresoVerde = false;
+                }, 200);
+                
+                return;
+            } else {
+                console.log(`❌ No se pudo deshacer ${id}:`, resultado ? resultado.mensaje : 'resultado null');
+                // No se pudo deshacer (no es el último movimiento)
+                const cell = document.querySelector(`[data-area="verde"][data-index="${index}"]`);
+                if (typeof window.mostrarFeedbackError === 'function') {
+                    window.mostrarFeedbackError(cell);
+                }
+                
+                deshacerEnProgresoVerde = false;
+                return;
+            }
+        }
+        
+        deshacerEnProgresoVerde = false;
+        return;
+    }
+    
+    // ============================================================
+    // SI NO ESTÁ MARCADA → VERIFICAR ORDEN Y MARCAR
+    // ============================================================
+    
+    console.log(`📋 progresoVerde: ${progresoVerde}, index: ${index}`);
     
     if (index !== progresoVerde) {
-        const cell = document.querySelector(`.cell[data-area="verde"][data-index="${index}"]`);
+        console.log(`⚠️ Fuera de orden: esperaba ${progresoVerde}, recibí ${index}`);
+        const cell = document.querySelector(`[data-area="verde"][data-index="${index}"]`);
         if (cell) {
             cell.style.borderColor = '#ff4444';
             setTimeout(() => {
@@ -154,8 +241,22 @@ function manejarClickVerde(index) {
         return;
     }
     
+    // ============================================================
+    // MARCAR CASILLA
+    // ============================================================
+    
     // Marcar la casilla
     historialMovimientos.push(id);
+    
+    // ============================================================
+    // GUARDAR ACCIÓN PARA DESHACER
+    // ============================================================
+    if (typeof window.guardarAccion === 'function') {
+        window.guardarAccion('marcar', id, 'verde', {
+            index: index,
+            valor: TABLA_VERDE[index].valor
+        });
+    }
     
     // Actualizar visuales
     actualizarVisuales();
@@ -184,7 +285,7 @@ function manejarClickVerde(index) {
 }
 
 // ============================================================
-// VERIFICAR BONIFICACIÓN INDIVIDUAL - DESBLOQUEA EN GRIS O REGISTRA LOBO
+// VERIFICAR BONIFICACIÓN INDIVIDUAL - CON DESHACER
 // ============================================================
 
 function verificarBonificacionIndividual(index) {
@@ -201,6 +302,13 @@ function verificarBonificacionIndividual(index) {
     if (celda.bonus === 'Lobo') {
         if (typeof registrarLobo === 'function') {
             registrarLobo('verde');
+            // Guardar acción de lobo
+            if (typeof window.guardarAccion === 'function' && typeof lobos !== 'undefined') {
+                window.guardarAccion('lobo', `lobo-verde-${index}`, 'verde', {
+                    cantidadAnterior: lobos.cantidad - 1,
+                    totalAnterior: (lobos.cantidad - 1) * (lobos.valorActual || 0)
+                });
+            }
         }
     } else {
         aplicarBonificacionVerde(celda.bonus);
@@ -304,6 +412,7 @@ function recalcularPuntajesVerde() {
 function resetAreaVerde() {
     progresoVerde = 0;
     bonificacionesVerde = [false, false, false, false, false];
+    deshacerEnProgresoVerde = false;
     
     document.querySelectorAll('.cell[data-area="verde"]').forEach(cell => {
         cell.classList.remove('marcada');
@@ -321,3 +430,5 @@ window.inicializarAreaVerde = inicializarAreaVerde;
 window.resetAreaVerde = resetAreaVerde;
 window.recalcularPuntajesVerde = recalcularPuntajesVerde;
 window.manejarClickVerde = manejarClickVerde;
+window.actualizarEstadosVerde = actualizarEstadosVerde;
+window.progresoVerde = progresoVerde;

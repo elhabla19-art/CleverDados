@@ -1,5 +1,5 @@
 // ============================================================
-// ÁREA GRIS - CLEVERDADOS (CORREGIDO - MANTIENE DESBLOQUEOS)
+// ÁREA GRIS - CLEVERDADOS (CON DESHACER CORREGIDO)
 // ============================================================
 
 // Configuración de turnos y sus bonificaciones
@@ -111,6 +111,7 @@ function inicializarAreaGris() {
                  data-area="gris" 
                  data-fila="turno" 
                  data-col="${index}"
+                 data-id="${id}"
                  data-turno="${turno.numero}"
                  data-bonificacion="${turno.bonificacion}"
                  onclick="manejarClickTurnoGris(${index})">
@@ -175,6 +176,7 @@ function generarFilaHabilidad(habilidadId) {
                      data-area="gris"
                      data-fila="${habilidadId}"
                      data-col="${index}"
+                     data-id="${id}"
                      data-habilidad="${habilidadId}"
                      data-color="${bgColor}"
                      onclick="manejarClickHabilidadGris('${habilidadId}', ${index})"
@@ -195,6 +197,7 @@ function generarFilaHabilidad(habilidadId) {
                      data-area="gris"
                      data-fila="${habilidadId}"
                      data-col="${i}"
+                     data-id="${id}"
                      data-habilidad="${habilidadId}"
                      onclick="manejarClickHabilidadGris('${habilidadId}', ${i})">
                     ${estaMarcada ? '✓' : ''}
@@ -303,27 +306,74 @@ function desbloquearSeisExterno(indice) {
     return desbloquearExterno('seis', indice);
 }
 
-// LOBO ELIMINADO - No hay función para lobo
-
 // ============================================================
-// MANEJAR CLICKS
+// MANEJAR CLICK EN TURNO - CON DESHACER CORREGIDO
 // ============================================================
 
 function manejarClickTurnoGris(index) {
-    // El área gris SIEMPRE se puede llenar (sin necesidad de zoom)
     const turno = TURNOS_CONFIG[index];
     const id = `gris-turno-${index}`;
     
-    if (historialMovimientos.includes(id)) return;
-    
-    if (index > 0) {
-        const anterior = `gris-turno-${index - 1}`;
-        if (!historialMovimientos.includes(anterior)) return;
+    // ============================================================
+    // VERIFICAR SI YA ESTÁ MARCADO → INTENTAR DESHACER
+    // ============================================================
+    if (historialMovimientos.includes(id)) {
+        // Intentar deshacer
+        if (typeof window.intentarDeshacer === 'function') {
+            const resultado = window.intentarDeshacer(id);
+            if (resultado && resultado.exito) {
+                // El deshacer ya actualizó todo
+                // Reconstruir turnosCompletados y actualizar visuales
+                reconstruirTurnosCompletados();
+                actualizarEstadosGris();
+                return;
+            } else {
+                // No se pudo deshacer (no es el último movimiento)
+                const cell = document.querySelector(`[data-area="gris"][data-fila="turno"][data-col="${index}"]`);
+                if (typeof window.mostrarFeedbackError === 'function') {
+                    window.mostrarFeedbackError(cell);
+                }
+                return;
+            }
+        }
+        return;
     }
     
+    // ============================================================
+    // SI NO ESTÁ MARCADO → VERIFICAR ORDEN Y MARCAR
+    // ============================================================
+    
+    // Validación de orden: solo se puede marcar en secuencia
+    if (index > 0) {
+        const anterior = `gris-turno-${index - 1}`;
+        if (!historialMovimientos.includes(anterior)) {
+            // Mostrar feedback de que no se puede marcar fuera de orden
+            const cell = document.querySelector(`[data-area="gris"][data-fila="turno"][data-col="${index}"]`);
+            if (cell) {
+                cell.style.borderColor = '#ff4444';
+                setTimeout(() => {
+                    cell.style.borderColor = '';
+                }, 500);
+            }
+            return;
+        }
+    }
+    
+    // Marcar el turno
     historialMovimientos.push(id);
     turnosCompletados.push(turno.numero);
     
+    // ============================================================
+    // GUARDAR ACCIÓN PARA DESHACER
+    // ============================================================
+    if (typeof window.guardarAccion === 'function') {
+        window.guardarAccion('turno', id, 'gris', {
+            turno: turno.numero,
+            index: index
+        });
+    }
+    
+    // Actualizar visual de la celda de turno
     const cell = document.querySelector(`[data-area="gris"][data-fila="turno"][data-col="${index}"]`);
     if (cell) cell.classList.add('marcada');
     
@@ -338,6 +388,19 @@ function manejarClickTurnoGris(index) {
     }
 }
 
+// ============================================================
+// RECONSTRUIR TURNOS COMPLETADOS DESDE EL HISTORIAL
+// ============================================================
+
+function reconstruirTurnosCompletados() {
+    turnosCompletados = [];
+    TURNOS_CONFIG.forEach((turno, index) => {
+        const id = `gris-turno-${index}`;
+        if (historialMovimientos.includes(id)) {
+            turnosCompletados.push(turno.numero);
+        }
+    });
+}
 
 // ============================================================
 // ACTUALIZAR DESBLOQUEOS POR TURNO (sin resetear externos)
@@ -378,17 +441,57 @@ function actualizarDesbloqueosPorTurno(turnoNumero) {
     });
 }
 
+// ============================================================
+// MANEJAR CLICK EN HABILIDAD - CON DESHACER CORREGIDO
+// ============================================================
+
 function manejarClickHabilidadGris(habilidadId, index) {
-    // El área gris SIEMPRE se puede llenar (sin necesidad de zoom)
     const config = HABILIDADES_CONFIG[habilidadId];
     if (!config) return;
     
     const id = `gris-${habilidadId}-${index}`;
     
-    if (historialMovimientos.includes(id)) return;
+    // ============================================================
+    // VERIFICAR SI YA ESTÁ MARCADO → INTENTAR DESHACER
+    // ============================================================
+    if (historialMovimientos.includes(id)) {
+        // Intentar deshacer
+        if (typeof window.intentarDeshacer === 'function') {
+            const resultado = window.intentarDeshacer(id);
+            if (resultado && resultado.exito) {
+                // El deshacer ya actualizó todo
+                actualizarEstadosGris();
+                return;
+            } else {
+                // No se pudo deshacer (no es el último movimiento)
+                const cell = document.querySelector(`[data-area="gris"][data-fila="${habilidadId}"][data-col="${index}"]`);
+                if (typeof window.mostrarFeedbackError === 'function') {
+                    window.mostrarFeedbackError(cell);
+                }
+                return;
+            }
+        }
+        return;
+    }
+    
+    // ============================================================
+    // SI NO ESTÁ MARCADO → VERIFICAR DESBLOQUEO Y MARCAR
+    // ============================================================
+    
     if (!estaDesbloqueadaGris(habilidadId, index)) return;
     
     historialMovimientos.push(id);
+    
+    // ============================================================
+    // GUARDAR ACCIÓN PARA DESHACER
+    // ============================================================
+    if (typeof window.guardarAccion === 'function') {
+        window.guardarAccion('habilidad', id, 'gris', {
+            habilidad: habilidadId,
+            index: index
+        });
+    }
+    
     aplicarBonificacionGris(habilidadId);
     
     actualizarEstadosGris();
@@ -400,6 +503,62 @@ function manejarClickHabilidadGris(habilidadId, index) {
     }
 }
 
+// ============================================================
+// ACTUALIZAR ESTADOS DE GRIS (después de deshacer)
+// ============================================================
+
+function actualizarEstadosGris() {
+    // Reconstruir turnosCompletados desde el historial
+    reconstruirTurnosCompletados();
+    
+    // Actualizar visuales de habilidades
+    document.querySelectorAll('.celda-habilidad').forEach(cell => {
+        const habilidadId = cell.dataset.habilidad;
+        const index = parseInt(cell.dataset.col);
+        const id = `gris-${habilidadId}-${index}`;
+        const clave = `${habilidadId}-${index}`;
+        
+        // Si está marcada/usada
+        if (historialMovimientos.includes(id)) {
+            cell.classList.remove('bloqueada', 'desbloqueada');
+            cell.classList.add('usada');
+            cell.textContent = '✓';
+            return;
+        }
+        
+        // Si está desbloqueada externamente o por turnos
+        const estaDesbloqueada = desbloqueosExternos[clave] || estaDesbloqueadaGris(habilidadId, index);
+        
+        if (estaDesbloqueada) {
+            cell.classList.remove('bloqueada', 'usada');
+            cell.classList.add('desbloqueada');
+            cell.textContent = '';
+            if (cell.dataset.color) {
+                cell.style.opacity = '1';
+                cell.style.filter = 'none';
+            }
+        } else {
+            cell.classList.remove('desbloqueada', 'usada');
+            cell.classList.add('bloqueada');
+            cell.textContent = '';
+            if (cell.dataset.color) {
+                cell.style.opacity = '0.3';
+                cell.style.filter = 'grayscale(0.8)';
+            }
+        }
+    });
+    
+    // Actualizar turnos
+    document.querySelectorAll('.gris-turno-cell').forEach(cell => {
+        const index = parseInt(cell.dataset.col);
+        const id = `gris-turno-${index}`;
+        if (historialMovimientos.includes(id)) {
+            cell.classList.add('marcada');
+        } else {
+            cell.classList.remove('marcada');
+        }
+    });
+}
 
 // ============================================================
 // APLICAR BONIFICACIONES
@@ -428,49 +587,6 @@ function aplicarBonificacionGris(habilidadId) {
 }
 
 // ============================================================
-// ACTUALIZAR ESTADOS VISUALES (mantiene desbloqueos externos)
-// ============================================================
-
-function actualizarEstadosGris() {
-    document.querySelectorAll('.celda-habilidad').forEach(cell => {
-        const habilidadId = cell.dataset.habilidad;
-        const index = parseInt(cell.dataset.col);
-        const id = `gris-${habilidadId}-${index}`;
-        const clave = `${habilidadId}-${index}`;
-        
-        // Si está marcada/usada
-        if (historialMovimientos.includes(id)) {
-            cell.classList.remove('bloqueada', 'desbloqueada');
-            cell.classList.add('usada');
-            cell.textContent = '✓';
-            return;
-        }
-        
-        // Si está desbloqueada externamente o por turnos
-        const estaDesbloqueada = desbloqueosExternos[clave] || estaDesbloqueadaGris(habilidadId, index);
-        
-        if (estaDesbloqueada) {
-            cell.classList.remove('bloqueada', 'usada');
-            cell.classList.add('desbloqueada');
-            cell.textContent = '';
-            // Asegurar que el color se mantenga
-            if (cell.dataset.color) {
-                cell.style.opacity = '1';
-                cell.style.filter = 'none';
-            }
-        } else {
-            cell.classList.remove('desbloqueada', 'usada');
-            cell.classList.add('bloqueada');
-            cell.textContent = '';
-            if (cell.dataset.color) {
-                cell.style.opacity = '0.3';
-                cell.style.filter = 'grayscale(0.8)';
-            }
-        }
-    });
-}
-
-// ============================================================
 // RECALCULAR PUNTAJES
 // ============================================================
 
@@ -483,7 +599,8 @@ function recalcularPuntajes() {
     }
     
     puntajesAreas.gris = puntos;
-    document.getElementById('score-gris').textContent = puntos;
+    const element = document.getElementById('score-gris');
+    if (element) element.textContent = puntos;
     
     let total = 0;
     const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
@@ -493,8 +610,10 @@ function recalcularPuntajes() {
     total += puntosBonificacion;
     
     puntajeTotal = total;
-    document.getElementById('score-total').textContent = total;
-    document.getElementById('bonus-display').textContent = puntosBonificacion;
+    const totalElement = document.getElementById('score-total');
+    const bonusElement = document.getElementById('bonus-display');
+    if (totalElement) totalElement.textContent = total;
+    if (bonusElement) bonusElement.textContent = puntosBonificacion;
 }
 
 // ============================================================
@@ -522,3 +641,8 @@ window.desbloquearEspiralExterno = desbloquearEspiralExterno;
 window.desbloquearMas1Externo = desbloquearMas1Externo;
 window.desbloquearXExterno = desbloquearXExterno;
 window.desbloquearSeisExterno = desbloquearSeisExterno;
+window.manejarClickTurnoGris = manejarClickTurnoGris;
+window.manejarClickHabilidadGris = manejarClickHabilidadGris;
+window.actualizarEstadosGris = actualizarEstadosGris;
+window.reconstruirTurnosCompletados = reconstruirTurnosCompletados;
+window.turnosCompletados = turnosCompletados;
