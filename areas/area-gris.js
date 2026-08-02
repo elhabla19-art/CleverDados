@@ -237,7 +237,7 @@ function estaDesbloqueadaGris(habilidadId, index) {
 }
 
 // ============================================================
-// FUNCIONES DE DESBLOQUEO EXTERNO UNIFICADAS
+// FUNCIONES DE DESBLOQUEO EXTERNO UNIFICADAS - CON UI ACTUALIZADA
 // ============================================================
 
 function desbloquearExterno(habilidadId, indice) {
@@ -253,6 +253,7 @@ function desbloquearExterno(habilidadId, indice) {
             cell.style.opacity = '1';
             cell.style.filter = 'none';
         }
+        cell.textContent = '';
         return true;
     }
     return false;
@@ -277,35 +278,106 @@ function desbloquearSiguienteExterno(habilidadId) {
         cell.style.opacity = '1';
         cell.style.filter = 'none';
     }
+    cell.textContent = '';
     return true;
 }
 
-// FUNCIONES PÚBLICAS - TODAS USAN desbloqueosExternos
+// FUNCIONES PÚBLICAS - TODAS USAN desbloqueosExternos Y ACTUALIZAN UI
 function desbloquearEspiralExterno(indice) {
-    if (indice !== undefined) {
-        return desbloquearExterno('espiral', indice);
-    }
-    return desbloquearSiguienteExterno('espiral');
+    const resultado = indice !== undefined 
+        ? desbloquearExterno('espiral', indice)
+        : desbloquearSiguienteExterno('espiral');
+    
+    // Actualizar visuales completos después del desbloqueo
+    setTimeout(() => {
+        if (typeof actualizarEstadosGris === 'function') {
+            actualizarEstadosGris();
+        }
+        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+            PUNTAJES.calcularTotal();
+        }
+        if (typeof renderizarLeaderboard === 'function') {
+            renderizarLeaderboard();
+        }
+    }, 50);
+    
+    return resultado;
 }
 
 function desbloquearMas1Externo(indice) {
-    if (indice !== undefined) {
-        return desbloquearExterno('mas1', indice);
-    }
-    return desbloquearSiguienteExterno('mas1');
+    const resultado = indice !== undefined 
+        ? desbloquearExterno('mas1', indice)
+        : desbloquearSiguienteExterno('mas1');
+    
+    setTimeout(() => {
+        if (typeof actualizarEstadosGris === 'function') {
+            actualizarEstadosGris();
+        }
+        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+            PUNTAJES.calcularTotal();
+        }
+        if (typeof renderizarLeaderboard === 'function') {
+            renderizarLeaderboard();
+        }
+    }, 50);
+    
+    return resultado;
 }
 
 function desbloquearXExterno(indice) {
-    return desbloquearExterno('x', indice);
+    const resultado = desbloquearExterno('x', indice);
+    
+    setTimeout(() => {
+        if (typeof actualizarEstadosGris === 'function') {
+            actualizarEstadosGris();
+        }
+        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+            PUNTAJES.calcularTotal();
+        }
+        if (typeof renderizarLeaderboard === 'function') {
+            renderizarLeaderboard();
+        }
+    }, 50);
+    
+    return resultado;
 }
 
 function desbloquearSeisExterno(indice) {
-    return desbloquearExterno('seis', indice);
+    const resultado = desbloquearExterno('seis', indice);
+    
+    setTimeout(() => {
+        if (typeof actualizarEstadosGris === 'function') {
+            actualizarEstadosGris();
+        }
+        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+            PUNTAJES.calcularTotal();
+        }
+        if (typeof renderizarLeaderboard === 'function') {
+            renderizarLeaderboard();
+        }
+    }, 50);
+    
+    return resultado;
 }
 
 // FUNCIÓN GENÉRICA PARA USAR DESDE OTRAS ÁREAS
 function desbloquearHabilidadEnGris(habilidadId, indice) {
-    return desbloquearExterno(habilidadId, indice);
+    const resultado = desbloquearExterno(habilidadId, indice);
+    
+    // Actualizar visuales completos
+    setTimeout(() => {
+        if (typeof actualizarEstadosGris === 'function') {
+            actualizarEstadosGris();
+        }
+        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+            PUNTAJES.calcularTotal();
+        }
+        if (typeof renderizarLeaderboard === 'function') {
+            renderizarLeaderboard();
+        }
+    }, 50);
+    
+    return resultado;
 }
 
 // ============================================================
@@ -434,6 +506,7 @@ function actualizarDesbloqueosPorTurno(turnoNumero) {
                         cell.style.opacity = '1';
                         cell.style.filter = 'none';
                     }
+                    cell.textContent = '';
                 }
             }
         }
