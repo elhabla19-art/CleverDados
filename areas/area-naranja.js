@@ -190,11 +190,55 @@ function actualizarVisualesNaranja() {
 // ============================================================
 
 function actualizarEstadosNaranja() {
+    console.log('🔄 Actualizando estados de Naranja...');
+    
     // Recalcular bonificaciones
     BONUS_INDICES_NARANJA.forEach((index, bonusIdx) => {
         const id = `naranja-${index}`;
         bonificacionesNaranja[bonusIdx] = historialMovimientos.includes(id);
+        console.log(`  Bonus ${bonusIdx} (índice ${index}): ${bonificacionesNaranja[bonusIdx] ? 'ACTIVO ✅' : 'inactivo ❌'}`);
     });
+}
+
+// ============================================================
+// DESBLOQUEAR EN GRIS
+// ============================================================
+
+function desbloquearEnGrisNaranja(habilidadId, indice) {
+    console.log(`🔓 Desbloqueando en Gris (Naranja): ${habilidadId}-${indice}`);
+    
+    if (typeof window.desbloquearHabilidadEnGris === 'function') {
+        return window.desbloquearHabilidadEnGris(habilidadId, indice);
+    }
+    
+    // Fallback: funciones específicas
+    if (habilidadId === 'x' && typeof window.desbloquearXExterno === 'function') {
+        return window.desbloquearXExterno(indice);
+    }
+    if (habilidadId === 'seis' && typeof window.desbloquearSeisExterno === 'function') {
+        return window.desbloquearSeisExterno(indice);
+    }
+    if (habilidadId === 'espiral' && typeof window.desbloquearEspiralExterno === 'function') {
+        return window.desbloquearEspiralExterno(indice);
+    }
+    if (habilidadId === 'mas1' && typeof window.desbloquearMas1Externo === 'function') {
+        return window.desbloquearMas1Externo(indice);
+    }
+    
+    // Fallback final: DOM directo
+    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
+    const cell = document.querySelector(selector);
+    
+    if (cell && cell.classList.contains('bloqueada')) {
+        cell.classList.remove('bloqueada');
+        cell.classList.add('desbloqueada');
+        if (cell.dataset.color) {
+            cell.style.opacity = '1';
+            cell.style.filter = 'none';
+        }
+        return true;
+    }
+    return false;
 }
 
 // ============================================================
@@ -217,8 +261,6 @@ function manejarClickNaranja(index) {
     const id = `naranja-${index}`;
     
     console.log(`🖱️ Click en naranja[${index}], id: ${id}`);
-    console.log(`📋 historialMovimientos:`, historialMovimientos);
-    console.log(`📋 está marcada: ${historialMovimientos.includes(id)}`);
     
     // ============================================================
     // VERIFICAR SI YA ESTÁ MARCADA → INTENTAR DESHACER
@@ -226,38 +268,49 @@ function manejarClickNaranja(index) {
     if (historialMovimientos.includes(id)) {
         console.log(`🔍 Intento deshacer ${id}`);
         
-        // Marcar que estamos en proceso de deshacer
         deshacerEnProgresoNaranja = true;
         
-        // Intentar deshacer
         if (typeof window.intentarDeshacer === 'function') {
             const resultado = window.intentarDeshacer(id);
-            console.log(`📊 Resultado de intentarDeshacer:`, resultado);
             
             if (resultado && resultado.exito) {
                 console.log(`✅ Deshacer exitoso para ${id}`);
-                // El deshacer fue exitoso
                 actualizarEstadosNaranja();
                 actualizarProgresoNaranja();
                 actualizarVisualesNaranja();
+                
+                // ================================================
+                // RECONSTRUIR GRIS - ¡ESTA ES LA LÍNEA CLAVE!
+                // ================================================
+                if (typeof window.reconstruirGrisCompleto === 'function') {
+                    window.reconstruirGrisCompleto();
+                }
+                
                 if (typeof actualizarVisuales === 'function') {
                     actualizarVisuales();
                 }
                 
-                // Liberar el flag después de un pequeño delay
+                if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+                    PUNTAJES.calcularTotal();
+                } else {
+                    recalcularPuntajesNaranja();
+                }
+                
+                if (typeof renderizarLeaderboard === 'function') {
+                    renderizarLeaderboard();
+                }
+                
                 setTimeout(() => {
                     deshacerEnProgresoNaranja = false;
                 }, 200);
                 
                 return;
             } else {
-                console.log(`❌ No se pudo deshacer ${id}:`, resultado ? resultado.mensaje : 'resultado null');
-                // No se pudo deshacer (no es el último movimiento)
+                console.log(`❌ No se pudo deshacer ${id}`);
                 const cell = document.querySelector(`[data-area="naranja"][data-index="${index}"]`);
                 if (typeof window.mostrarFeedbackError === 'function') {
                     window.mostrarFeedbackError(cell);
                 }
-                
                 deshacerEnProgresoNaranja = false;
                 return;
             }
@@ -296,7 +349,6 @@ function manejarClickNaranja(index) {
             mostrarModalNumerico(function(numero) {
                 console.log(`🔢 Número seleccionado: ${numero}`);
                 let valorFinal = numero * celda.multiplicador;
-                // Guardar el valor anterior antes de modificarlo
                 const valorAnterior = valoresNaranja[index];
                 valoresNaranja[index] = valorFinal;
                 marcarNaranja(index, valorFinal, valorAnterior);
@@ -367,7 +419,7 @@ function marcarNaranja(index, numero, valorAnterior) {
 }
 
 // ============================================================
-// VERIFICAR BONIFICACIÓN - CON DESHACER
+// VERIFICAR BONIFICACIÓN - CON SOPORTE PARA LOBOS
 // ============================================================
 
 function verificarBonificacionNaranja(index) {
@@ -380,15 +432,19 @@ function verificarBonificacionNaranja(index) {
     
     bonificacionesNaranja[bonusIdx] = true;
     
+    console.log(`✅ Bonificación en Naranja índice ${index}: ${celda.bonus}`);
+    
     // Si es Lobo, registrar en lugar de desbloquear en Gris
     if (celda.bonus === 'Lobo') {
         if (typeof registrarLobo === 'function') {
+            const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
             registrarLobo('naranja');
-            // Guardar acción de lobo
-            if (typeof window.guardarAccion === 'function' && typeof lobos !== 'undefined') {
-                window.guardarAccion('lobo', `lobo-naranja-${index}`, 'naranja', {
-                    cantidadAnterior: lobos.cantidad - 1,
-                    totalAnterior: (lobos.cantidad - 1) * (lobos.valorActual || 0)
+            
+            if (typeof window.actualizarUltimaAccion === 'function') {
+                window.actualizarUltimaAccion({
+                    tipo: 'marcar_con_lobo',
+                    cantidadAntes: cantidadAntes,
+                    cantidadDespues: cantidadAntes + 1
                 });
             }
         }
@@ -406,24 +462,16 @@ function aplicarBonificacionNaranja(celda) {
     
     switch(celda.tipo) {
         case 'espiral':
-            if (typeof window.desbloquearEspiralExterno === 'function') {
-                window.desbloquearEspiralExterno(celda.indiceGris);
-            }
+            desbloquearEnGrisNaranja('espiral', celda.indiceGris);
             break;
         case 'mas1':
-            if (typeof window.desbloquearMas1Externo === 'function') {
-                window.desbloquearMas1Externo(celda.indiceGris);
-            }
+            desbloquearEnGrisNaranja('mas1', celda.indiceGris);
             break;
         case 'x':
-            if (typeof window.desbloquearXExterno === 'function') {
-                window.desbloquearXExterno(celda.indiceGris);
-            }
+            desbloquearEnGrisNaranja('x', celda.indiceGris);
             break;
         case 'seis':
-            if (typeof window.desbloquearSeisExterno === 'function') {
-                window.desbloquearSeisExterno(celda.indiceGris);
-            }
+            desbloquearEnGrisNaranja('seis', celda.indiceGris);
             break;
         case 'lobo':
             // Los lobos ya se manejan en verificarBonificacionNaranja
@@ -520,3 +568,6 @@ window.manejarClickNaranja = manejarClickNaranja;
 window.marcarNaranja = marcarNaranja;
 window.actualizarEstadosNaranja = actualizarEstadosNaranja;
 window.progresoNaranja = progresoNaranja;
+window.bonificacionesNaranja = bonificacionesNaranja;
+
+console.log('🟧 Área Naranja cargada correctamente');

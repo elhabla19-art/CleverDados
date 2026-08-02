@@ -17,17 +17,16 @@ const AMARILLA_CONFIG = {
 
 // Estado de bonificaciones desbloqueadas
 let bonificacionesAmarilla = {
-    fila0: false, // XAzul
-    fila1: false, // 4Naranja
-    fila2: false, // XVerde
-    fila3: false  // Lobo
+    fila0: false,
+    fila1: false,
+    fila2: false,
+    fila3: false
 };
 
 let columnasCompletadas = [false, false, false, false];
 let filasCompletadas = [false, false, false, false];
 let todoCompletado = false;
 
-// Flag para evitar doble clic después de deshacer
 let deshacerEnProgresoAmarilla = false;
 
 // ============================================================
@@ -38,25 +37,20 @@ function inicializarAreaAmarilla() {
     const container = document.getElementById('area-amarilla-content');
     if (!container) return;
     
+    // Asegurar que los estados estén sincronizados
+    actualizarEstadosAmarilla();
+    
     let html = `<div class="amarilla-grid">`;
     
-    // Generar filas
     AMARILLA_CONFIG.filas.forEach((fila, filaIndex) => {
         html += `<div class="amarilla-fila" data-fila="${filaIndex}">`;
         
-        // Celdas de números (4 columnas)
         fila.numeros.forEach((valor, colIndex) => {
             const esX = valor === 'X';
             const id = `amarilla-${filaIndex}-${colIndex}`;
             const estaMarcada = historialMovimientos.includes(id);
             const clasePreMarcada = esX ? 'pre-marcada' : '';
             const claseMarcada = estaMarcada ? 'marcada' : '';
-            
-            // Obtener el valor a mostrar (si está marcada y tiene valor)
-            let displayValue = valor;
-            if (estaMarcada && !esX) {
-                displayValue = valor;
-            }
             
             html += `
                 <div class="cell ${clasePreMarcada} ${claseMarcada}" 
@@ -66,12 +60,11 @@ function inicializarAreaAmarilla() {
                      data-esx="${esX}"
                      data-id="${id}"
                      onclick="manejarClickAmarilla(${filaIndex}, ${colIndex})">
-                    ${displayValue}
+                    ${valor}
                 </div>
             `;
         });
         
-        // Círculo de bonificación de fila (5ª columna)
         const bonifDesbloqueada = bonificacionesAmarilla[`fila${filaIndex}`];
         const clase = bonifDesbloqueada ? 'puntaje-completado' : 'puntaje-pendiente';
         
@@ -87,7 +80,6 @@ function inicializarAreaAmarilla() {
         html += `</div>`;
     });
     
-    // Fila de círculos de puntajes de columnas
     html += `<div class="amarilla-puntajes">`;
     AMARILLA_CONFIG.columnas.forEach((puntaje, colIndex) => {
         const completada = columnasCompletadas[colIndex];
@@ -99,7 +91,6 @@ function inicializarAreaAmarilla() {
         `;
     });
     
-    // Círculo de bonus total +1
     const claseTotal = todoCompletado ? 'puntaje-completado' : 'puntaje-pendiente';
     html += `
         <div class="puntaje-circulo ${claseTotal}">${todoCompletado ? '✓' : '+1'}</div>
@@ -112,11 +103,13 @@ function inicializarAreaAmarilla() {
 }
 
 // ============================================================
-// ACTUALIZAR ESTADOS DE AMARILLA (después de deshacer)
+// ACTUALIZAR ESTADOS DE AMARILLA - CORREGIDO
 // ============================================================
 
 function actualizarEstadosAmarilla() {
-    // Recalcular filas completadas
+    console.log('🔄 Actualizando estados de Amarilla...');
+    
+    // Recalcular filas completadas y bonificaciones
     AMARILLA_CONFIG.filas.forEach((config, filaIndex) => {
         let marcadas = 0;
         let totalNumeros = 0;
@@ -131,15 +124,22 @@ function actualizarEstadosAmarilla() {
             }
         });
         
-        const estabaCompletada = filasCompletadas[filaIndex];
         filasCompletadas[filaIndex] = (marcadas === totalNumeros && totalNumeros > 0);
         
-        // Si estaba completada y ahora no, revertir bonificación
-        if (estabaCompletada && !filasCompletadas[filaIndex]) {
-            bonificacionesAmarilla[`fila${filaIndex}`] = false;
-            // Actualizar círculo
-            const circulo = document.querySelector(`.amarilla-bonificacion-circulo[data-amarilla-fila="${filaIndex}"]`);
-            if (circulo) {
+        // ACTUALIZAR BONIFICACIÓN basado en filasCompletadas
+        const bonifKey = `fila${filaIndex}`;
+        bonificacionesAmarilla[bonifKey] = filasCompletadas[filaIndex];
+        
+        console.log(`  Fila ${filaIndex}: ${marcadas}/${totalNumeros} → ${filasCompletadas[filaIndex] ? 'COMPLETA ✅' : 'incompleta ❌'}, bonificación: ${bonificacionesAmarilla[bonifKey]}`);
+        
+        // Actualizar el círculo visual
+        const circulo = document.querySelector(`.amarilla-bonificacion-circulo[data-amarilla-fila="${filaIndex}"]`);
+        if (circulo) {
+            if (filasCompletadas[filaIndex]) {
+                circulo.classList.remove('puntaje-pendiente');
+                circulo.classList.add('puntaje-completado');
+                circulo.textContent = '✓';
+            } else {
                 circulo.classList.remove('puntaje-completado');
                 circulo.classList.add('puntaje-pendiente');
                 circulo.textContent = config.simbolo;
@@ -161,150 +161,89 @@ function actualizarEstadosAmarilla() {
             }
         }
         columnasCompletadas[colIndex] = todasMarcadas;
+        
+        console.log(`  Columna ${colIndex}: ${columnasCompletadas[colIndex] ? 'COMPLETA ✅' : 'incompleta ❌'}`);
+        
+        // Actualizar el círculo de columna
+        const circulos = document.querySelectorAll('.amarilla-puntajes .puntaje-circulo');
+        if (circulos[colIndex]) {
+            if (columnasCompletadas[colIndex]) {
+                circulos[colIndex].classList.remove('puntaje-pendiente');
+                circulos[colIndex].classList.add('puntaje-completado');
+                circulos[colIndex].textContent = '✓';
+            } else {
+                circulos[colIndex].classList.remove('puntaje-completado');
+                circulos[colIndex].classList.add('puntaje-pendiente');
+                circulos[colIndex].textContent = AMARILLA_CONFIG.columnas[colIndex];
+            }
+        }
     }
     
     // Recalcular todo completado
     todoCompletado = filasCompletadas.every(f => f === true) && columnasCompletadas.every(c => c === true);
-}
-
-// ============================================================
-// MANEJAR CLICK EN CELDA - CON DESHACER CORREGIDO
-// ============================================================
-
-function manejarClickAmarilla(filaIndex, colIndex) {
-    // SOLO permitir clicks si estamos en modo zoom
-    if (typeof enModoZoom === 'undefined' || !enModoZoom) {
-        return;
-    }
     
-    // Si hay un deshacer en progreso, ignorar el click
-    if (deshacerEnProgresoAmarilla) {
-        console.log('⏳ Deshacer en progreso, ignorando click');
-        return;
-    }
+    console.log(`  Todo completado: ${todoCompletado ? 'SÍ ✅' : 'NO ❌'}`);
     
-    const config = AMARILLA_CONFIG.filas[filaIndex];
-    if (!config) return;
-    
-    const valor = config.numeros[colIndex];
-    
-    // Si es X, no se puede marcar
-    if (valor === 'X') return;
-    
-    const id = `amarilla-${filaIndex}-${colIndex}`;
-    
-    console.log(`🖱️ Click en amarilla[${filaIndex}][${colIndex}], id: ${id}`);
-    console.log(`📋 historialMovimientos:`, historialMovimientos);
-    console.log(`📋 está marcada: ${historialMovimientos.includes(id)}`);
-    
-    // ============================================================
-    // VERIFICAR SI YA ESTÁ MARCADA → INTENTAR DESHACER
-    // ============================================================
-    if (historialMovimientos.includes(id)) {
-        console.log(`🔍 Intento deshacer ${id}`);
-        
-        // Marcar que estamos en proceso de deshacer
-        deshacerEnProgresoAmarilla = true;
-        
-        // Intentar deshacer
-        if (typeof window.intentarDeshacer === 'function') {
-            const resultado = window.intentarDeshacer(id);
-            console.log(`📊 Resultado de intentarDeshacer:`, resultado);
-            
-            if (resultado && resultado.exito) {
-                console.log(`✅ Deshacer exitoso para ${id}`);
-                // El deshacer fue exitoso
-                actualizarEstadosAmarilla();
-                if (typeof actualizarVisuales === 'function') {
-                    actualizarVisuales();
-                }
-                if (typeof actualizarVisualesZoom === 'function') {
-                    actualizarVisualesZoom();
-                }
-                
-                // Recalcular puntajes
-                if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-                    PUNTAJES.calcularTotal();
-                } else {
-                    recalcularPuntajesAmarilla();
-                }
-                
-                if (typeof renderizarLeaderboard === 'function') {
-                    renderizarLeaderboard();
-                }
-                
-                // Liberar el flag después de un pequeño delay
-                setTimeout(() => {
-                    deshacerEnProgresoAmarilla = false;
-                }, 200);
-                
-                return;
-            } else {
-                console.log(`❌ No se pudo deshacer ${id}:`, resultado ? resultado.mensaje : 'resultado null');
-                // No se pudo deshacer (no es el último movimiento)
-                const cell = document.querySelector(`[data-area="amarilla"][data-fila="${filaIndex}"][data-col="${colIndex}"]`);
-                if (typeof window.mostrarFeedbackError === 'function') {
-                    window.mostrarFeedbackError(cell);
-                }
-                
-                deshacerEnProgresoAmarilla = false;
-                return;
-            }
+    // Actualizar círculo +1
+    const circulos = document.querySelectorAll('.amarilla-puntajes .puntaje-circulo');
+    const ultimoCirculo = circulos[circulos.length - 1];
+    if (ultimoCirculo) {
+        if (todoCompletado) {
+            ultimoCirculo.classList.remove('puntaje-pendiente');
+            ultimoCirculo.classList.add('puntaje-completado');
+            ultimoCirculo.textContent = '✓';
+        } else {
+            ultimoCirculo.classList.remove('puntaje-completado');
+            ultimoCirculo.classList.add('puntaje-pendiente');
+            ultimoCirculo.textContent = '+1';
         }
-        
-        deshacerEnProgresoAmarilla = false;
-        return;
-    }
-    
-    // ============================================================
-    // SI NO ESTÁ MARCADA → MARCAR
-    // ============================================================
-    
-    // Marcar la celda
-    historialMovimientos.push(id);
-    
-    // ============================================================
-    // GUARDAR ACCIÓN PARA DESHACER
-    // ============================================================
-    if (typeof window.guardarAccion === 'function') {
-        window.guardarAccion('marcar', id, 'amarilla', {
-            fila: filaIndex,
-            col: colIndex,
-            valor: valor
-        });
-    }
-    
-    // Actualizar visual en el zoom
-    if (typeof actualizarVisualesZoom === 'function') {
-        actualizarVisualesZoom();
-    }
-    
-    // Verificar si la fila está completa
-    verificarFilaCompleta(filaIndex);
-    
-    // Verificar si la columna está completa
-    verificarColumnaCompleta(colIndex);
-    
-    // Verificar si todo está completo
-    verificarTodoCompleto();
-    
-    // ACTUALIZAR PUNTAJES
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    } else {
-        recalcularPuntajesAmarilla();
-    }
-    
-    actualizarVisuales();
-    
-    // Sincronizar con otros jugadores
-    if (typeof broadcastPuntaje === 'function') {
-        broadcastPuntaje('sync');
     }
 }
 
 // ============================================================
-// VERIFICAR FILAS COMPLETAS
+// DESBLOQUEAR EN GRIS
+// ============================================================
+
+function desbloquearEnGris(habilidadId, indice) {
+    console.log(`🔓 Desbloqueando en Gris: ${habilidadId}-${indice}`);
+    
+    // Intentar usar el sistema unificado
+    if (typeof window.desbloquearHabilidadEnGris === 'function') {
+        return window.desbloquearHabilidadEnGris(habilidadId, indice);
+    }
+    
+    // Fallback: funciones específicas
+    if (habilidadId === 'x' && typeof window.desbloquearXExterno === 'function') {
+        return window.desbloquearXExterno(indice);
+    }
+    if (habilidadId === 'seis' && typeof window.desbloquearSeisExterno === 'function') {
+        return window.desbloquearSeisExterno(indice);
+    }
+    if (habilidadId === 'espiral' && typeof window.desbloquearEspiralExterno === 'function') {
+        return window.desbloquearEspiralExterno(indice);
+    }
+    if (habilidadId === 'mas1' && typeof window.desbloquearMas1Externo === 'function') {
+        return window.desbloquearMas1Externo(indice);
+    }
+    
+    // Fallback final: DOM directo
+    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
+    const cell = document.querySelector(selector);
+    
+    if (cell && cell.classList.contains('bloqueada')) {
+        cell.classList.remove('bloqueada');
+        cell.classList.add('desbloqueada');
+        if (cell.dataset.color) {
+            cell.style.opacity = '1';
+            cell.style.filter = 'none';
+        }
+        return true;
+    }
+    return false;
+}
+
+// ============================================================
+// VERIFICAR FILAS COMPLETAS - CON SOPORTE PARA LOBOS
 // ============================================================
 
 function verificarFilaCompleta(filaIndex) {
@@ -326,8 +265,8 @@ function verificarFilaCompleta(filaIndex) {
     
     if (marcadas === totalNumeros && !filasCompletadas[filaIndex] && totalNumeros > 0) {
         filasCompletadas[filaIndex] = true;
+        bonificacionesAmarilla[`fila${filaIndex}`] = true;
         
-        // Actualizar círculo de bonificación de fila
         const circulo = document.querySelector(`.amarilla-bonificacion-circulo[data-amarilla-fila="${filaIndex}"]`);
         if (circulo) {
             circulo.classList.remove('puntaje-pendiente');
@@ -335,17 +274,21 @@ function verificarFilaCompleta(filaIndex) {
             circulo.textContent = '✓';
         }
         
-        bonificacionesAmarilla[`fila${filaIndex}`] = true;
+        console.log(`✅ Fila ${filaIndex} completada! Bonificación: ${config.bonificacion}`);
         
-        // Desbloquear en Gris o registrar Lobo según corresponda
         if (config.bonificacion === 'Lobo') {
+            // REGISTRAR LOBO SIN GUARDAR ACCIÓN SEPARADA
             if (typeof registrarLobo === 'function') {
+                // Guardar el estado ANTES del lobo
+                const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
                 registrarLobo('amarilla');
-                // Guardar acción de lobo
-                if (typeof window.guardarAccion === 'function' && typeof lobos !== 'undefined') {
-                    window.guardarAccion('lobo', `lobo-amarilla-${filaIndex}`, 'amarilla', {
-                        cantidadAnterior: lobos.cantidad - 1,
-                        totalAnterior: (lobos.cantidad - 1) * (lobos.valorActual || 0)
+                
+                // Actualizar la última acción para incluir la info del lobo
+                if (typeof window.actualizarUltimaAccion === 'function') {
+                    window.actualizarUltimaAccion({
+                        tipo: 'marcar_con_lobo',
+                        cantidadAntes: cantidadAntes,
+                        cantidadDespues: cantidadAntes + 1
                     });
                 }
             }
@@ -353,26 +296,6 @@ function verificarFilaCompleta(filaIndex) {
             desbloquearEnGris(config.habilidadGris, config.indiceGris);
         }
     }
-}
-
-// ============================================================
-// DESBLOQUEAR EN GRIS - CON ÍNDICE ESPECÍFICO
-// ============================================================
-
-function desbloquearEnGris(habilidadId, indice) {
-    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
-    const cell = document.querySelector(selector);
-    
-    if (cell && cell.classList.contains('bloqueada')) {
-        cell.classList.remove('bloqueada');
-        cell.classList.add('desbloqueada');
-        if (cell.dataset.color) {
-            cell.style.opacity = '1';
-            cell.style.filter = 'none';
-        }
-        return true;
-    }
-    return false;
 }
 
 // ============================================================
@@ -387,9 +310,7 @@ function verificarColumnaCompleta(colIndex) {
     for (let fila = 0; fila < 4; fila++) {
         const config = AMARILLA_CONFIG.filas[fila];
         const valor = config.numeros[colIndex];
-        
         if (valor === 'X') continue;
-        
         const id = `amarilla-${fila}-${colIndex}`;
         if (!historialMovimientos.includes(id)) {
             todasMarcadas = false;
@@ -400,7 +321,6 @@ function verificarColumnaCompleta(colIndex) {
     if (todasMarcadas && !columnasCompletadas[colIndex]) {
         columnasCompletadas[colIndex] = true;
         
-        // Actualizar círculo de puntaje
         const circulos = document.querySelectorAll('.amarilla-puntajes .puntaje-circulo');
         if (circulos[colIndex]) {
             circulos[colIndex].classList.remove('puntaje-pendiente');
@@ -408,14 +328,10 @@ function verificarColumnaCompleta(colIndex) {
             circulos[colIndex].textContent = '✓';
         }
         
-        // ACTUALIZAR PUNTAJES
+        console.log(`✅ Columna ${colIndex} completada! +${AMARILLA_CONFIG.columnas[colIndex]} pts`);
+        
         if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
             PUNTAJES.calcularTotal();
-            if (typeof renderizarLeaderboard === 'function') {
-                renderizarLeaderboard();
-            }
-        } else {
-            recalcularPuntajesAmarilla();
         }
     }
 }
@@ -433,7 +349,6 @@ function verificarTodoCompleto() {
     if (todasFilas && todasColumnas) {
         todoCompletado = true;
         
-        // Actualizar círculo +1
         const circulos = document.querySelectorAll('.amarilla-puntajes .puntaje-circulo');
         const ultimoCirculo = circulos[circulos.length - 1];
         if (ultimoCirculo) {
@@ -442,19 +357,104 @@ function verificarTodoCompleto() {
             ultimoCirculo.textContent = '✓';
         }
         
-        // Desbloquear +1 en el índice correcto
         const indiceCorrecto = AMARILLA_CONFIG.indiceBonusTotal || 1;
         desbloquearEnGris('mas1', indiceCorrecto);
         
-        // ACTUALIZAR PUNTAJES
-        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-            PUNTAJES.calcularTotal();
-            if (typeof renderizarLeaderboard === 'function') {
-                renderizarLeaderboard();
+        console.log(`✅ Todo completado! +1 desbloqueado en Gris`);
+    }
+}
+
+// ============================================================
+// MANEJAR CLICK EN CELDA
+// ============================================================
+
+function manejarClickAmarilla(filaIndex, colIndex) {
+    if (typeof enModoZoom === 'undefined' || !enModoZoom) {
+        return;
+    }
+    
+    if (deshacerEnProgresoAmarilla) {
+        return;
+    }
+    
+    const config = AMARILLA_CONFIG.filas[filaIndex];
+    if (!config) return;
+    
+    const valor = config.numeros[colIndex];
+    if (valor === 'X') return;
+    
+    const id = `amarilla-${filaIndex}-${colIndex}`;
+    
+    // SI ESTÁ MARCADA → DESHACER
+    if (historialMovimientos.includes(id)) {
+        deshacerEnProgresoAmarilla = true;
+        
+        if (typeof window.intentarDeshacer === 'function') {
+            const resultado = window.intentarDeshacer(id);
+            
+            if (resultado && resultado.exito) {
+                // ACTUALIZAR ESTADOS (esto recalcula bonificaciones)
+                actualizarEstadosAmarilla();
+                
+                // RECONSTRUIR GRIS (esto quita los desbloqueos que ya no corresponden)
+                if (typeof window.reconstruirGrisCompleto === 'function') {
+                    window.reconstruirGrisCompleto();
+                }
+                
+                if (typeof actualizarVisuales === 'function') {
+                    actualizarVisuales();
+                }
+                if (typeof actualizarVisualesZoom === 'function') {
+                    actualizarVisualesZoom();
+                }
+                
+                if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+                    PUNTAJES.calcularTotal();
+                }
+                
+                if (typeof renderizarLeaderboard === 'function') {
+                    renderizarLeaderboard();
+                }
+                
+                setTimeout(() => {
+                    deshacerEnProgresoAmarilla = false;
+                }, 200);
+                
+                return;
             }
-        } else {
-            recalcularPuntajesAmarilla();
         }
+        
+        deshacerEnProgresoAmarilla = false;
+        return;
+    }
+    
+    // SI NO ESTÁ MARCADA → MARCAR
+    historialMovimientos.push(id);
+    
+    if (typeof window.guardarAccion === 'function') {
+        window.guardarAccion('marcar', id, 'amarilla', {
+            fila: filaIndex,
+            col: colIndex,
+            valor: valor
+        });
+    }
+    
+    if (typeof actualizarVisualesZoom === 'function') {
+        actualizarVisualesZoom();
+    }
+    
+    verificarFilaCompleta(filaIndex);
+    verificarColumnaCompleta(colIndex);
+    verificarTodoCompleto();
+    
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    }
+    
+    actualizarVisuales();
+    
+    if (typeof broadcastPuntaje === 'function') {
+        broadcastPuntaje('sync');
     }
 }
 
@@ -475,10 +475,8 @@ function recalcularPuntajesAmarilla() {
         }
     });
     
-    const totalAmarilla = puntosColumnas;
-    
-    puntajesAreas.amarilla = totalAmarilla;
-    document.getElementById('score-amarilla').textContent = totalAmarilla;
+    puntajesAreas.amarilla = puntosColumnas;
+    document.getElementById('score-amarilla').textContent = puntosColumnas;
     
     let total = 0;
     const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
@@ -525,3 +523,7 @@ window.recalcularPuntajesAmarilla = recalcularPuntajesAmarilla;
 window.columnasCompletadas = columnasCompletadas;
 window.manejarClickAmarilla = manejarClickAmarilla;
 window.actualizarEstadosAmarilla = actualizarEstadosAmarilla;
+window.bonificacionesAmarilla = bonificacionesAmarilla;
+window.filasCompletadas = filasCompletadas;
+
+console.log('🟨 Área Amarilla cargada correctamente');

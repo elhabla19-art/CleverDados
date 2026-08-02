@@ -1,5 +1,5 @@
 // ============================================================
-// DESHACER.JS - SISTEMA DE DESHACER PARA CLEVERDADOS
+// DESHACER.JS - SISTEMA DE DESHACER (VERSIÓN SIMPLE CON LOBOS)
 // ============================================================
 
 let pilaMovimientos = [];
@@ -23,6 +23,16 @@ function guardarAccion(tipo, id, area, datosExtra = {}) {
 }
 
 // ============================================================
+// ACTUALIZAR ÚLTIMA ACCIÓN (para lobos)
+// ============================================================
+
+function actualizarUltimaAccion(extraData) {
+    if (pilaMovimientos.length === 0) return;
+    const ultimo = pilaMovimientos[pilaMovimientos.length - 1];
+    Object.assign(ultimo.datos, extraData);
+}
+
+// ============================================================
 // VERIFICAR SI ES EL ÚLTIMO MOVIMIENTO
 // ============================================================
 
@@ -37,20 +47,15 @@ function esUltimoMovimiento(id) {
 // ============================================================
 
 function intentarDeshacer(id) {
-    // 1. Verificar si hay movimientos
     if (pilaMovimientos.length === 0) {
         return { exito: false, mensaje: 'No hay movimientos para deshacer' };
     }
     
-    // 2. Verificar si es el último movimiento
     if (!esUltimoMovimiento(id)) {
         return { exito: false, mensaje: 'Solo puedes deshacer el último movimiento' };
     }
     
-    // 3. Obtener y eliminar el último movimiento
     const movimiento = pilaMovimientos.pop();
-    
-    // 4. Ejecutar el deshacer
     const resultado = ejecutarDeshacer(movimiento);
     
     return {
@@ -61,7 +66,7 @@ function intentarDeshacer(id) {
 }
 
 // ============================================================
-// EJECUTAR DESHACER
+// EJECUTAR DESHACER - CON SOPORTE PARA LOBO
 // ============================================================
 
 function ejecutarDeshacer(movimiento) {
@@ -70,21 +75,78 @@ function ejecutarDeshacer(movimiento) {
     console.log(`↩️ Deshaciendo: ${tipo} - ${id} en ${area}`);
     
     try {
+        // 1. Siempre remover del historial primero
+        if (typeof historialMovimientos !== 'undefined') {
+            const index = historialMovimientos.indexOf(id);
+            if (index !== -1) {
+                historialMovimientos.splice(index, 1);
+                console.log(`✅ Eliminado ${id} del historial`);
+            } else {
+                console.warn(`⚠️ No se encontró ${id} en historial`);
+                return false;
+            }
+        }
+        
+        // 2. Restaurar datos específicos según el tipo
         switch (tipo) {
-            case 'marcar':
-                return deshacerMarcar(id, area);
-            case 'turno':
-                return deshacerTurno(id);
-            case 'habilidad':
-                return deshacerHabilidad(id);
             case 'numero':
-                return deshacerNumero(id, area, datos);
-            case 'lobo':
-                return deshacerLobo(datos);
+                restaurarNumero(id, area, datos);
+                break;
+            case 'turno':
+                restaurarTurno(id);
+                break;
+            case 'marcar_con_lobo':
+                restaurarLobo(datos);
+                break;
+            case 'marcar':
+            case 'habilidad':
+                // No requieren restauración adicional
+                break;
             default:
                 console.warn(`⚠️ Tipo desconocido: ${tipo}`);
-                return false;
         }
+        
+        // 3. RECONSTRUIR GRIS COMPLETO
+        if (typeof window.reconstruirGrisCompleto === 'function') {
+            window.reconstruirGrisCompleto();
+        }
+        
+        // 4. Actualizar progresos de áreas específicas
+        if (area === 'amarilla' && typeof actualizarEstadosAmarilla === 'function') {
+            actualizarEstadosAmarilla();
+        } else if (area === 'azul' && typeof actualizarEstadosAzul === 'function') {
+            actualizarEstadosAzul();
+        } else if (area === 'verde' && typeof actualizarEstadosVerde === 'function') {
+            actualizarEstadosVerde();
+        } else if (area === 'naranja' && typeof actualizarProgresoNaranja === 'function') {
+            actualizarProgresoNaranja();
+        } else if (area === 'morado' && typeof actualizarProgresoMorado === 'function') {
+            actualizarProgresoMorado();
+        }
+        
+        // 5. Actualizar visuales
+        if (typeof actualizarVisuales === 'function') {
+            actualizarVisuales();
+        }
+        
+        // 6. Recalcular puntajes
+        if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+            PUNTAJES.calcularTotal();
+        } else if (typeof calcularPuntajes === 'function') {
+            calcularPuntajes();
+        }
+        
+        // 7. Actualizar leaderboard
+        if (typeof renderizarLeaderboard === 'function') {
+            renderizarLeaderboard();
+        }
+        
+        // 8. Sincronizar
+        if (typeof broadcastPuntaje === 'function') {
+            broadcastPuntaje('sync');
+        }
+        
+        return true;
     } catch (e) {
         console.error('Error al deshacer:', e);
         return false;
@@ -92,229 +154,75 @@ function ejecutarDeshacer(movimiento) {
 }
 
 // ============================================================
-// DESHACER: MARCAR CASILLA
+// RESTAURAR NÚMERO (naranja, morado)
 // ============================================================
 
-function deshacerMarcar(id, area) {
-    // 1. Remover del historial de movimientos
-    if (typeof historialMovimientos !== 'undefined') {
-        const index = historialMovimientos.indexOf(id);
-        if (index !== -1) {
-            historialMovimientos.splice(index, 1);
-            console.log(`✅ Deshecho: ${id}`);
-        } else {
-            return false;
-        }
-    }
-    
-    // 2. Actualizar visuales
-    if (typeof actualizarVisuales === 'function') {
-        actualizarVisuales();
-    }
-    
-    // 3. Recalcular puntajes
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    } else if (typeof calcularPuntajes === 'function') {
-        calcularPuntajes();
-    }
-    
-    // 4. Actualizar leaderboard
-    if (typeof renderizarLeaderboard === 'function') {
-        renderizarLeaderboard();
-    }
-    
-    // 5. Sincronizar
-    if (typeof broadcastPuntaje === 'function') {
-        broadcastPuntaje('sync');
-    }
-    
-    return true;
-}
-
-// ============================================================
-// DESHACER: TURNO (gris)
-// ============================================================
-
-function deshacerTurno(id) {
-    // 1. Remover del historial de movimientos
-    if (typeof historialMovimientos !== 'undefined') {
-        const index = historialMovimientos.indexOf(id);
-        if (index !== -1) {
-            historialMovimientos.splice(index, 1);
-        } else {
-            return false;
-        }
-    }
-    
-    // 2. Remover de turnosCompletados
+function restaurarNumero(id, area, datos) {
     const partes = id.split('-');
-    if (partes.length === 3 && partes[0] === 'gris' && partes[1] === 'turno') {
-        const turnoIndex = parseInt(partes[2]);
-        if (typeof turnosCompletados !== 'undefined') {
-            const turnoNumero = turnoIndex + 1;
-            const idx = turnosCompletados.indexOf(turnoNumero);
-            if (idx !== -1) {
-                turnosCompletados.splice(idx, 1);
-            }
+    if (partes.length !== 2) return;
+    
+    const index = parseInt(partes[1]);
+    if (isNaN(index)) return;
+    
+    const valorAnterior = datos && datos.valorAnterior !== undefined ? datos.valorAnterior : null;
+    
+    if (area === 'naranja' && typeof valoresNaranja !== 'undefined') {
+        valoresNaranja[index] = valorAnterior;
+        console.log(`✅ Restaurado valoresNaranja[${index}] = ${valorAnterior}`);
+        if (typeof actualizarVisualesNaranja === 'function') {
+            actualizarVisualesNaranja();
+        }
+    } else if (area === 'morado' && typeof valoresMorado !== 'undefined') {
+        valoresMorado[index] = valorAnterior;
+        console.log(`✅ Restaurado valoresMorado[${index}] = ${valorAnterior}`);
+        if (typeof actualizarVisualesMorado === 'function') {
+            actualizarVisualesMorado();
         }
     }
-    
-    // 3. Actualizar estados de habilidades
-    if (typeof reconstruirTurnosCompletados === 'function') {
-        reconstruirTurnosCompletados();
-    }
-    if (typeof actualizarEstadosGris === 'function') {
-        actualizarEstadosGris();
-    }
-    
-    // 4. Actualizar visuales
-    if (typeof actualizarVisuales === 'function') {
-        actualizarVisuales();
-    }
-    
-    // 5. Recalcular puntajes
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    }
-    
-    return true;
 }
 
 // ============================================================
-// DESHACER: HABILIDAD (gris)
+// RESTAURAR TURNO (gris)
 // ============================================================
 
-function deshacerHabilidad(id) {
-    // 1. Remover del historial de movimientos
-    if (typeof historialMovimientos !== 'undefined') {
-        const index = historialMovimientos.indexOf(id);
-        if (index !== -1) {
-            historialMovimientos.splice(index, 1);
-        } else {
-            return false;
-        }
-    }
-    
-    // 2. Actualizar visuales
-    if (typeof actualizarEstadosGris === 'function') {
-        actualizarEstadosGris();
-    }
-    if (typeof actualizarVisuales === 'function') {
-        actualizarVisuales();
-    }
-    
-    // 3. Recalcular puntajes
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    }
-    
-    return true;
-}
-
-// ============================================================
-// DESHACER: NÚMERO (naranja, morado) - CORREGIDO
-// ============================================================
-
-function deshacerNumero(id, area, datos) {
-    console.log(`↩️ Deshaciendo número: ${id} en ${area}`, datos);
-    
-    // 1. Remover del historial de movimientos
-    if (typeof historialMovimientos !== 'undefined') {
-        const index = historialMovimientos.indexOf(id);
-        if (index !== -1) {
-            historialMovimientos.splice(index, 1);
-            console.log(`✅ Eliminado ${id} del historial`);
-        } else {
-            console.warn(`⚠️ No se encontró ${id} en historial`);
-            return false;
-        }
-    }
-    
-    // 2. Restaurar el valor guardado
+function restaurarTurno(id) {
     const partes = id.split('-');
-    if (partes.length === 2) {
-        const index = parseInt(partes[1]);
-        if (!isNaN(index)) {
-            if (area === 'naranja' && typeof valoresNaranja !== 'undefined') {
-                const valorAnterior = datos && datos.valorAnterior !== undefined ? datos.valorAnterior : null;
-                valoresNaranja[index] = valorAnterior;
-                console.log(`✅ Restaurado valoresNaranja[${index}] = ${valorAnterior}`);
-            } else if (area === 'morado' && typeof valoresMorado !== 'undefined') {
-                const valorAnterior = datos && datos.valorAnterior !== undefined ? datos.valorAnterior : null;
-                valoresMorado[index] = valorAnterior;
-                console.log(`✅ Restaurado valoresMorado[${index}] = ${valorAnterior}`);
-            }
+    if (partes.length !== 3 || partes[0] !== 'gris' || partes[1] !== 'turno') return;
+    
+    const turnoIndex = parseInt(partes[2]);
+    if (isNaN(turnoIndex)) return;
+    
+    if (typeof turnosCompletados !== 'undefined') {
+        const turnoNumero = turnoIndex + 1;
+        const idx = turnosCompletados.indexOf(turnoNumero);
+        if (idx !== -1) {
+            turnosCompletados.splice(idx, 1);
+            console.log(`✅ Turno ${turnoNumero} restaurado`);
         }
     }
-    
-    // 3. Actualizar progreso
-    if (area === 'naranja' && typeof actualizarProgresoNaranja === 'function') {
-        actualizarProgresoNaranja();
-    } else if (area === 'morado' && typeof actualizarProgresoMorado === 'function') {
-        actualizarProgresoMorado();
-    }
-    
-    // 4. Actualizar visuales específicas
-    if (area === 'naranja' && typeof actualizarVisualesNaranja === 'function') {
-        actualizarVisualesNaranja();
-    } else if (area === 'morado' && typeof actualizarVisualesMorado === 'function') {
-        actualizarVisualesMorado();
-    }
-    
-    // 5. Actualizar visuales generales
-    if (typeof actualizarVisuales === 'function') {
-        actualizarVisuales();
-    }
-    
-    // 6. Recalcular puntajes
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    } else if (area === 'naranja' && typeof recalcularPuntajesNaranja === 'function') {
-        recalcularPuntajesNaranja();
-    } else if (area === 'morado' && typeof recalcularPuntajesMorado === 'function') {
-        recalcularPuntajesMorado();
-    }
-    
-    // 7. Actualizar leaderboard
-    if (typeof renderizarLeaderboard === 'function') {
-        renderizarLeaderboard();
-    }
-    
-    // 8. Sincronizar
-    if (typeof broadcastPuntaje === 'function') {
-        broadcastPuntaje('sync');
-    }
-    
-    return true;
 }
 
 // ============================================================
-// DESHACER: LOBO
+// RESTAURAR LOBO
 // ============================================================
 
-function deshacerLobo(datos) {
-    if (typeof lobos === 'undefined') return false;
+function restaurarLobo(datos) {
+    if (typeof lobos === 'undefined') return;
     
-    if (datos && datos.cantidadAnterior !== undefined) {
-        lobos.cantidad = datos.cantidadAnterior;
+    if (datos && datos.cantidadAntes !== undefined) {
+        lobos.cantidad = datos.cantidadAntes;
+        console.log(`✅ Lobo restaurado a: ${lobos.cantidad}`);
     } else if (lobos.cantidad > 0) {
         lobos.cantidad--;
+        console.log(`✅ Lobo decrementado a: ${lobos.cantidad}`);
     }
     
     if (typeof actualizarValorLobo === 'function') {
-        actualizarValorLobo();
+        actualizarValorLobo(false);
     }
-    
     if (typeof actualizarUI === 'function') {
         actualizarUI();
     }
-    
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    }
-    
-    return true;
 }
 
 // ============================================================
@@ -350,6 +258,7 @@ function contarMovimientos() {
 // ============================================================
 
 window.guardarAccion = guardarAccion;
+window.actualizarUltimaAccion = actualizarUltimaAccion;
 window.esUltimoMovimiento = esUltimoMovimiento;
 window.intentarDeshacer = intentarDeshacer;
 window.limpiarPilaMovimientos = limpiarPilaMovimientos;
@@ -357,4 +266,4 @@ window.getPilaMovimientos = getPilaMovimientos;
 window.getUltimoMovimiento = getUltimoMovimiento;
 window.contarMovimientos = contarMovimientos;
 
-console.log('↩️ Sistema de deshacer cargado correctamente');
+console.log('↩️ Sistema de deshacer (simple) cargado correctamente');

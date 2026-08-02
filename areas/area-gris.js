@@ -237,7 +237,7 @@ function estaDesbloqueadaGris(habilidadId, index) {
 }
 
 // ============================================================
-// DESBLOQUEAR EXTERNAMENTE (desde otras áreas)
+// FUNCIONES DE DESBLOQUEO EXTERNO UNIFICADAS
 // ============================================================
 
 function desbloquearExterno(habilidadId, indice) {
@@ -280,10 +280,7 @@ function desbloquearSiguienteExterno(habilidadId) {
     return true;
 }
 
-// ============================================================
-// FUNCIONES PARA DESBLOQUEO EXTERNO CON ÍNDICE ESPECÍFICO
-// ============================================================
-
+// FUNCIONES PÚBLICAS - TODAS USAN desbloqueosExternos
 function desbloquearEspiralExterno(indice) {
     if (indice !== undefined) {
         return desbloquearExterno('espiral', indice);
@@ -306,6 +303,11 @@ function desbloquearSeisExterno(indice) {
     return desbloquearExterno('seis', indice);
 }
 
+// FUNCIÓN GENÉRICA PARA USAR DESDE OTRAS ÁREAS
+function desbloquearHabilidadEnGris(habilidadId, indice) {
+    return desbloquearExterno(habilidadId, indice);
+}
+
 // ============================================================
 // MANEJAR CLICK EN TURNO - CON DESHACER CORREGIDO
 // ============================================================
@@ -323,9 +325,6 @@ function manejarClickTurnoGris(index) {
             const resultado = window.intentarDeshacer(id);
             if (resultado && resultado.exito) {
                 // El deshacer ya actualizó todo
-                // Reconstruir turnosCompletados y actualizar visuales
-                reconstruirTurnosCompletados();
-                actualizarEstadosGris();
                 return;
             } else {
                 // No se pudo deshacer (no es el último movimiento)
@@ -561,6 +560,101 @@ function actualizarEstadosGris() {
 }
 
 // ============================================================
+// RECONSTRUIR GRIS COMPLETO - REVERIFICA TODOS LOS DESBLOQUEOS
+// ============================================================
+
+function reconstruirGrisCompleto() {
+    console.log('🔄 Reconstruyendo Gris completo...');
+    
+    // 1. Reconstruir turnos desde el historial
+    reconstruirTurnosCompletados();
+    
+    // 2. Limpiar y reconstruir desbloqueos externos desde cero
+    desbloqueosExternos = {};
+    
+    // === AMARILLA ===
+    if (typeof bonificacionesAmarilla !== 'undefined' && typeof AMARILLA_CONFIG !== 'undefined') {
+        AMARILLA_CONFIG.filas.forEach((config, filaIdx) => {
+            const bonifKey = `fila${filaIdx}`;
+            if (bonificacionesAmarilla[bonifKey] && config.habilidadGris && config.indiceGris !== undefined) {
+                const clave = `${config.habilidadGris}-${config.indiceGris}`;
+                desbloqueosExternos[clave] = true;
+            }
+        });
+    }
+    
+    // === AZUL ===
+    if (typeof filasCompletadasAzul !== 'undefined' && typeof BONIFICACIONES_FILA !== 'undefined') {
+        BONIFICACIONES_FILA.forEach((bonif, filaIdx) => {
+            if (filasCompletadasAzul[filaIdx] && bonif.habilidadGris && bonif.indiceGris !== undefined) {
+                const clave = `${bonif.habilidadGris}-${bonif.indiceGris}`;
+                desbloqueosExternos[clave] = true;
+            }
+        });
+    }
+    if (typeof columnasCompletadasAzul !== 'undefined' && typeof BONIFICACIONES_COLUMNA !== 'undefined') {
+        BONIFICACIONES_COLUMNA.forEach((bonif, colIdx) => {
+            if (columnasCompletadasAzul[colIdx] && bonif.tipo === 'gris' && bonif.habilidadGris && bonif.indiceGris !== undefined) {
+                const clave = `${bonif.habilidadGris}-${bonif.indiceGris}`;
+                desbloqueosExternos[clave] = true;
+            }
+        });
+    }
+    
+    // === VERDE ===
+    if (typeof bonificacionesVerde !== 'undefined' && typeof BONUS_MAP !== 'undefined' && typeof BONUS_INDICES !== 'undefined') {
+        BONUS_INDICES.forEach((index, bonusIdx) => {
+            if (bonificacionesVerde[bonusIdx]) {
+                const celda = TABLA_VERDE[index];
+                if (celda && celda.bonus) {
+                    const info = BONUS_MAP[celda.bonus];
+                    if (info && info.tipo !== 'lobo' && info.indiceGris !== undefined) {
+                        let habilidadId = info.tipo;
+                        if (habilidadId === 'mas1') habilidadId = 'mas1';
+                        else if (habilidadId === 'espiral') habilidadId = 'espiral';
+                        else if (habilidadId === 'x') habilidadId = 'x';
+                        else if (habilidadId === 'seis') habilidadId = 'seis';
+                        const clave = `${habilidadId}-${info.indiceGris}`;
+                        desbloqueosExternos[clave] = true;
+                    }
+                }
+            }
+        });
+    }
+    
+    // === NARANJA ===
+    if (typeof bonificacionesNaranja !== 'undefined' && typeof BONUS_INDICES_NARANJA !== 'undefined') {
+        BONUS_INDICES_NARANJA.forEach((index, bonusIdx) => {
+            if (bonificacionesNaranja[bonusIdx]) {
+                const celda = NARANJA_CONFIG[index];
+                if (celda && celda.bonus && celda.tipo !== 'lobo' && celda.indiceGris !== undefined) {
+                    const clave = `${celda.tipo}-${celda.indiceGris}`;
+                    desbloqueosExternos[clave] = true;
+                }
+            }
+        });
+    }
+    
+    // === MORADO ===
+    if (typeof bonificacionesMorado !== 'undefined' && typeof BONUS_INDICES_MORADO !== 'undefined') {
+        BONUS_INDICES_MORADO.forEach((index, bonusIdx) => {
+            if (bonificacionesMorado[bonusIdx]) {
+                const celda = MORADO_CONFIG[index];
+                if (celda && celda.bonus && celda.tipo !== 'lobo' && celda.indiceGris !== undefined) {
+                    const clave = `${celda.tipo}-${celda.indiceGris}`;
+                    desbloqueosExternos[clave] = true;
+                }
+            }
+        });
+    }
+    
+    // 3. Actualizar visuales de Gris
+    actualizarEstadosGris();
+    
+    console.log('✅ Gris reconstruido completamente');
+}
+
+// ============================================================
 // APLICAR BONIFICACIONES
 // ============================================================
 
@@ -641,8 +735,13 @@ window.desbloquearEspiralExterno = desbloquearEspiralExterno;
 window.desbloquearMas1Externo = desbloquearMas1Externo;
 window.desbloquearXExterno = desbloquearXExterno;
 window.desbloquearSeisExterno = desbloquearSeisExterno;
+window.desbloquearHabilidadEnGris = desbloquearHabilidadEnGris;
 window.manejarClickTurnoGris = manejarClickTurnoGris;
 window.manejarClickHabilidadGris = manejarClickHabilidadGris;
 window.actualizarEstadosGris = actualizarEstadosGris;
 window.reconstruirTurnosCompletados = reconstruirTurnosCompletados;
+window.reconstruirGrisCompleto = reconstruirGrisCompleto;
+window.desbloqueosExternos = desbloqueosExternos;
 window.turnosCompletados = turnosCompletados;
+
+console.log('🐺 Área Gris cargada correctamente');

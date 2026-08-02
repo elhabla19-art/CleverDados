@@ -2,16 +2,6 @@
 // LOBOS.JS - SISTEMA DE BONIFICACIÓN DE LOBOS (CORREGIDO)
 // ============================================================
 
-/**
- * Sistema de Lobos para CleverDados
- * 
- * Funcionamiento:
- * - Cada vez que se desbloquea un Lobo, se incrementa el contador
- * - El valor del Lobo es el puntaje del área de color con menos puntos
- * - Puntuación total = cantidadDeLobos × valorDelColorMenor
- */
-
-// Estado de los lobos
 let lobos = {
     cantidad: 0,
     valorActual: 0,
@@ -21,8 +11,11 @@ let lobos = {
     colorMenor: 'amarilla'
 };
 
+let actualizandoLobo = false;
+let ultimoValorRegistrado = { cantidad: 0, valor: 0, total: 0, color: 'amarilla' };
+
 // ============================================================
-// OBTENER EL COLOR CON MENOS PUNTOS - USA puntajesAreas DIRECTAMENTE
+// OBTENER EL COLOR CON MENOS PUNTOS
 // ============================================================
 
 function obtenerColorConMenosPuntos() {
@@ -30,20 +23,17 @@ function obtenerColorConMenosPuntos() {
     let menorPuntaje = Infinity;
     let colorMenor = null;
     
-    // USAR DIRECTAMENTE puntajesAreas (que es donde se guardan los puntajes)
     if (typeof puntajesAreas !== 'undefined' && puntajesAreas) {
         lobos.colores.forEach(color => {
             const pts = puntajesAreas[color] || 0;
             puntajes[color] = pts;
         });
     } else {
-        // Fallback: todos 0
         lobos.colores.forEach(color => {
             puntajes[color] = 0;
         });
     }
     
-    // Encontrar el color con menos puntos
     for (const [color, pts] of Object.entries(puntajes)) {
         if (pts < menorPuntaje) {
             menorPuntaje = pts;
@@ -51,17 +41,12 @@ function obtenerColorConMenosPuntos() {
         }
     }
     
-    // Si todos tienen 0, usar amarilla como predeterminado
     if (colorMenor === null || menorPuntaje === Infinity) {
         colorMenor = 'amarilla';
         menorPuntaje = 0;
     }
     
-    // Guardar el color menor en el objeto lobos
     lobos.colorMenor = colorMenor;
-    
-    console.log('📊 Puntajes de colores:', puntajes);
-    console.log(`🎯 Color con menos puntos: ${colorMenor} = ${menorPuntaje}pts`);
     
     return {
         color: colorMenor,
@@ -71,36 +56,51 @@ function obtenerColorConMenosPuntos() {
 }
 
 // ============================================================
-// ACTUALIZAR VALOR DEL LOBO - CALCULA CON EL COLOR MENOR
+// ACTUALIZAR VALOR DEL LOBO - CON PREVENCIÓN DE RECURSIÓN Y LOG SILENCIOSO
 // ============================================================
 
-function actualizarValorLobo() {
-    // Obtener el color con menos puntos SIEMPRE
-    const info = obtenerColorConMenosPuntos();
+function actualizarValorLobo(silencioso = true) {
+    if (actualizandoLobo) return;
+    actualizandoLobo = true;
     
-    // Actualizar el valor actual con el puntaje del color menor
-    lobos.valorActual = info.puntaje;
-    
-    // Calcular el total: cantidad × valor
-    lobos.totalPuntos = lobos.cantidad * lobos.valorActual;
-    
-    // Guardar el color menor
-    lobos.colorMenor = info.color;
-    
-    console.log(`🐺 Actualizado: ${lobos.cantidad} lobos × ${lobos.valorActual}pts = ${lobos.totalPuntos}pts (color: ${lobos.colorMenor})`);
+    try {
+        const info = obtenerColorConMenosPuntos();
+        const nuevoValor = {
+            cantidad: lobos.cantidad,
+            valor: info.puntaje,
+            total: lobos.cantidad * info.puntaje,
+            color: info.color
+        };
+        
+        lobos.valorActual = info.puntaje;
+        lobos.totalPuntos = lobos.cantidad * lobos.valorActual;
+        lobos.colorMenor = info.color;
+        
+        // Solo mostrar log si hay cambios o si se pide explícitamente
+        const cambioSignificativo = 
+            nuevoValor.cantidad !== ultimoValorRegistrado.cantidad ||
+            nuevoValor.valor !== ultimoValorRegistrado.valor ||
+            nuevoValor.total !== ultimoValorRegistrado.total ||
+            nuevoValor.color !== ultimoValorRegistrado.color;
+        
+        if (cambioSignificativo || !silencioso) {
+            console.log(`🐺 Actualizado: ${lobos.cantidad} lobos × ${lobos.valorActual}pts = ${lobos.totalPuntos}pts (color: ${lobos.colorMenor})`);
+            ultimoValorRegistrado = nuevoValor;
+        }
+    } finally {
+        actualizandoLobo = false;
+    }
     
     return lobos;
 }
 
 // ============================================================
-// DESBLOQUEAR UN LOBO
+// DESBLOQUEAR UN LOBO (SIEMPRE CON LOG)
 // ============================================================
 
 function desbloquearLobo(origen = 'desconocido') {
-    // Incrementar cantidad
     lobos.cantidad++;
     
-    // Registrar el desbloqueo
     lobos.desbloqueos.push({
         timestamp: Date.now(),
         origen: origen,
@@ -109,18 +109,14 @@ function desbloquearLobo(origen = 'desconocido') {
     
     console.log(`🐺 Lobo #${lobos.cantidad} desbloqueado desde ${origen}`);
     
-    // ACTUALIZAR EL VALOR INMEDIATAMENTE
-    actualizarValorLobo();
-    
-    // Actualizar UI
+    // Forzar log con silencioso=false
+    actualizarValorLobo(false);
     actualizarUI();
     
-    // Recalcular puntajes totales
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         PUNTAJES.calcularTotal();
     }
     
-    // Sincronizar con otros jugadores
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
     }
@@ -129,13 +125,11 @@ function desbloquearLobo(origen = 'desconocido') {
 }
 
 // ============================================================
-// OBTENER INFORMACIÓN DE LOBOS PARA EL LEADERBOARD
+// OBTENER INFORMACIÓN DE LOBOS
 // ============================================================
 
 function obtenerInfoLobos() {
-    // Asegurar que el valor esté actualizado
-    actualizarValorLobo();
-    
+    actualizarValorLobo(true); // Silencioso
     return {
         cantidad: lobos.cantidad,
         valorActual: lobos.valorActual,
@@ -146,12 +140,11 @@ function obtenerInfoLobos() {
 }
 
 // ============================================================
-// GENERAR HTML PARA EL TAG DE LOBOS EN LEADERBOARD
+// GENERAR HTML PARA EL TAG DE LOBOS
 // ============================================================
 
 function generarTagLobos() {
-    // Asegurar que el valor esté actualizado
-    actualizarValorLobo();
+    actualizarValorLobo(true); // Silencioso
     
     if (lobos.cantidad === 0) {
         return `
@@ -169,7 +162,6 @@ function generarTagLobos() {
     const total = lobos.cantidad * pts;
     const colorMenor = info.color;
     
-    // Obtener el color del área menor para el dot
     const coloresMap = {
         'amarilla': '#fdd835',
         'azul': '#1e88e5',
@@ -190,12 +182,11 @@ function generarTagLobos() {
 }
 
 // ============================================================
-// ACTUALIZAR UI DEL LEADERBOARD
+// ACTUALIZAR UI
 // ============================================================
 
 function actualizarUI() {
-    // Asegurar que el valor esté actualizado
-    actualizarValorLobo();
+    actualizarValorLobo(true); // Silencioso
     
     const tagsContainer = document.querySelector('.puntajes-tags');
     if (!tagsContainer) return;
@@ -233,6 +224,8 @@ function resetLobos() {
         colores: ['amarilla', 'azul', 'verde', 'naranja', 'morado'],
         colorMenor: 'amarilla'
     };
+    actualizandoLobo = false;
+    ultimoValorRegistrado = { cantidad: 0, valor: 0, total: 0, color: 'amarilla' };
     
     actualizarUI();
     console.log('🐺 Lobos reiniciados');
@@ -242,26 +235,16 @@ function resetLobos() {
 // INTEGRAR CON EL SISTEMA DE PUNTAJES
 // ============================================================
 
-// Extender PUNTAJES para incluir lobos
 if (typeof PUNTAJES !== 'undefined') {
-    // Guardar referencia al calcularTotal original
     const originalCalcularTotal = PUNTAJES.calcularTotal;
     
-    // Sobrescribir calcularTotal para actualizar lobos
     PUNTAJES.calcularTotal = function() {
-        // Llamar al método original
         const total = originalCalcularTotal.call(this);
-        
-        // ACTUALIZAR EL VALOR DEL LOBO DESPUÉS DE CALCULAR PUNTAJES
-        actualizarValorLobo();
-        
-        // Actualizar UI
+        actualizarValorLobo(true); // Silencioso
         actualizarUI();
-        
         return total;
     };
     
-    // Extender obtenerPuntajesPorArea para incluir lobos
     const originalObtenerPuntajesPorArea = PUNTAJES.obtenerPuntajesPorArea;
     PUNTAJES.obtenerPuntajesPorArea = function() {
         const result = originalObtenerPuntajesPorArea.call(this);

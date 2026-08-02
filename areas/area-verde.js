@@ -145,11 +145,55 @@ function actualizarProgresoVerde() {
 // ============================================================
 
 function actualizarEstadosVerde() {
+    console.log('🔄 Actualizando estados de Verde...');
+    
     // Recalcular bonificaciones
     BONUS_INDICES.forEach((index, bonusIdx) => {
         const id = `verde-tabla-${index}`;
         bonificacionesVerde[bonusIdx] = historialMovimientos.includes(id);
+        console.log(`  Bonus ${bonusIdx} (índice ${index}): ${bonificacionesVerde[bonusIdx] ? 'ACTIVO ✅' : 'inactivo ❌'}`);
     });
+}
+
+// ============================================================
+// DESBLOQUEAR EN GRIS
+// ============================================================
+
+function desbloquearEnGrisVerde(habilidadId, indice) {
+    console.log(`🔓 Desbloqueando en Gris (Verde): ${habilidadId}-${indice}`);
+    
+    if (typeof window.desbloquearHabilidadEnGris === 'function') {
+        return window.desbloquearHabilidadEnGris(habilidadId, indice);
+    }
+    
+    // Fallback: funciones específicas
+    if (habilidadId === 'x' && typeof window.desbloquearXExterno === 'function') {
+        return window.desbloquearXExterno(indice);
+    }
+    if (habilidadId === 'seis' && typeof window.desbloquearSeisExterno === 'function') {
+        return window.desbloquearSeisExterno(indice);
+    }
+    if (habilidadId === 'espiral' && typeof window.desbloquearEspiralExterno === 'function') {
+        return window.desbloquearEspiralExterno(indice);
+    }
+    if (habilidadId === 'mas1' && typeof window.desbloquearMas1Externo === 'function') {
+        return window.desbloquearMas1Externo(indice);
+    }
+    
+    // Fallback final: DOM directo
+    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
+    const cell = document.querySelector(selector);
+    
+    if (cell && cell.classList.contains('bloqueada')) {
+        cell.classList.remove('bloqueada');
+        cell.classList.add('desbloqueada');
+        if (cell.dataset.color) {
+            cell.style.opacity = '1';
+            cell.style.filter = 'none';
+        }
+        return true;
+    }
+    return false;
 }
 
 // ============================================================
@@ -171,8 +215,6 @@ function manejarClickVerde(index) {
     const id = `verde-tabla-${index}`;
     
     console.log(`🖱️ Click en verde[${index}], id: ${id}`);
-    console.log(`📋 historialMovimientos:`, historialMovimientos);
-    console.log(`📋 está marcada: ${historialMovimientos.includes(id)}`);
     
     // ============================================================
     // VERIFICAR SI YA ESTÁ MARCADA → INTENTAR DESHACER
@@ -180,19 +222,23 @@ function manejarClickVerde(index) {
     if (historialMovimientos.includes(id)) {
         console.log(`🔍 Intento deshacer ${id}`);
         
-        // Marcar que estamos en proceso de deshacer
         deshacerEnProgresoVerde = true;
         
-        // Intentar deshacer
         if (typeof window.intentarDeshacer === 'function') {
             const resultado = window.intentarDeshacer(id);
-            console.log(`📊 Resultado de intentarDeshacer:`, resultado);
             
             if (resultado && resultado.exito) {
                 console.log(`✅ Deshacer exitoso para ${id}`);
-                // El deshacer fue exitoso
                 actualizarEstadosVerde();
                 actualizarProgresoVerde();
+                
+                // ================================================
+                // RECONSTRUIR GRIS - ¡ESTA ES LA LÍNEA CLAVE!
+                // ================================================
+                if (typeof window.reconstruirGrisCompleto === 'function') {
+                    window.reconstruirGrisCompleto();
+                }
+                
                 if (typeof actualizarVisuales === 'function') {
                     actualizarVisuales();
                 }
@@ -200,20 +246,27 @@ function manejarClickVerde(index) {
                     actualizarVisualesZoom();
                 }
                 
-                // Liberar el flag después de un pequeño delay
+                if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+                    PUNTAJES.calcularTotal();
+                } else {
+                    recalcularPuntajesVerde();
+                }
+                
+                if (typeof renderizarLeaderboard === 'function') {
+                    renderizarLeaderboard();
+                }
+                
                 setTimeout(() => {
                     deshacerEnProgresoVerde = false;
                 }, 200);
                 
                 return;
             } else {
-                console.log(`❌ No se pudo deshacer ${id}:`, resultado ? resultado.mensaje : 'resultado null');
-                // No se pudo deshacer (no es el último movimiento)
+                console.log(`❌ No se pudo deshacer ${id}`);
                 const cell = document.querySelector(`[data-area="verde"][data-index="${index}"]`);
                 if (typeof window.mostrarFeedbackError === 'function') {
                     window.mostrarFeedbackError(cell);
                 }
-                
                 deshacerEnProgresoVerde = false;
                 return;
             }
@@ -285,7 +338,7 @@ function manejarClickVerde(index) {
 }
 
 // ============================================================
-// VERIFICAR BONIFICACIÓN INDIVIDUAL - CON DESHACER
+// VERIFICAR BONIFICACIÓN INDIVIDUAL - CON SOPORTE PARA LOBOS
 // ============================================================
 
 function verificarBonificacionIndividual(index) {
@@ -298,15 +351,19 @@ function verificarBonificacionIndividual(index) {
     
     bonificacionesVerde[bonusIdx] = true;
     
+    console.log(`✅ Bonificación en Verde índice ${index}: ${celda.bonus}`);
+    
     // Si es Lobo, registrar en lugar de desbloquear en Gris
     if (celda.bonus === 'Lobo') {
         if (typeof registrarLobo === 'function') {
+            const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
             registrarLobo('verde');
-            // Guardar acción de lobo
-            if (typeof window.guardarAccion === 'function' && typeof lobos !== 'undefined') {
-                window.guardarAccion('lobo', `lobo-verde-${index}`, 'verde', {
-                    cantidadAnterior: lobos.cantidad - 1,
-                    totalAnterior: (lobos.cantidad - 1) * (lobos.valorActual || 0)
+            
+            if (typeof window.actualizarUltimaAccion === 'function') {
+                window.actualizarUltimaAccion({
+                    tipo: 'marcar_con_lobo',
+                    cantidadAntes: cantidadAntes,
+                    cantidadDespues: cantidadAntes + 1
                 });
             }
         }
@@ -348,26 +405,6 @@ function aplicarBonificacionVerde(bonus) {
     } else {
         recalcularPuntajesVerde();
     }
-}
-
-// ============================================================
-// DESBLOQUEAR EN GRIS
-// ============================================================
-
-function desbloquearEnGrisVerde(habilidadId, indice) {
-    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
-    const cell = document.querySelector(selector);
-    
-    if (cell && cell.classList.contains('bloqueada')) {
-        cell.classList.remove('bloqueada');
-        cell.classList.add('desbloqueada');
-        if (cell.dataset.color) {
-            cell.style.opacity = '1';
-            cell.style.filter = 'none';
-        }
-        return true;
-    }
-    return false;
 }
 
 // ============================================================
@@ -432,3 +469,6 @@ window.recalcularPuntajesVerde = recalcularPuntajesVerde;
 window.manejarClickVerde = manejarClickVerde;
 window.actualizarEstadosVerde = actualizarEstadosVerde;
 window.progresoVerde = progresoVerde;
+window.bonificacionesVerde = bonificacionesVerde;
+
+console.log('🟩 Área Verde cargada correctamente');

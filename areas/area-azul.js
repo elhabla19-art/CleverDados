@@ -162,6 +162,8 @@ function actualizarProgresoAzul() {
 // ============================================================
 
 function actualizarEstadosAzul() {
+    console.log('🔄 Actualizando estados de Azul...');
+    
     // Recalcular filas completadas
     BONIFICACIONES_FILA.forEach((bonif, filaIndex) => {
         let todasMarcadas = true;
@@ -172,6 +174,7 @@ function actualizarEstadosAzul() {
             }
         });
         filasCompletadasAzul[filaIndex] = todasMarcadas;
+        console.log(`  Fila ${filaIndex}: ${filasCompletadasAzul[filaIndex] ? 'COMPLETA ✅' : 'incompleta ❌'}`);
     });
     
     // Recalcular columnas completadas
@@ -186,7 +189,49 @@ function actualizarEstadosAzul() {
             }
         });
         columnasCompletadasAzul[colIndex] = todasMarcadas;
+        console.log(`  Columna ${colIndex}: ${columnasCompletadasAzul[colIndex] ? 'COMPLETA ✅' : 'incompleta ❌'}`);
     });
+}
+
+// ============================================================
+// DESBLOQUEAR EN GRIS
+// ============================================================
+
+function desbloquearEnGrisAzul(habilidadId, indice) {
+    console.log(`🔓 Desbloqueando en Gris (Azul): ${habilidadId}-${indice}`);
+    
+    if (typeof window.desbloquearHabilidadEnGris === 'function') {
+        return window.desbloquearHabilidadEnGris(habilidadId, indice);
+    }
+    
+    // Fallback: funciones específicas
+    if (habilidadId === 'x' && typeof window.desbloquearXExterno === 'function') {
+        return window.desbloquearXExterno(indice);
+    }
+    if (habilidadId === 'seis' && typeof window.desbloquearSeisExterno === 'function') {
+        return window.desbloquearSeisExterno(indice);
+    }
+    if (habilidadId === 'espiral' && typeof window.desbloquearEspiralExterno === 'function') {
+        return window.desbloquearEspiralExterno(indice);
+    }
+    if (habilidadId === 'mas1' && typeof window.desbloquearMas1Externo === 'function') {
+        return window.desbloquearMas1Externo(indice);
+    }
+    
+    // Fallback final: DOM directo
+    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
+    const cell = document.querySelector(selector);
+    
+    if (cell && cell.classList.contains('bloqueada')) {
+        cell.classList.remove('bloqueada');
+        cell.classList.add('desbloqueada');
+        if (cell.dataset.color) {
+            cell.style.opacity = '1';
+            cell.style.filter = 'none';
+        }
+        return true;
+    }
+    return false;
 }
 
 // ============================================================
@@ -211,8 +256,6 @@ function manejarClickAzul(index) {
     const id = `azul-tabla-${index}`;
     
     console.log(`🖱️ Click en azul[${index}], id: ${id}`);
-    console.log(`📋 historialMovimientos:`, historialMovimientos);
-    console.log(`📋 está marcada: ${historialMovimientos.includes(id)}`);
     
     // ============================================================
     // VERIFICAR SI YA ESTÁ MARCADA → INTENTAR DESHACER
@@ -220,19 +263,23 @@ function manejarClickAzul(index) {
     if (historialMovimientos.includes(id)) {
         console.log(`🔍 Intento deshacer ${id}`);
         
-        // Marcar que estamos en proceso de deshacer
         deshacerEnProgresoAzul = true;
         
-        // Intentar deshacer
         if (typeof window.intentarDeshacer === 'function') {
             const resultado = window.intentarDeshacer(id);
-            console.log(`📊 Resultado de intentarDeshacer:`, resultado);
             
             if (resultado && resultado.exito) {
                 console.log(`✅ Deshacer exitoso para ${id}`);
-                // El deshacer fue exitoso
                 actualizarEstadosAzul();
                 actualizarProgresoAzul();
+                
+                // ================================================
+                // RECONSTRUIR GRIS - ¡ESTA ES LA LÍNEA CLAVE!
+                // ================================================
+                if (typeof window.reconstruirGrisCompleto === 'function') {
+                    window.reconstruirGrisCompleto();
+                }
+                
                 if (typeof actualizarVisuales === 'function') {
                     actualizarVisuales();
                 }
@@ -240,7 +287,6 @@ function manejarClickAzul(index) {
                     actualizarVisualesZoom();
                 }
                 
-                // Recalcular puntajes
                 if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
                     PUNTAJES.calcularTotal();
                 } else {
@@ -251,20 +297,17 @@ function manejarClickAzul(index) {
                     renderizarLeaderboard();
                 }
                 
-                // Liberar el flag después de un pequeño delay
                 setTimeout(() => {
                     deshacerEnProgresoAzul = false;
                 }, 200);
                 
                 return;
             } else {
-                console.log(`❌ No se pudo deshacer ${id}:`, resultado ? resultado.mensaje : 'resultado null');
-                // No se pudo deshacer (no es el último movimiento)
+                console.log(`❌ No se pudo deshacer ${id}`);
                 const cell = document.querySelector(`[data-area="azul"][data-index="${index}"]`);
                 if (typeof window.mostrarFeedbackError === 'function') {
                     window.mostrarFeedbackError(cell);
                 }
-                
                 deshacerEnProgresoAzul = false;
                 return;
             }
@@ -319,7 +362,7 @@ function manejarClickAzul(index) {
 }
 
 // ============================================================
-// VERIFICAR FILAS - DESBLOQUEA EN GRIS O REGISTRA LOBO
+// VERIFICAR FILAS - CON SOPORTE PARA LOBOS
 // ============================================================
 
 function verificarFilasAzul() {
@@ -337,15 +380,19 @@ function verificarFilasAzul() {
         if (todasMarcadas) {
             filasCompletadasAzul[filaIndex] = true;
             
+            console.log(`✅ Fila ${filaIndex} de Azul completada! Bonificación: ${bonif.bonificacion}`);
+            
             // Verificar si es Lobo
             if (bonif.bonificacion === 'Lobo') {
                 if (typeof registrarLobo === 'function') {
+                    const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
                     registrarLobo('azul');
-                    // Guardar acción de lobo
-                    if (typeof window.guardarAccion === 'function' && typeof lobos !== 'undefined') {
-                        window.guardarAccion('lobo', `lobo-azul-${filaIndex}`, 'azul', {
-                            cantidadAnterior: lobos.cantidad - 1,
-                            totalAnterior: (lobos.cantidad - 1) * (lobos.valorActual || 0)
+                    
+                    if (typeof window.actualizarUltimaAccion === 'function') {
+                        window.actualizarUltimaAccion({
+                            tipo: 'marcar_con_lobo',
+                            cantidadAntes: cantidadAntes,
+                            cantidadDespues: cantidadAntes + 1
                         });
                     }
                 }
@@ -357,7 +404,7 @@ function verificarFilasAzul() {
 }
 
 // ============================================================
-// VERIFICAR COLUMNAS - DESBLOQUEA EN GRIS
+// VERIFICAR COLUMNAS
 // ============================================================
 
 function verificarColumnasAzul() {
@@ -376,6 +423,7 @@ function verificarColumnasAzul() {
         
         if (todasMarcadas) {
             columnasCompletadasAzul[colIndex] = true;
+            console.log(`✅ Columna ${colIndex} de Azul completada! Bonificación: ${bonif.bonificacion}`);
             aplicarBonificacionColumnaAzul(bonif);
         }
     });
@@ -402,25 +450,6 @@ function aplicarBonificacionColumnaAzul(bonif) {
     } else {
         recalcularPuntajesAzul();
     }
-}
-
-// ============================================================
-// DESBLOQUEAR EN GRIS
-// ============================================================
-
-function desbloquearEnGrisAzul(habilidadId, indice) {
-    const selector = `.celda-habilidad[data-habilidad="${habilidadId}"][data-col="${indice}"]`;
-    const cell = document.querySelector(selector);
-    if (cell && cell.classList.contains('bloqueada')) {
-        cell.classList.remove('bloqueada');
-        cell.classList.add('desbloqueada');
-        if (cell.dataset.color) {
-            cell.style.opacity = '1';
-            cell.style.filter = 'none';
-        }
-        return true;
-    }
-    return false;
 }
 
 // ============================================================
@@ -501,3 +530,6 @@ window.progresoAzul = progresoAzul;
 window.obtenerProgresoAzul = obtenerProgresoAzul;
 window.manejarClickAzul = manejarClickAzul;
 window.actualizarEstadosAzul = actualizarEstadosAzul;
+window.filasCompletadasAzul = filasCompletadasAzul;
+
+console.log('🟦 Área Azul cargada correctamente');
