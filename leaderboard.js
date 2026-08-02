@@ -132,7 +132,7 @@ function generarMiniaturaMoradoZoom(marcas, valores) {
 }
 
 // ============================================================
-// MOSTRAR ZOOM DE ÁREA
+// MOSTRAR ZOOM DE ÁREA - CON CIERRE AL CLICAR FUERA
 // ============================================================
 function mostrarAreaZoom(area, marcasJSON, valoresNaranjaJSON, valoresMoradoJSON) {
     const marcas = JSON.parse(marcasJSON);
@@ -186,6 +186,7 @@ function mostrarAreaZoom(area, marcasJSON, valoresNaranjaJSON, valoresMoradoJSON
     
     const overlay = document.createElement('div');
     overlay.className = 'zoom-overlay';
+    overlay.id = 'leaderboardZoomOverlay';
     overlay.innerHTML = `
         <div class="zoom-modal" style="border-color: ${color};">
             <div class="zoom-header">
@@ -197,6 +198,13 @@ function mostrarAreaZoom(area, marcasJSON, valoresNaranjaJSON, valoresMoradoJSON
             </div>
         </div>
     `;
+    
+    overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarZoom();
+        }
+    });
+    
     document.body.appendChild(overlay);
 }
 
@@ -204,17 +212,18 @@ function mostrarAreaZoom(area, marcasJSON, valoresNaranjaJSON, valoresMoradoJSON
 // CERRAR ZOOM
 // ============================================================
 function cerrarZoom() {
-    const overlay = document.querySelector('.zoom-overlay');
+    const overlay = document.getElementById('leaderboardZoomOverlay');
     if (overlay) {
         overlay.remove();
     }
+    const otrosOverlays = document.querySelectorAll('.zoom-overlay:not(#leaderboardZoomOverlay)');
+    otrosOverlays.forEach(function(el) { el.remove(); });
 }
 
 // ============================================================
-// GENERAR TAGS DE PUNTAJES POR ÁREA - CON LOBOS SIEMPRE VISIBLE
+// GENERAR TAGS DE PUNTAJES POR ÁREA
 // ============================================================
 function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valoresMorado) {
-    // SOLO 5 áreas (excluyendo Gris)
     const areas = [
         { id: 'amarilla', color: '#fdd835', label: '🟨' },
         { id: 'azul', color: '#1e88e5', label: '🟦' },
@@ -225,8 +234,7 @@ function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valor
     
     let html = '<div class="puntajes-tags">';
     
-    // Tags de colores
-    areas.forEach(area => {
+    areas.forEach(function(area) {
         let puntos = 0;
         if (puntajesPorArea && puntajesPorArea[area.id] !== undefined) {
             puntos = puntajesPorArea[area.id];
@@ -252,16 +260,12 @@ function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valor
         `;
     });
     
-    // ============================================================
-    // TAG DE LOBOS - SIEMPRE VISIBLE CON PUNTAJE CORRECTO
-    // ============================================================
     let cantidadLobos = 0;
     let puntosLobos = 0;
     let valorLobo = 0;
     let colorMenor = 'amarilla';
     
     if (typeof lobos !== 'undefined' && lobos) {
-        // Asegurar que el valor esté actualizado
         if (typeof actualizarValorLobo === 'function') {
             actualizarValorLobo();
         }
@@ -271,7 +275,6 @@ function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valor
         colorMenor = lobos.colorMenor || 'amarilla';
     }
     
-    // Si no hay lobos, mostrar 0
     if (cantidadLobos === 0) {
         html += `
             <span class="puntaje-tag lobos-tag" style="border-color: #d32f2f; cursor: default; opacity: 0.6;">
@@ -282,7 +285,6 @@ function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valor
             </span>
         `;
     } else {
-        // Obtener el color del área menor para el dot
         const coloresMap = {
             'amarilla': '#fdd835',
             'azul': '#1e88e5',
@@ -320,17 +322,21 @@ function renderizarLeaderboard() {
         return;
     }
     
-    const jugadores = Object.keys(datosJugadores).map(id => ({
-        id: id,
-        ...datosJugadores[id]
-    })).sort((a, b) => (b.puntaje || 0) - (a.puntaje || 0));
+    const jugadores = Object.keys(datosJugadores).map(function(id) {
+        return {
+            id: id,
+            ...datosJugadores[id]
+        };
+    }).sort(function(a, b) {
+        return (b.puntaje || 0) - (a.puntaje || 0);
+    });
     
     if (jugadores.length === 0) {
         list.innerHTML = '<div class="no-players">Esperando jugadores...</div>';
         return;
     }
     
-    jugadores.forEach((j, index) => {
+    jugadores.forEach(function(j, index) {
         const soyYo = j.id === miId;
         const movimientos = j.movimientos || [];
         
@@ -364,7 +370,7 @@ function renderizarLeaderboard() {
         );
         
         const card = document.createElement('div');
-        card.className = `player-card ${soyYo ? 'me' : ''}`;
+        card.className = 'player-card' + (soyYo ? ' me' : '');
         
         card.innerHTML = `
             <div class="player-card-header">
@@ -390,351 +396,75 @@ function actualizarLeaderboard() {
 }
 
 // ============================================================
-// ESTILOS CSS
-// ============================================================
-const LEADERBOARD_STYLES = `
-/* ============================================================
-   LEADERBOARD
-   ============================================================ */
-
-.leaderboard {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.leaderboard h3 {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.no-players {
-    color: var(--text-muted);
-    text-align: center;
-    padding: 20px;
-    font-size: 0.9rem;
-}
-
-.player-card {
-    background: var(--bg-box);
-    border-radius: 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--border-color);
-    transition: all 0.2s;
-}
-
-.player-card.me {
-    border-left: 4px solid var(--color-azul);
-}
-
-.player-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-}
-
-.player-name {
-    font-weight: bold;
-    font-size: 0.9rem;
-    color: #fff;
-}
-
-.player-total {
-    font-weight: bold;
-    font-size: 0.9rem;
-    color: #ffd700;
-}
-
-/* ============================================================
-   TAGS DE PUNTAJES - CLICKABLES PARA ZOOM
-   ============================================================ */
-
-.puntajes-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 4px;
-}
-
-.puntaje-tag {
-    font-size: 0.6rem;
-    padding: 3px 10px 3px 6px;
-    border-radius: 12px;
-    border: 2px solid var(--border-color);
-    background: var(--bg-main);
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-weight: bold;
-    transition: all 0.15s;
-    cursor: pointer;
-    user-select: none;
-}
-
-.puntaje-tag:hover {
-    transform: scale(1.08);
-    background: var(--bg-box);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-}
-
-.tag-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-/* ============================================================
-   TAG DE LOBOS
-   ============================================================ */
-
-.lobos-tag {
-    border-color: #d32f2f !important;
-    background: rgba(211, 47, 47, 0.08) !important;
-    font-weight: bold !important;
-    cursor: default !important;
-}
-
-.lobos-tag:hover {
-    transform: none !important;
-    background: rgba(211, 47, 47, 0.15) !important;
-}
-
-.lobos-tag .tag-dot {
-    background: #d32f2f !important;
-    font-size: 1rem !important;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* ============================================================
-   ZOOM MODAL
-   ============================================================ */
-
-.zoom-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.92);
-    z-index: 10000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    animation: zoomFadeIn 0.25s ease;
-}
-
-@keyframes zoomFadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.zoom-modal {
-    background: var(--bg-panel);
-    border-radius: 16px;
-    padding: 20px 24px 24px 24px;
-    max-width: 600px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    border: 2px solid var(--border-color);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
-}
-
-.zoom-header {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.zoom-close {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 1.8rem;
-    cursor: pointer;
-    padding: 0 8px;
-    transition: color 0.15s;
-    line-height: 1;
-}
-
-.zoom-close:hover {
-    color: #fff;
-}
-
-.zoom-body {
-    display: flex;
-    justify-content: center;
-}
-
-/* Zoom Áreas */
-.zoom-area {
-    background: var(--bg-main);
-    border-radius: 8px;
-    padding: 12px;
-    border: 2px solid var(--border-color);
-}
-
-.zoom-fila {
-    display: flex;
-    gap: 4px;
-    justify-content: center;
-    margin-bottom: 4px;
-}
-
-.zoom-fila:last-child {
-    margin-bottom: 0;
-}
-
-.zoom-cell {
-    width: 45px;
-    height: 45px;
-    background: var(--bg-cell);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    font-weight: bold;
-    color: var(--text-main);
-    border: 1px solid transparent;
-}
-
-.zoom-cell.marcada {
-    background: var(--bg-box);
-    color: #4caf50 !important;
-    border-color: rgba(255,255,255,0.3);
-    position: relative;
-}
-
-.zoom-cell.marcada::after {
-    content: "✓";
-    position: absolute;
-    font-size: 1.2rem;
-    color: #4caf50;
-}
-
-.zoom-cell.pre-marcada {
-    background: rgba(255, 0, 0, 0.12);
-    color: var(--text-muted);
-}
-
-.zoom-cell.vacia {
-    opacity: 0.2;
-}
-
-.zoom-cell.multiplicador {
-    border-color: #ffd700;
-    color: #ffd700;
-}
-
-/* Zoom Áreas específicas */
-.zoom-amarilla .zoom-cell { min-width: 50px; }
-.zoom-azul .zoom-cell { min-width: 50px; }
-.zoom-verde .zoom-cell { min-width: 38px; height: 38px; font-size: 0.7rem; }
-.zoom-naranja .zoom-cell { min-width: 38px; height: 38px; font-size: 0.7rem; }
-.zoom-morado .zoom-cell { min-width: 38px; height: 38px; font-size: 0.7rem; }
-
-/* Zoom áreas contenedor para Rojo */
-.zoom-areas-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-}
-
-.zoom-area-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-.zoom-area-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-weight: bold;
-}
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 768px) {
-    .zoom-cell {
-        width: 32px;
-        height: 32px;
-        font-size: 0.6rem;
-    }
-    
-    .zoom-amarilla .zoom-cell { min-width: 35px; }
-    .zoom-azul .zoom-cell { min-width: 35px; }
-    .zoom-verde .zoom-cell { min-width: 28px; height: 28px; font-size: 0.55rem; }
-    .zoom-naranja .zoom-cell { min-width: 28px; height: 28px; font-size: 0.55rem; }
-    .zoom-morado .zoom-cell { min-width: 28px; height: 28px; font-size: 0.55rem; }
-    
-    .zoom-modal {
-        padding: 16px;
-        max-width: 95%;
-    }
-}
-
-@media (max-width: 480px) {
-    .zoom-cell {
-        width: 28px;
-        height: 28px;
-        font-size: 0.5rem;
-    }
-    
-    .zoom-amarilla .zoom-cell { min-width: 30px; }
-    .zoom-azul .zoom-cell { min-width: 30px; }
-    .zoom-verde .zoom-cell { min-width: 24px; height: 24px; font-size: 0.45rem; }
-    .zoom-naranja .zoom-cell { min-width: 24px; height: 24px; font-size: 0.45rem; }
-    .zoom-morado .zoom-cell { min-width: 24px; height: 24px; font-size: 0.45rem; }
-    
-    .zoom-modal {
-        padding: 12px;
-        max-width: 98%;
-    }
-}
-
-/* Landscape */
-@media (orientation: landscape) and (max-height: 700px) {
-    .zoom-cell {
-        width: 24px;
-        height: 24px;
-        font-size: 0.45rem;
-    }
-    
-    .zoom-amarilla .zoom-cell { min-width: 26px; }
-    .zoom-azul .zoom-cell { min-width: 26px; }
-    .zoom-verde .zoom-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
-    .zoom-naranja .zoom-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
-    .zoom-morado .zoom-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
-}
-`;
-
-// ============================================================
 // INYECTAR ESTILOS
 // ============================================================
 (function injectLeaderboardStyles() {
+    const LEADERBOARD_STYLES = `
+        .leaderboard { display: flex; flex-direction: column; gap: 8px; }
+        .leaderboard h3 { font-size: 0.85rem; color: var(--text-muted); text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+        .no-players { color: var(--text-muted); text-align: center; padding: 20px; font-size: 0.9rem; }
+        .player-card { background: var(--bg-box); border-radius: 10px; padding: 10px 12px; border: 1px solid var(--border-color); transition: all 0.2s; }
+        .player-card.me { border-left: 4px solid var(--color-azul); }
+        .player-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .player-name { font-weight: bold; font-size: 0.9rem; color: #fff; }
+        .player-total { font-weight: bold; font-size: 0.9rem; color: #ffd700; }
+        .puntajes-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .puntaje-tag { font-size: 0.6rem; padding: 3px 10px 3px 6px; border-radius: 12px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-weight: bold; transition: all 0.15s; cursor: pointer; user-select: none; }
+        .puntaje-tag:hover { transform: scale(1.08); background: var(--bg-box); box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+        .tag-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+        .lobos-tag { border-color: #d32f2f !important; background: rgba(211, 47, 47, 0.08) !important; font-weight: bold !important; cursor: default !important; }
+        .lobos-tag:hover { transform: none !important; background: rgba(211, 47, 47, 0.15) !important; }
+        .zoom-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.92); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; animation: zoomFadeIn 0.25s ease; }
+        @keyframes zoomFadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .zoom-modal { background: var(--bg-panel); border-radius: 16px; padding: 20px 24px 24px 24px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; border: 2px solid var(--border-color); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9); }
+        .zoom-header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 12px; }
+        .zoom-close { background: none; border: none; color: var(--text-muted); font-size: 1.8rem; cursor: pointer; padding: 0 8px; transition: color 0.15s; line-height: 1; }
+        .zoom-close:hover { color: #fff; }
+        .zoom-body { display: flex; justify-content: center; }
+        .zoom-area { background: var(--bg-main); border-radius: 8px; padding: 12px; border: 2px solid var(--border-color); }
+        .zoom-fila { display: flex; gap: 4px; justify-content: center; margin-bottom: 4px; }
+        .zoom-fila:last-child { margin-bottom: 0; }
+        .zoom-cell { width: 45px; height: 45px; background: var(--bg-cell); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; color: var(--text-main); border: 1px solid transparent; }
+        .zoom-cell.marcada { background: var(--bg-box); color: #4caf50 !important; border-color: rgba(255,255,255,0.3); position: relative; }
+        .zoom-cell.marcada::after { content: "✓"; position: absolute; font-size: 1.2rem; color: #4caf50; }
+        .zoom-cell.pre-marcada { background: rgba(255, 0, 0, 0.12); color: var(--text-muted); }
+        .zoom-cell.vacia { opacity: 0.2; }
+        .zoom-cell.multiplicador { border-color: #ffd700; color: #ffd700; }
+        .zoom-amarilla .zoom-cell { min-width: 50px; }
+        .zoom-azul .zoom-cell { min-width: 50px; }
+        .zoom-verde .zoom-cell { min-width: 38px; height: 38px; font-size: 0.7rem; }
+        .zoom-naranja .zoom-cell { min-width: 38px; height: 38px; font-size: 0.7rem; }
+        .zoom-morado .zoom-cell { min-width: 38px; height: 38px; font-size: 0.7rem; }
+        .zoom-areas-container { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+        .zoom-area-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .zoom-area-label { font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
+        @media (max-width: 768px) {
+            .zoom-cell { width: 32px; height: 32px; font-size: 0.6rem; }
+            .zoom-amarilla .zoom-cell { min-width: 35px; }
+            .zoom-azul .zoom-cell { min-width: 35px; }
+            .zoom-verde .zoom-cell { min-width: 28px; height: 28px; font-size: 0.55rem; }
+            .zoom-naranja .zoom-cell { min-width: 28px; height: 28px; font-size: 0.55rem; }
+            .zoom-morado .zoom-cell { min-width: 28px; height: 28px; font-size: 0.55rem; }
+            .zoom-modal { padding: 16px; max-width: 95%; }
+        }
+        @media (max-width: 480px) {
+            .zoom-cell { width: 28px; height: 28px; font-size: 0.5rem; }
+            .zoom-amarilla .zoom-cell { min-width: 30px; }
+            .zoom-azul .zoom-cell { min-width: 30px; }
+            .zoom-verde .zoom-cell { min-width: 24px; height: 24px; font-size: 0.45rem; }
+            .zoom-naranja .zoom-cell { min-width: 24px; height: 24px; font-size: 0.45rem; }
+            .zoom-morado .zoom-cell { min-width: 24px; height: 24px; font-size: 0.45rem; }
+            .zoom-modal { padding: 12px; max-width: 98%; }
+        }
+        @media (orientation: landscape) and (max-height: 700px) {
+            .zoom-cell { width: 24px; height: 24px; font-size: 0.45rem; }
+            .zoom-amarilla .zoom-cell { min-width: 26px; }
+            .zoom-azul .zoom-cell { min-width: 26px; }
+            .zoom-verde .zoom-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
+            .zoom-naranja .zoom-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
+            .zoom-morado .zoom-cell { min-width: 20px; height: 20px; font-size: 0.4rem; }
+        }
+    `;
     const style = document.createElement('style');
     style.textContent = LEADERBOARD_STYLES;
     document.head.appendChild(style);
