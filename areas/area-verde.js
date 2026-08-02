@@ -141,7 +141,7 @@ function actualizarProgresoVerde() {
 }
 
 // ============================================================
-// ACTUALIZAR ESTADOS DE VERDE (después de deshacer)
+// ACTUALIZAR ESTADOS DE VERDE - CORREGIDO CON LOBOS
 // ============================================================
 
 function actualizarEstadosVerde() {
@@ -153,6 +153,13 @@ function actualizarEstadosVerde() {
         bonificacionesVerde[bonusIdx] = historialMovimientos.includes(id);
         console.log(`  Bonus ${bonusIdx} (índice ${index}): ${bonificacionesVerde[bonusIdx] ? 'ACTIVO ✅' : 'inactivo ❌'}`);
     });
+    
+    // ============================================================
+    // RECALCULAR LOBOS DESDE BONIFICACIONES
+    // ============================================================
+    if (typeof window.recalcularLobosDesdeBonificaciones === 'function') {
+        window.recalcularLobosDesdeBonificaciones();
+    }
 }
 
 // ============================================================
@@ -194,6 +201,81 @@ function desbloquearEnGrisVerde(habilidadId, indice) {
         return true;
     }
     return false;
+}
+
+// ============================================================
+// VERIFICAR BONIFICACIÓN INDIVIDUAL - CON SOPORTE PARA LOBOS CORREGIDO
+// ============================================================
+
+function verificarBonificacionIndividual(index) {
+    const bonusIdx = BONUS_INDICES.indexOf(index);
+    if (bonusIdx === -1) return;
+    if (bonificacionesVerde[bonusIdx]) return;
+    
+    const celda = TABLA_VERDE[index];
+    if (!celda.bonus) return;
+    
+    bonificacionesVerde[bonusIdx] = true;
+    
+    console.log(`✅ Bonificación en Verde índice ${index}: ${celda.bonus}`);
+    
+    // Si es Lobo, registrar en lugar de desbloquear en Gris
+    if (celda.bonus === 'Lobo') {
+        // ============================================================
+        // REGISTRAR LOBO CON GUARDADO DE ESTADO PARA DESHACER
+        // ============================================================
+        if (typeof registrarLobo === 'function') {
+            const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
+            registrarLobo('verde');
+            
+            if (typeof window.actualizarUltimaAccion === 'function') {
+                window.actualizarUltimaAccion({
+                    tipo: 'marcar_con_lobo',
+                    cantidadAntes: cantidadAntes,
+                    cantidadDespues: cantidadAntes + 1,
+                    otorgoLobo: true,
+                    lobosAntes: cantidadAntes
+                });
+            }
+        }
+    } else {
+        aplicarBonificacionVerde(celda.bonus);
+    }
+}
+
+// ============================================================
+// APLICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
+// ============================================================
+
+function aplicarBonificacionVerde(bonus) {
+    const info = BONUS_MAP[bonus];
+    if (!info) return;
+    
+    const indiceGris = info.indiceGris;
+    
+    switch(info.tipo) {
+        case 'mas1':
+            desbloquearEnGrisVerde('mas1', indiceGris);
+            break;
+        case 'espiral':
+            desbloquearEnGrisVerde('espiral', indiceGris);
+            break;
+        case 'x':
+            desbloquearEnGrisVerde('x', indiceGris);
+            break;
+        case 'seis':
+            desbloquearEnGrisVerde('seis', indiceGris);
+            break;
+        case 'lobo':
+            // Los lobos ya se manejan en verificarBonificacionIndividual
+            break;
+    }
+    
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesVerde();
+    }
 }
 
 // ============================================================
@@ -334,76 +416,6 @@ function manejarClickVerde(index) {
     
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
-    }
-}
-
-// ============================================================
-// VERIFICAR BONIFICACIÓN INDIVIDUAL - CON SOPORTE PARA LOBOS
-// ============================================================
-
-function verificarBonificacionIndividual(index) {
-    const bonusIdx = BONUS_INDICES.indexOf(index);
-    if (bonusIdx === -1) return;
-    if (bonificacionesVerde[bonusIdx]) return;
-    
-    const celda = TABLA_VERDE[index];
-    if (!celda.bonus) return;
-    
-    bonificacionesVerde[bonusIdx] = true;
-    
-    console.log(`✅ Bonificación en Verde índice ${index}: ${celda.bonus}`);
-    
-    // Si es Lobo, registrar en lugar de desbloquear en Gris
-    if (celda.bonus === 'Lobo') {
-        if (typeof registrarLobo === 'function') {
-            const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
-            registrarLobo('verde');
-            
-            if (typeof window.actualizarUltimaAccion === 'function') {
-                window.actualizarUltimaAccion({
-                    tipo: 'marcar_con_lobo',
-                    cantidadAntes: cantidadAntes,
-                    cantidadDespues: cantidadAntes + 1
-                });
-            }
-        }
-    } else {
-        aplicarBonificacionVerde(celda.bonus);
-    }
-}
-
-// ============================================================
-// APLICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
-// ============================================================
-
-function aplicarBonificacionVerde(bonus) {
-    const info = BONUS_MAP[bonus];
-    if (!info) return;
-    
-    const indiceGris = info.indiceGris;
-    
-    switch(info.tipo) {
-        case 'mas1':
-            desbloquearEnGrisVerde('mas1', indiceGris);
-            break;
-        case 'espiral':
-            desbloquearEnGrisVerde('espiral', indiceGris);
-            break;
-        case 'x':
-            desbloquearEnGrisVerde('x', indiceGris);
-            break;
-        case 'seis':
-            desbloquearEnGrisVerde('seis', indiceGris);
-            break;
-        case 'lobo':
-            // Los lobos ya se manejan en verificarBonificacionIndividual
-            break;
-    }
-    
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    } else {
-        recalcularPuntajesVerde();
     }
 }
 

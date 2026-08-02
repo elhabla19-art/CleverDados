@@ -197,7 +197,7 @@ function actualizarVisualesMorado() {
 }
 
 // ============================================================
-// ACTUALIZAR ESTADOS DE MORADO (después de deshacer)
+// ACTUALIZAR ESTADOS DE MORADO - CORREGIDO CON LOBOS
 // ============================================================
 
 function actualizarEstadosMorado() {
@@ -209,6 +209,13 @@ function actualizarEstadosMorado() {
         bonificacionesMorado[bonusIdx] = historialMovimientos.includes(id);
         console.log(`  Bonus ${bonusIdx} (índice ${index}): ${bonificacionesMorado[bonusIdx] ? 'ACTIVO ✅' : 'inactivo ❌'}`);
     });
+    
+    // ============================================================
+    // RECALCULAR LOBOS DESDE BONIFICACIONES
+    // ============================================================
+    if (typeof window.recalcularLobosDesdeBonificaciones === 'function') {
+        window.recalcularLobosDesdeBonificaciones();
+    }
 }
 
 // ============================================================
@@ -250,6 +257,78 @@ function desbloquearEnGrisMorado(habilidadId, indice) {
         return true;
     }
     return false;
+}
+
+// ============================================================
+// VERIFICAR BONIFICACIÓN - CON SOPORTE PARA LOBOS CORREGIDO
+// ============================================================
+
+function verificarBonificacionMorado(index) {
+    const bonusIdx = BONUS_INDICES_MORADO.indexOf(index);
+    if (bonusIdx === -1) return;
+    if (bonificacionesMorado[bonusIdx]) return;
+    
+    const celda = MORADO_CONFIG[index];
+    if (!celda.bonus) return;
+    
+    bonificacionesMorado[bonusIdx] = true;
+    
+    console.log(`✅ Bonificación en Morado índice ${index}: ${celda.bonus}`);
+    
+    // Si es Lobo, registrar en lugar de desbloquear en Gris
+    if (celda.bonus === 'Lobo') {
+        // ============================================================
+        // REGISTRAR LOBO CON GUARDADO DE ESTADO PARA DESHACER
+        // ============================================================
+        if (typeof registrarLobo === 'function') {
+            const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
+            registrarLobo('morado');
+            
+            if (typeof window.actualizarUltimaAccion === 'function') {
+                window.actualizarUltimaAccion({
+                    tipo: 'marcar_con_lobo',
+                    cantidadAntes: cantidadAntes,
+                    cantidadDespues: cantidadAntes + 1,
+                    otorgoLobo: true,
+                    lobosAntes: cantidadAntes
+                });
+            }
+        }
+    } else {
+        aplicarBonificacionMorado(celda);
+    }
+}
+
+// ============================================================
+// APLICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
+// ============================================================
+
+function aplicarBonificacionMorado(celda) {
+    if (!celda.bonus) return;
+    
+    switch(celda.tipo) {
+        case 'espiral':
+            desbloquearEnGrisMorado('espiral', celda.indiceGris);
+            break;
+        case 'mas1':
+            desbloquearEnGrisMorado('mas1', celda.indiceGris);
+            break;
+        case 'x':
+            desbloquearEnGrisMorado('x', celda.indiceGris);
+            break;
+        case 'seis':
+            desbloquearEnGrisMorado('seis', celda.indiceGris);
+            break;
+        case 'lobo':
+            // Los lobos ya se manejan en verificarBonificacionMorado
+            break;
+    }
+    
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesMorado();
+    }
 }
 
 // ============================================================
@@ -440,73 +519,6 @@ function marcarMorado(index, numero, valorAnterior) {
     
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
-    }
-}
-
-// ============================================================
-// VERIFICAR BONIFICACIÓN - CON SOPORTE PARA LOBOS
-// ============================================================
-
-function verificarBonificacionMorado(index) {
-    const bonusIdx = BONUS_INDICES_MORADO.indexOf(index);
-    if (bonusIdx === -1) return;
-    if (bonificacionesMorado[bonusIdx]) return;
-    
-    const celda = MORADO_CONFIG[index];
-    if (!celda.bonus) return;
-    
-    bonificacionesMorado[bonusIdx] = true;
-    
-    console.log(`✅ Bonificación en Morado índice ${index}: ${celda.bonus}`);
-    
-    // Si es Lobo, registrar en lugar de desbloquear en Gris
-    if (celda.bonus === 'Lobo') {
-        if (typeof registrarLobo === 'function') {
-            const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
-            registrarLobo('morado');
-            
-            if (typeof window.actualizarUltimaAccion === 'function') {
-                window.actualizarUltimaAccion({
-                    tipo: 'marcar_con_lobo',
-                    cantidadAntes: cantidadAntes,
-                    cantidadDespues: cantidadAntes + 1
-                });
-            }
-        }
-    } else {
-        aplicarBonificacionMorado(celda);
-    }
-}
-
-// ============================================================
-// APLICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
-// ============================================================
-
-function aplicarBonificacionMorado(celda) {
-    if (!celda.bonus) return;
-    
-    switch(celda.tipo) {
-        case 'espiral':
-            desbloquearEnGrisMorado('espiral', celda.indiceGris);
-            break;
-        case 'mas1':
-            desbloquearEnGrisMorado('mas1', celda.indiceGris);
-            break;
-        case 'x':
-            desbloquearEnGrisMorado('x', celda.indiceGris);
-            break;
-        case 'seis':
-            desbloquearEnGrisMorado('seis', celda.indiceGris);
-            break;
-        case 'lobo':
-            // Los lobos ya se manejan en verificarBonificacionMorado
-            break;
-    }
-    
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    } else {
-        recalcularPuntajesMorado();
     }
 }
 

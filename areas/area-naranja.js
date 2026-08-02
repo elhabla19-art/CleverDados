@@ -186,7 +186,7 @@ function actualizarVisualesNaranja() {
 }
 
 // ============================================================
-// ACTUALIZAR ESTADOS DE NARANJA (después de deshacer)
+// ACTUALIZAR ESTADOS DE NARANJA - CORREGIDO CON LOBOS
 // ============================================================
 
 function actualizarEstadosNaranja() {
@@ -198,6 +198,13 @@ function actualizarEstadosNaranja() {
         bonificacionesNaranja[bonusIdx] = historialMovimientos.includes(id);
         console.log(`  Bonus ${bonusIdx} (índice ${index}): ${bonificacionesNaranja[bonusIdx] ? 'ACTIVO ✅' : 'inactivo ❌'}`);
     });
+    
+    // ============================================================
+    // RECALCULAR LOBOS DESDE BONIFICACIONES
+    // ============================================================
+    if (typeof window.recalcularLobosDesdeBonificaciones === 'function') {
+        window.recalcularLobosDesdeBonificaciones();
+    }
 }
 
 // ============================================================
@@ -239,6 +246,78 @@ function desbloquearEnGrisNaranja(habilidadId, indice) {
         return true;
     }
     return false;
+}
+
+// ============================================================
+// VERIFICAR BONIFICACIÓN - CON SOPORTE PARA LOBOS CORREGIDO
+// ============================================================
+
+function verificarBonificacionNaranja(index) {
+    const bonusIdx = BONUS_INDICES_NARANJA.indexOf(index);
+    if (bonusIdx === -1) return;
+    if (bonificacionesNaranja[bonusIdx]) return;
+    
+    const celda = NARANJA_CONFIG[index];
+    if (!celda.bonus) return;
+    
+    bonificacionesNaranja[bonusIdx] = true;
+    
+    console.log(`✅ Bonificación en Naranja índice ${index}: ${celda.bonus}`);
+    
+    // Si es Lobo, registrar en lugar de desbloquear en Gris
+    if (celda.bonus === 'Lobo') {
+        // ============================================================
+        // REGISTRAR LOBO CON GUARDADO DE ESTADO PARA DESHACER
+        // ============================================================
+        if (typeof registrarLobo === 'function') {
+            const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
+            registrarLobo('naranja');
+            
+            if (typeof window.actualizarUltimaAccion === 'function') {
+                window.actualizarUltimaAccion({
+                    tipo: 'marcar_con_lobo',
+                    cantidadAntes: cantidadAntes,
+                    cantidadDespues: cantidadAntes + 1,
+                    otorgoLobo: true,
+                    lobosAntes: cantidadAntes
+                });
+            }
+        }
+    } else {
+        aplicarBonificacionNaranja(celda);
+    }
+}
+
+// ============================================================
+// APLICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
+// ============================================================
+
+function aplicarBonificacionNaranja(celda) {
+    if (!celda.bonus) return;
+    
+    switch(celda.tipo) {
+        case 'espiral':
+            desbloquearEnGrisNaranja('espiral', celda.indiceGris);
+            break;
+        case 'mas1':
+            desbloquearEnGrisNaranja('mas1', celda.indiceGris);
+            break;
+        case 'x':
+            desbloquearEnGrisNaranja('x', celda.indiceGris);
+            break;
+        case 'seis':
+            desbloquearEnGrisNaranja('seis', celda.indiceGris);
+            break;
+        case 'lobo':
+            // Los lobos ya se manejan en verificarBonificacionNaranja
+            break;
+    }
+    
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesNaranja();
+    }
 }
 
 // ============================================================
@@ -415,73 +494,6 @@ function marcarNaranja(index, numero, valorAnterior) {
     // Sincronizar
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
-    }
-}
-
-// ============================================================
-// VERIFICAR BONIFICACIÓN - CON SOPORTE PARA LOBOS
-// ============================================================
-
-function verificarBonificacionNaranja(index) {
-    const bonusIdx = BONUS_INDICES_NARANJA.indexOf(index);
-    if (bonusIdx === -1) return;
-    if (bonificacionesNaranja[bonusIdx]) return;
-    
-    const celda = NARANJA_CONFIG[index];
-    if (!celda.bonus) return;
-    
-    bonificacionesNaranja[bonusIdx] = true;
-    
-    console.log(`✅ Bonificación en Naranja índice ${index}: ${celda.bonus}`);
-    
-    // Si es Lobo, registrar en lugar de desbloquear en Gris
-    if (celda.bonus === 'Lobo') {
-        if (typeof registrarLobo === 'function') {
-            const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
-            registrarLobo('naranja');
-            
-            if (typeof window.actualizarUltimaAccion === 'function') {
-                window.actualizarUltimaAccion({
-                    tipo: 'marcar_con_lobo',
-                    cantidadAntes: cantidadAntes,
-                    cantidadDespues: cantidadAntes + 1
-                });
-            }
-        }
-    } else {
-        aplicarBonificacionNaranja(celda);
-    }
-}
-
-// ============================================================
-// APLICAR BONIFICACIÓN - DESBLOQUEA EN GRIS
-// ============================================================
-
-function aplicarBonificacionNaranja(celda) {
-    if (!celda.bonus) return;
-    
-    switch(celda.tipo) {
-        case 'espiral':
-            desbloquearEnGrisNaranja('espiral', celda.indiceGris);
-            break;
-        case 'mas1':
-            desbloquearEnGrisNaranja('mas1', celda.indiceGris);
-            break;
-        case 'x':
-            desbloquearEnGrisNaranja('x', celda.indiceGris);
-            break;
-        case 'seis':
-            desbloquearEnGrisNaranja('seis', celda.indiceGris);
-            break;
-        case 'lobo':
-            // Los lobos ya se manejan en verificarBonificacionNaranja
-            break;
-    }
-    
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    } else {
-        recalcularPuntajesNaranja();
     }
 }
 

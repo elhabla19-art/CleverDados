@@ -1,5 +1,5 @@
 // ============================================================
-// DESHACER.JS - SISTEMA DE DESHACER (VERSIÓN SIMPLE CON LOBOS)
+// DESHACER.JS - SISTEMA DE DESHACER (VERSIÓN COMPLETA CON LOBOS)
 // ============================================================
 
 let pilaMovimientos = [];
@@ -99,6 +99,11 @@ function ejecutarDeshacer(movimiento) {
                 restaurarLobo(datos);
                 break;
             case 'marcar':
+                // Verificar si esta acción otorgó un lobo que debe ser revertido
+                if (datos && datos.otorgoLobo) {
+                    restaurarLobo({ cantidadAntes: datos.lobosAntes });
+                }
+                break;
             case 'habilidad':
                 // No requieren restauración adicional
                 break;
@@ -124,24 +129,32 @@ function ejecutarDeshacer(movimiento) {
             actualizarProgresoMorado();
         }
         
-        // 5. Actualizar visuales
+        // 5. Recalcular lobos desde bonificaciones (esto asegura consistencia)
+        if (typeof window.recalcularLobosDesdeBonificaciones === 'function') {
+            window.recalcularLobosDesdeBonificaciones();
+        }
+        
+        // 6. Actualizar visuales
         if (typeof actualizarVisuales === 'function') {
             actualizarVisuales();
         }
+        if (typeof actualizarVisualesZoom === 'function') {
+            actualizarVisualesZoom();
+        }
         
-        // 6. Recalcular puntajes
+        // 7. Recalcular puntajes
         if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
             PUNTAJES.calcularTotal();
         } else if (typeof calcularPuntajes === 'function') {
             calcularPuntajes();
         }
         
-        // 7. Actualizar leaderboard
+        // 8. Actualizar leaderboard
         if (typeof renderizarLeaderboard === 'function') {
             renderizarLeaderboard();
         }
         
-        // 8. Sincronizar
+        // 9. Sincronizar
         if (typeof broadcastPuntaje === 'function') {
             broadcastPuntaje('sync');
         }
@@ -203,25 +216,33 @@ function restaurarTurno(id) {
 }
 
 // ============================================================
-// RESTAURAR LOBO
+// RESTAURAR LOBO - CORREGIDO
 // ============================================================
 
 function restaurarLobo(datos) {
     if (typeof lobos === 'undefined') return;
     
-    if (datos && datos.cantidadAntes !== undefined) {
+    // Si tenemos el valor exacto de antes, restaurarlo
+    if (datos && datos.cantidadAntes !== undefined && datos.cantidadAntes !== null) {
         lobos.cantidad = datos.cantidadAntes;
-        console.log(`✅ Lobo restaurado a: ${lobos.cantidad}`);
+        console.log(`✅ Lobo restaurado a: ${lobos.cantidad} (desde ${datos.cantidadAntes})`);
     } else if (lobos.cantidad > 0) {
+        // Fallback: decrementar en 1
         lobos.cantidad--;
         console.log(`✅ Lobo decrementado a: ${lobos.cantidad}`);
     }
     
+    // Recalcular el valor del lobo
     if (typeof actualizarValorLobo === 'function') {
         actualizarValorLobo(false);
     }
     if (typeof actualizarUI === 'function') {
         actualizarUI();
+    }
+    
+    // Actualizar el líderboard
+    if (typeof renderizarLeaderboard === 'function') {
+        renderizarLeaderboard();
     }
 }
 
@@ -265,5 +286,6 @@ window.limpiarPilaMovimientos = limpiarPilaMovimientos;
 window.getPilaMovimientos = getPilaMovimientos;
 window.getUltimoMovimiento = getUltimoMovimiento;
 window.contarMovimientos = contarMovimientos;
+window.restaurarLobo = restaurarLobo;
 
-console.log('↩️ Sistema de deshacer (simple) cargado correctamente');
+console.log('↩️ Sistema de deshacer (completo con lobos) cargado correctamente');

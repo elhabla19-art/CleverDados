@@ -95,10 +95,105 @@ function actualizarValorLobo(silencioso = true) {
 }
 
 // ============================================================
+// RECALCULAR LOBOS DESDE BONIFICACIONES (NUEVA FUNCIÓN)
+// ============================================================
+
+function recalcularLobosDesdeBonificaciones() {
+    if (typeof lobos === 'undefined') return 0;
+    
+    console.log('🐺 Recalculando lobos desde bonificaciones...');
+    
+    // Contar cuántas bonificaciones de lobo están activas
+    let totalLobos = 0;
+    let detalles = [];
+    
+    // === AMARILLA ===
+    if (typeof bonificacionesAmarilla !== 'undefined' && typeof AMARILLA_CONFIG !== 'undefined') {
+        for (let i = 0; i < 4; i++) {
+            const key = `fila${i}`;
+            if (bonificacionesAmarilla[key]) {
+                const config = AMARILLA_CONFIG.filas[i];
+                if (config && config.bonificacion === 'Lobo') {
+                    totalLobos++;
+                    detalles.push(`Amarilla F${i}`);
+                }
+            }
+        }
+    }
+    
+    // === AZUL ===
+    if (typeof filasCompletadasAzul !== 'undefined' && typeof BONIFICACIONES_FILA !== 'undefined') {
+        for (let i = 0; i < BONIFICACIONES_FILA.length; i++) {
+            if (filasCompletadasAzul[i]) {
+                const config = BONIFICACIONES_FILA[i];
+                if (config && config.bonificacion === 'Lobo') {
+                    totalLobos++;
+                    detalles.push(`Azul F${i}`);
+                }
+            }
+        }
+    }
+    
+    // === VERDE ===
+    if (typeof bonificacionesVerde !== 'undefined' && typeof BONUS_INDICES !== 'undefined' && typeof TABLA_VERDE !== 'undefined') {
+        BONUS_INDICES.forEach((index, bonusIdx) => {
+            if (bonificacionesVerde[bonusIdx]) {
+                const celda = TABLA_VERDE[index];
+                if (celda && celda.bonus === 'Lobo') {
+                    totalLobos++;
+                    detalles.push(`Verde I${index}`);
+                }
+            }
+        });
+    }
+    
+    // === NARANJA ===
+    if (typeof bonificacionesNaranja !== 'undefined' && typeof BONUS_INDICES_NARANJA !== 'undefined' && typeof NARANJA_CONFIG !== 'undefined') {
+        BONUS_INDICES_NARANJA.forEach((index, bonusIdx) => {
+            if (bonificacionesNaranja[bonusIdx]) {
+                const celda = NARANJA_CONFIG[index];
+                if (celda && celda.bonus === 'Lobo') {
+                    totalLobos++;
+                    detalles.push(`Naranja I${index}`);
+                }
+            }
+        });
+    }
+    
+    // === MORADO ===
+    if (typeof bonificacionesMorado !== 'undefined' && typeof BONUS_INDICES_MORADO !== 'undefined' && typeof MORADO_CONFIG !== 'undefined') {
+        BONUS_INDICES_MORADO.forEach((index, bonusIdx) => {
+            if (bonificacionesMorado[bonusIdx]) {
+                const celda = MORADO_CONFIG[index];
+                if (celda && celda.bonus === 'Lobo') {
+                    totalLobos++;
+                    detalles.push(`Morado I${index}`);
+                }
+            }
+        });
+    }
+    
+    // Actualizar el contador de lobos
+    lobos.cantidad = totalLobos;
+    
+    // Recalcular valor
+    if (typeof actualizarValorLobo === 'function') {
+        actualizarValorLobo(false);
+    }
+    if (typeof actualizarUI === 'function') {
+        actualizarUI();
+    }
+    
+    console.log(`🐺 Lobos recalculados: ${totalLobos} (${detalles.join(', ') || 'ninguno'})`);
+    return totalLobos;
+}
+
+// ============================================================
 // DESBLOQUEAR UN LOBO (SIEMPRE CON LOG)
 // ============================================================
 
 function desbloquearLobo(origen = 'desconocido') {
+    // Incrementar el contador
     lobos.cantidad++;
     
     lobos.desbloqueos.push({
@@ -125,6 +220,31 @@ function desbloquearLobo(origen = 'desconocido') {
 }
 
 // ============================================================
+// REGISTRAR LOBO DESDE OTRAS ÁREAS (CON GUARDADO DE ESTADO)
+// ============================================================
+
+function registrarLobo(origen) {
+    // Guardar el estado ANTES del lobo
+    const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
+    
+    // Desbloquear el lobo
+    desbloquearLobo(origen);
+    
+    // Actualizar la última acción para incluir la info del lobo
+    if (typeof window.actualizarUltimaAccion === 'function') {
+        window.actualizarUltimaAccion({
+            tipo: 'marcar_con_lobo',
+            cantidadAntes: cantidadAntes,
+            cantidadDespues: cantidadAntes + 1,
+            otorgoLobo: true,
+            lobosAntes: cantidadAntes
+        });
+    }
+    
+    return lobos;
+}
+
+// ============================================================
 // OBTENER INFORMACIÓN DE LOBOS
 // ============================================================
 
@@ -135,7 +255,8 @@ function obtenerInfoLobos() {
         valorActual: lobos.valorActual,
         totalPuntos: lobos.totalPuntos,
         colorMenor: lobos.colorMenor || null,
-        desbloqueos: lobos.desbloqueos
+        desbloqueos: lobos.desbloqueos,
+        colores: lobos.colores
     };
 }
 
@@ -204,14 +325,6 @@ function actualizarUI() {
 }
 
 // ============================================================
-// FUNCIÓN PARA REGISTRAR LOBO DESDE OTRAS ÁREAS
-// ============================================================
-
-function registrarLobo(origen) {
-    desbloquearLobo(origen);
-}
-
-// ============================================================
 // RESET DE LOBOS
 // ============================================================
 
@@ -271,5 +384,6 @@ window.actualizarUI = actualizarUI;
 window.resetLobos = resetLobos;
 window.obtenerColorConMenosPuntos = obtenerColorConMenosPuntos;
 window.actualizarValorLobo = actualizarValorLobo;
+window.recalcularLobosDesdeBonificaciones = recalcularLobosDesdeBonificaciones;
 
 console.log('🐺 Sistema de Lobos cargado correctamente');

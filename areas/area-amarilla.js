@@ -103,7 +103,7 @@ function inicializarAreaAmarilla() {
 }
 
 // ============================================================
-// ACTUALIZAR ESTADOS DE AMARILLA - CORREGIDO
+// ACTUALIZAR ESTADOS DE AMARILLA - CORREGIDO CON LOBOS
 // ============================================================
 
 function actualizarEstadosAmarilla() {
@@ -198,6 +198,13 @@ function actualizarEstadosAmarilla() {
             ultimoCirculo.textContent = '+1';
         }
     }
+    
+    // ============================================================
+    // RECALCULAR LOBOS DESDE BONIFICACIONES
+    // ============================================================
+    if (typeof window.recalcularLobosDesdeBonificaciones === 'function') {
+        window.recalcularLobosDesdeBonificaciones();
+    }
 }
 
 // ============================================================
@@ -243,7 +250,7 @@ function desbloquearEnGris(habilidadId, indice) {
 }
 
 // ============================================================
-// VERIFICAR FILAS COMPLETAS - CON SOPORTE PARA LOBOS
+// VERIFICAR FILAS COMPLETAS - CON SOPORTE PARA LOBOS CORREGIDO
 // ============================================================
 
 function verificarFilaCompleta(filaIndex) {
@@ -277,7 +284,9 @@ function verificarFilaCompleta(filaIndex) {
         console.log(`✅ Fila ${filaIndex} completada! Bonificación: ${config.bonificacion}`);
         
         if (config.bonificacion === 'Lobo') {
-            // REGISTRAR LOBO SIN GUARDAR ACCIÓN SEPARADA
+            // ============================================================
+            // REGISTRAR LOBO CON GUARDADO DE ESTADO PARA DESHACER
+            // ============================================================
             if (typeof registrarLobo === 'function') {
                 // Guardar el estado ANTES del lobo
                 const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
@@ -288,7 +297,9 @@ function verificarFilaCompleta(filaIndex) {
                     window.actualizarUltimaAccion({
                         tipo: 'marcar_con_lobo',
                         cantidadAntes: cantidadAntes,
-                        cantidadDespues: cantidadAntes + 1
+                        cantidadDespues: cantidadAntes + 1,
+                        otorgoLobo: true,
+                        lobosAntes: cantidadAntes
                     });
                 }
             }

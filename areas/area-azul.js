@@ -158,7 +158,7 @@ function actualizarProgresoAzul() {
 }
 
 // ============================================================
-// ACTUALIZAR ESTADOS DE AZUL (después de deshacer)
+// ACTUALIZAR ESTADOS DE AZUL - CORREGIDO CON LOBOS
 // ============================================================
 
 function actualizarEstadosAzul() {
@@ -191,6 +191,13 @@ function actualizarEstadosAzul() {
         columnasCompletadasAzul[colIndex] = todasMarcadas;
         console.log(`  Columna ${colIndex}: ${columnasCompletadasAzul[colIndex] ? 'COMPLETA ✅' : 'incompleta ❌'}`);
     });
+    
+    // ============================================================
+    // RECALCULAR LOBOS DESDE BONIFICACIONES
+    // ============================================================
+    if (typeof window.recalcularLobosDesdeBonificaciones === 'function') {
+        window.recalcularLobosDesdeBonificaciones();
+    }
 }
 
 // ============================================================
@@ -232,6 +239,102 @@ function desbloquearEnGrisAzul(habilidadId, indice) {
         return true;
     }
     return false;
+}
+
+// ============================================================
+// VERIFICAR FILAS - CON SOPORTE PARA LOBOS CORREGIDO
+// ============================================================
+
+function verificarFilasAzul() {
+    BONIFICACIONES_FILA.forEach((bonif, filaIndex) => {
+        if (filasCompletadasAzul[filaIndex]) return;
+        
+        let todasMarcadas = true;
+        bonif.celdas.forEach(celdaIndex => {
+            const id = `azul-tabla-${celdaIndex}`;
+            if (!historialMovimientos.includes(id)) {
+                todasMarcadas = false;
+            }
+        });
+        
+        if (todasMarcadas) {
+            filasCompletadasAzul[filaIndex] = true;
+            
+            console.log(`✅ Fila ${filaIndex} de Azul completada! Bonificación: ${bonif.bonificacion}`);
+            
+            // Verificar si es Lobo
+            if (bonif.bonificacion === 'Lobo') {
+                // ============================================================
+                // REGISTRAR LOBO CON GUARDADO DE ESTADO PARA DESHACER
+                // ============================================================
+                if (typeof registrarLobo === 'function') {
+                    const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
+                    registrarLobo('azul');
+                    
+                    if (typeof window.actualizarUltimaAccion === 'function') {
+                        window.actualizarUltimaAccion({
+                            tipo: 'marcar_con_lobo',
+                            cantidadAntes: cantidadAntes,
+                            cantidadDespues: cantidadAntes + 1,
+                            otorgoLobo: true,
+                            lobosAntes: cantidadAntes
+                        });
+                    }
+                }
+            } else {
+                desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
+            }
+        }
+    });
+}
+
+// ============================================================
+// VERIFICAR COLUMNAS
+// ============================================================
+
+function verificarColumnasAzul() {
+    BONIFICACIONES_COLUMNA.forEach((bonif, colIndex) => {
+        if (columnasCompletadasAzul[colIndex]) return;
+        
+        let todasMarcadas = true;
+        bonif.celdas.forEach(celdaIndex => {
+            const celda = TABLA_AZUL[celdaIndex];
+            if (celda.valor === '') return;
+            const id = `azul-tabla-${celdaIndex}`;
+            if (!historialMovimientos.includes(id)) {
+                todasMarcadas = false;
+            }
+        });
+        
+        if (todasMarcadas) {
+            columnasCompletadasAzul[colIndex] = true;
+            console.log(`✅ Columna ${colIndex} de Azul completada! Bonificación: ${bonif.bonificacion}`);
+            aplicarBonificacionColumnaAzul(bonif);
+        }
+    });
+}
+
+// ============================================================
+// APLICAR BONIFICACIÓN DE COLUMNA
+// ============================================================
+
+function aplicarBonificacionColumnaAzul(bonif) {
+    switch(bonif.tipo) {
+        case 'espiral':
+            desbloquearEnGrisAzul('espiral', bonif.indiceGris);
+            break;
+        case 'mas1':
+            desbloquearEnGrisAzul('mas1', bonif.indiceGris);
+            break;
+        case 'gris':
+            desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
+            break;
+    }
+    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
+        PUNTAJES.calcularTotal();
+    } else {
+        recalcularPuntajesAzul();
+    }
 }
 
 // ============================================================
@@ -358,97 +461,6 @@ function manejarClickAzul(index) {
     // Sincronizar
     if (typeof broadcastPuntaje === 'function') {
         broadcastPuntaje('sync');
-    }
-}
-
-// ============================================================
-// VERIFICAR FILAS - CON SOPORTE PARA LOBOS
-// ============================================================
-
-function verificarFilasAzul() {
-    BONIFICACIONES_FILA.forEach((bonif, filaIndex) => {
-        if (filasCompletadasAzul[filaIndex]) return;
-        
-        let todasMarcadas = true;
-        bonif.celdas.forEach(celdaIndex => {
-            const id = `azul-tabla-${celdaIndex}`;
-            if (!historialMovimientos.includes(id)) {
-                todasMarcadas = false;
-            }
-        });
-        
-        if (todasMarcadas) {
-            filasCompletadasAzul[filaIndex] = true;
-            
-            console.log(`✅ Fila ${filaIndex} de Azul completada! Bonificación: ${bonif.bonificacion}`);
-            
-            // Verificar si es Lobo
-            if (bonif.bonificacion === 'Lobo') {
-                if (typeof registrarLobo === 'function') {
-                    const cantidadAntes = typeof lobos !== 'undefined' ? lobos.cantidad : 0;
-                    registrarLobo('azul');
-                    
-                    if (typeof window.actualizarUltimaAccion === 'function') {
-                        window.actualizarUltimaAccion({
-                            tipo: 'marcar_con_lobo',
-                            cantidadAntes: cantidadAntes,
-                            cantidadDespues: cantidadAntes + 1
-                        });
-                    }
-                }
-            } else {
-                desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
-            }
-        }
-    });
-}
-
-// ============================================================
-// VERIFICAR COLUMNAS
-// ============================================================
-
-function verificarColumnasAzul() {
-    BONIFICACIONES_COLUMNA.forEach((bonif, colIndex) => {
-        if (columnasCompletadasAzul[colIndex]) return;
-        
-        let todasMarcadas = true;
-        bonif.celdas.forEach(celdaIndex => {
-            const celda = TABLA_AZUL[celdaIndex];
-            if (celda.valor === '') return;
-            const id = `azul-tabla-${celdaIndex}`;
-            if (!historialMovimientos.includes(id)) {
-                todasMarcadas = false;
-            }
-        });
-        
-        if (todasMarcadas) {
-            columnasCompletadasAzul[colIndex] = true;
-            console.log(`✅ Columna ${colIndex} de Azul completada! Bonificación: ${bonif.bonificacion}`);
-            aplicarBonificacionColumnaAzul(bonif);
-        }
-    });
-}
-
-// ============================================================
-// APLICAR BONIFICACIÓN DE COLUMNA
-// ============================================================
-
-function aplicarBonificacionColumnaAzul(bonif) {
-    switch(bonif.tipo) {
-        case 'espiral':
-            desbloquearEnGrisAzul('espiral', bonif.indiceGris);
-            break;
-        case 'mas1':
-            desbloquearEnGrisAzul('mas1', bonif.indiceGris);
-            break;
-        case 'gris':
-            desbloquearEnGrisAzul(bonif.habilidadGris, bonif.indiceGris);
-            break;
-    }
-    if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
-        PUNTAJES.calcularTotal();
-    } else {
-        recalcularPuntajesAzul();
     }
 }
 
