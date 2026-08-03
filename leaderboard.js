@@ -1,5 +1,5 @@
 // ============================================================
-// LEADERBOARD.JS - CLEVERDADOS (CON LOBOS CORREGIDO)
+// LEADERBOARD.JS - CLEVERDADOS (CON LOBOS CORREGIDO - SUMADOS AL TOTAL)
 // ============================================================
 
 // Colores de las áreas para los dots
@@ -221,7 +221,7 @@ function cerrarZoom() {
 }
 
 // ============================================================
-// GENERAR TAGS DE PUNTAJES POR ÁREA
+// GENERAR TAGS DE PUNTAJES POR ÁREA (INCLUYENDO LOBOS)
 // ============================================================
 function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valoresMorado) {
     const areas = [
@@ -260,12 +260,23 @@ function generarTagsPuntajes(puntajesPorArea, movimientos, valoresNaranja, valor
         `;
     });
     
+    // ============================================================
+    // TAG DE LOBOS - OBTENER DATOS DEL OBJETO PUNTAJES POR ÁREA
+    // ============================================================
     let cantidadLobos = 0;
     let puntosLobos = 0;
     let valorLobo = 0;
     let colorMenor = 'amarilla';
     
-    if (typeof lobos !== 'undefined' && lobos) {
+    // Primero intentar obtener de puntajesPorArea.lobosDetalle
+    if (puntajesPorArea && puntajesPorArea.lobosDetalle) {
+        cantidadLobos = puntajesPorArea.lobosDetalle.cantidad || 0;
+        puntosLobos = puntajesPorArea.lobosDetalle.totalPuntos || 0;
+        valorLobo = puntajesPorArea.lobosDetalle.valorActual || 0;
+        colorMenor = puntajesPorArea.lobosDetalle.colorMenor || 'amarilla';
+    } 
+    // Fallback: usar la variable global lobos
+    else if (typeof lobos !== 'undefined' && lobos) {
         if (typeof actualizarValorLobo === 'function') {
             actualizarValorLobo();
         }
@@ -353,6 +364,7 @@ function renderizarLeaderboard() {
             };
         }
         
+        // ✅ El puntaje total YA INCLUYE lobos porque viene de PUNTAJES.calcularTotal()
         if (j.puntaje !== undefined && j.puntaje !== null) {
             puntajesPorArea.total = j.puntaje;
         }

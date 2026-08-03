@@ -1,5 +1,5 @@
 // ============================================================
-// MULTIJUGADOR.JS - CORREGIDO
+// MULTIJUGADOR.JS - CORREGIDO (CON LOBOS INCLUIDOS EN EL PUNTAJE)
 // ============================================================
 
 let clienteMQTT = null;
@@ -86,10 +86,7 @@ function conectarSala(codigo) {
         try {
             const data = JSON.parse(message.toString());
             
-            // NO ignoramos el mensaje propio, lo procesamos para actualizar el leaderboard
-            // pero solo si es un mensaje de sincronización o si es de otro jugador
-            
-            // Actualizar datos del jugador (incluso si es propio, para mantener consistencia)
+            // Actualizar datos del jugador
             datosJugadores[data.id] = { 
                 nombre: data.nombre, 
                 puntaje: data.puntaje,
@@ -119,11 +116,11 @@ function conectarSala(codigo) {
 }
 
 // ============================================================
-// ACTUALIZAR DATOS PROPIOS
+// ACTUALIZAR DATOS PROPIOS (CON LOBOS INCLUIDOS)
 // ============================================================
 
 function actualizarDatosPropios() {
-    // Obtener puntajes por área
+    // Obtener puntajes por área (incluye lobos en el total)
     let puntajesPorArea = null;
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         puntajesPorArea = PUNTAJES.obtenerPuntajesPorArea();
@@ -136,13 +133,14 @@ function actualizarDatosPropios() {
             naranja: typeof puntajesAreas !== 'undefined' ? puntajesAreas.naranja || 0 : 0,
             morado: typeof puntajesAreas !== 'undefined' ? puntajesAreas.morado || 0 : 0,
             bonificacion: puntosBonificacion || 0,
+            lobos: (typeof lobos !== 'undefined' && lobos) ? lobos.totalPuntos || 0 : 0,
             total: puntajeTotal || 0
         };
     }
     
     datosJugadores[miId] = { 
         nombre: miNombre, 
-        puntaje: puntajeTotal || 0, 
+        puntaje: puntajesPorArea.total || 0,  // ✅ YA INCLUYE LOBOS
         movimientos: [...historialMovimientos],
         valoresNaranja: typeof valoresNaranja !== 'undefined' ? [...valoresNaranja] : null,
         valoresMorado: typeof valoresMorado !== 'undefined' ? [...valoresMorado] : null,
@@ -151,7 +149,7 @@ function actualizarDatosPropios() {
 }
 
 // ============================================================
-// BROADCAST - CORREGIDO
+// BROADCAST - CORREGIDO (CON LOBOS INCLUIDOS)
 // ============================================================
 
 function broadcastPuntaje(accion = 'sync') {
@@ -164,19 +162,31 @@ function broadcastPuntaje(accion = 'sync') {
     
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         puntajesPorArea = PUNTAJES.obtenerPuntajesPorArea();
-        miPuntajeTotal = puntajesPorArea.total || 0;
+        miPuntajeTotal = puntajesPorArea.total || 0;  // ✅ YA INCLUYE LOBOS
     } else {
+        // Calcular manual incluyendo lobos
+        let total = 0;
+        const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];
+        areas.forEach(area => {
+            total += puntajesAreas[area] || 0;
+        });
+        total += puntosBonificacion || 0;
+        if (typeof lobos !== 'undefined' && lobos) {
+            total += lobos.totalPuntos || 0;
+        }
+        miPuntajeTotal = total;
+        
         puntajesPorArea = {
-            gris: typeof puntajesAreas !== 'undefined' ? puntajesAreas.gris || 0 : 0,
-            amarilla: typeof puntajesAreas !== 'undefined' ? puntajesAreas.amarilla || 0 : 0,
-            azul: typeof puntajesAreas !== 'undefined' ? puntajesAreas.azul || 0 : 0,
-            verde: typeof puntajesAreas !== 'undefined' ? puntajesAreas.verde || 0 : 0,
-            naranja: typeof puntajesAreas !== 'undefined' ? puntajesAreas.naranja || 0 : 0,
-            morado: typeof puntajesAreas !== 'undefined' ? puntajesAreas.morado || 0 : 0,
+            gris: puntajesAreas.gris || 0,
+            amarilla: puntajesAreas.amarilla || 0,
+            azul: puntajesAreas.azul || 0,
+            verde: puntajesAreas.verde || 0,
+            naranja: puntajesAreas.naranja || 0,
+            morado: puntajesAreas.morado || 0,
             bonificacion: puntosBonificacion || 0,
-            total: puntajeTotal || 0
+            lobos: (typeof lobos !== 'undefined' && lobos) ? lobos.totalPuntos || 0 : 0,
+            total: miPuntajeTotal
         };
-        miPuntajeTotal = puntajeTotal || 0;
     }
     
     // Actualizar el puntaje total global
@@ -187,7 +197,7 @@ function broadcastPuntaje(accion = 'sync') {
     // Actualizar datos del jugador en memoria local
     datosJugadores[miId] = { 
         nombre: miNombre, 
-        puntaje: miPuntajeTotal,
+        puntaje: miPuntajeTotal,  // ✅ YA INCLUYE LOBOS
         movimientos: [...historialMovimientos],
         valoresNaranja: typeof valoresNaranja !== 'undefined' ? [...valoresNaranja] : null,
         valoresMorado: typeof valoresMorado !== 'undefined' ? [...valoresMorado] : null,
@@ -201,7 +211,7 @@ function broadcastPuntaje(accion = 'sync') {
             accion: accion,
             id: miId,
             nombre: miNombre,
-            puntaje: miPuntajeTotal,  // <--- USAR EL TOTAL CALCULADO
+            puntaje: miPuntajeTotal,  // ✅ YA INCLUYE LOBOS
             movimientos: [...historialMovimientos],
             valoresNaranja: typeof valoresNaranja !== 'undefined' ? [...valoresNaranja] : null,
             valoresMorado: typeof valoresMorado !== 'undefined' ? [...valoresMorado] : null,

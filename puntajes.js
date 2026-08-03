@@ -1,11 +1,6 @@
 // ============================================================
-// PUNTAJES.JS - CLEVERDADOS (CORREGIDO - CON LOBOS)
+// PUNTAJES.JS - CLEVERDADOS (CORREGIDO - CON LOBOS SUMADOS AL TOTAL)
 // ============================================================
-
-/**
- * Sistema de puntuación para cada área
- * Cada área tiene su propia lógica de cálculo
- */
 
 const PUNTAJES = {
     // ============================================================
@@ -155,7 +150,7 @@ const PUNTAJES = {
     },
 
     // ============================================================
-    // CALCULAR PUNTAJE TOTAL
+    // CALCULAR PUNTAJE TOTAL (INCLUYENDO LOBOS)
     // ============================================================
     calcularTotal: function() {
         let total = 0;
@@ -165,6 +160,7 @@ const PUNTAJES = {
             window.historialMovimientos = [];
         }
         
+        // Sumar todas las áreas
         areas.forEach(area => {
             if (this[area] && typeof this[area].calcular === 'function') {
                 try {
@@ -179,8 +175,21 @@ const PUNTAJES = {
             }
         });
         
+        // Sumar bonificaciones
         const bonus = this.bonificaciones.calcular();
         total += bonus;
+        
+        // ✅ SUMAR LOBOS AL TOTAL
+        let puntosLobos = 0;
+        if (typeof lobos !== 'undefined' && lobos) {
+            puntosLobos = lobos.totalPuntos || 0;
+            total += puntosLobos;
+        }
+        
+        // Guardar en puntajesAreas para referencia
+        if (typeof puntajesAreas !== 'undefined' && puntajesAreas) {
+            puntajesAreas.lobos = puntosLobos;
+        }
         
         if (typeof puntajeTotal !== 'undefined') {
             window.puntajeTotal = total;
@@ -214,10 +223,17 @@ const PUNTAJES = {
     },
 
     // ============================================================
-    // OBTENER PUNTAJE POR ÁREA (para leaderboard)
+    // OBTENER PUNTAJE POR ÁREA (para leaderboard) - INCLUYE LOBOS
     // ============================================================
     obtenerPuntajesPorArea: function() {
+        // Primero calcular para asegurar que todo esté actualizado
         const total = this.calcularTotal();
+        
+        // Obtener puntos de lobos
+        let puntosLobos = 0;
+        if (typeof lobos !== 'undefined' && lobos) {
+            puntosLobos = lobos.totalPuntos || 0;
+        }
         
         return {
             gris: (typeof puntajesAreas !== 'undefined' && puntajesAreas) ? puntajesAreas.gris || 0 : 0,
@@ -227,8 +243,10 @@ const PUNTAJES = {
             naranja: (typeof puntajesAreas !== 'undefined' && puntajesAreas) ? puntajesAreas.naranja || 0 : 0,
             morado: (typeof puntajesAreas !== 'undefined' && puntajesAreas) ? puntajesAreas.morado || 0 : 0,
             bonificacion: puntosBonificacion || 0,
-            total: total,
-            lobos: {
+            lobos: puntosLobos,  // ✅ Incluir lobos como un área más
+            total: total,        // ✅ Total YA INCLUYE lobos
+            // También incluir los detalles de lobos para el tag
+            lobosDetalle: {
                 cantidad: (typeof lobos !== 'undefined' && lobos) ? lobos.cantidad || 0 : 0,
                 valorActual: (typeof lobos !== 'undefined' && lobos) ? lobos.valorActual || 0 : 0,
                 totalPuntos: (typeof lobos !== 'undefined' && lobos) ? lobos.totalPuntos || 0 : 0,
@@ -244,4 +262,4 @@ const PUNTAJES = {
 
 window.PUNTAJES = PUNTAJES;
 
-console.log('📊 Sistema de puntuaciones cargado correctamente');
+console.log('📊 Sistema de puntuaciones cargado correctamente (con lobos incluidos)');
