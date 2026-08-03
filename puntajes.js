@@ -30,7 +30,8 @@ const PUNTAJES = {
     },
 
     // ============================================================
-    // ÁREA AZUL - Puntajes PROGRESIVOS por CANTIDAD de casillas llenas
+    // ÁREA AZUL - Puntaje DIRECTO según cantidad de casillas
+    // (SIN bonificaciones de columnas)
     // ============================================================
     azul: {
         puntajes: [1, 2, 4, 7, 11, 16, 22, 29, 37, 46, 56],
@@ -55,8 +56,9 @@ const PUNTAJES = {
             
             window.progresoAzul = casillasMarcadas;
             
-            for (let i = 0; i < casillasMarcadas && i < this.puntajes.length; i++) {
-                puntos += this.puntajes[i];
+            // Puntaje DIRECTO (sin bonificaciones de columnas)
+            if (casillasMarcadas > 0 && casillasMarcadas <= this.puntajes.length) {
+                puntos = this.puntajes[casillasMarcadas - 1];
             }
             
             return puntos;
@@ -64,7 +66,7 @@ const PUNTAJES = {
     },
 
     // ============================================================
-    // ÁREA VERDE - Puntajes progresivos
+    // ÁREA VERDE - Puntaje DIRECTO según cantidad de casillas
     // ============================================================
     verde: {
         puntajes: [1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66],
@@ -74,8 +76,9 @@ const PUNTAJES = {
                 m.startsWith('verde-tabla-')
             ).length : 0;
             
-            for (let i = 0; i < marcas && i < this.puntajes.length; i++) {
-                puntos += this.puntajes[i];
+            // Puntaje DIRECTO
+            if (marcas > 0 && marcas <= this.puntajes.length) {
+                puntos = this.puntajes[marcas - 1];
             }
             
             return puntos;

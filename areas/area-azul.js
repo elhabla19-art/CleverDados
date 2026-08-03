@@ -28,7 +28,7 @@ const BONIFICACIONES_FILA = [
     { fila: 2, celdas: [8, 9, 10, 11], bonificacion: 'Lobo', color: '#d32f2f', simbolo: '♦', habilidadGris: 'lobo', indiceGris: 1 }
 ];
 
-// Bonificaciones de columna
+// Bonificaciones de columna (SOLO para desbloqueos, NO suman puntos)
 const BONIFICACIONES_COLUMNA = [
     { col: 0, celdas: [0, 4, 8], bonificacion: 'Espiral', simbolo: '♻', color: '#78909c', tipo: 'espiral', indiceGris: 2 },
     { col: 1, celdas: [1, 5, 9], bonificacion: 'XVerde', simbolo: '✖', color: '#43a047', tipo: 'gris', habilidadGris: 'x', indiceGris: 5 },
@@ -465,7 +465,7 @@ function manejarClickAzul(index) {
 }
 
 // ============================================================
-// RECALCULAR PUNTAJES (FALLBACK)
+// RECALCULAR PUNTAJES (FALLBACK) - SIN BONIFICACIONES DE COLUMNAS
 // ============================================================
 
 function recalcularPuntajesAzul() {
@@ -474,21 +474,16 @@ function recalcularPuntajesAzul() {
         return;
     }
     
+    // Puntaje DIRECTO (sin bonificaciones de columnas)
     let puntos = 0;
-    for (let i = 0; i < progresoAzul && i < PUNTAJES_AZUL.length; i++) {
-        puntos += PUNTAJES_AZUL[i];
+    if (progresoAzul > 0 && progresoAzul <= PUNTAJES_AZUL.length) {
+        puntos = PUNTAJES_AZUL[progresoAzul - 1];
     }
     
-    let puntosColumnas = 0;
-    columnasCompletadasAzul.forEach((completada) => {
-        if (completada) puntosColumnas += 5;
-    });
-    
-    const totalAzul = puntos + puntosColumnas;
-    puntajesAreas.azul = totalAzul;
+    puntajesAreas.azul = puntos;
     
     const element = document.getElementById('score-azul');
-    if (element) element.textContent = totalAzul;
+    if (element) element.textContent = puntos;
     
     let total = 0;
     const areas = ['gris', 'amarilla', 'azul', 'verde', 'naranja', 'morado'];

@@ -420,7 +420,7 @@ function manejarClickVerde(index) {
 }
 
 // ============================================================
-// RECALCULAR PUNTAJES (FALLBACK)
+// RECALCULAR PUNTAJES (FALLBACK) - CON PUNTAJE DIRECTO
 // ============================================================
 
 function recalcularPuntajesVerde() {
@@ -429,11 +429,10 @@ function recalcularPuntajesVerde() {
         return;
     }
     
+    // Puntaje DIRECTO
     let puntos = 0;
-    if (progresoVerde > 0) {
-        for (let i = 0; i < progresoVerde && i < PUNTAJES_VERDE.length; i++) {
-            puntos += PUNTAJES_VERDE[i];
-        }
+    if (progresoVerde > 0 && progresoVerde <= PUNTAJES_VERDE.length) {
+        puntos = PUNTAJES_VERDE[progresoVerde - 1];
     }
     
     puntajesAreas.verde = puntos;
