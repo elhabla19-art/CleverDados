@@ -1,6 +1,11 @@
 // ============================================================
-// MULTIJUGADOR.JS - CORREGIDO (CON LOBOS INCLUIDOS EN EL PUNTAJE)
+// MULTIJUGADOR.JS - CORREGIDO (CON MODO AUTOMÁTICO)
 // ============================================================
+
+// ===== DETECTAR MODO AUTOMATICO =====
+const urlParams = new URLSearchParams(window.location.search);
+const isAutoMode = urlParams.get('auto') === '1';
+const AUTO_ROOM_CODE = 'GRIL';
 
 let clienteMQTT = null;
 let miId = Math.random().toString(36).substr(2, 9);
@@ -18,11 +23,25 @@ function obtenerNombre() {
 }
 
 function mostrarUnirse() {
-    // LIMPIAR EL CAMPO DE CÓDIGO CADA VEZ QUE SE ABRE
+    // Limpiar el campo de código
     const roomCodeInput = document.getElementById('roomCodeInput');
     if (roomCodeInput) {
         roomCodeInput.value = '';
         roomCodeInput.placeholder = 'ABCD';
+        roomCodeInput.readOnly = false;
+        roomCodeInput.style.opacity = '1';
+        roomCodeInput.style.color = 'white';
+    }
+    
+    // Si estamos en modo automatico, precargar el codigo
+    if (isAutoMode) {
+        const roomInput = document.getElementById('roomCodeInput');
+        if (roomInput) {
+            roomInput.value = AUTO_ROOM_CODE;
+            roomInput.readOnly = true;
+            roomInput.style.opacity = '0.7';
+            roomInput.style.color = '#4CAF50';
+        }
     }
     
     document.getElementById('lobbyModal').style.display = 'none';
@@ -30,11 +49,14 @@ function mostrarUnirse() {
 }
 
 function volverLobby() {
-    // LIMPIAR EL CAMPO AL VOLVER
+    // Limpiar el campo al volver
     const roomCodeInput = document.getElementById('roomCodeInput');
     if (roomCodeInput) {
         roomCodeInput.value = '';
         roomCodeInput.placeholder = 'ABCD';
+        roomCodeInput.readOnly = false;
+        roomCodeInput.style.opacity = '1';
+        roomCodeInput.style.color = 'white';
     }
     
     document.getElementById('joinModal').style.display = 'none';
@@ -49,13 +71,19 @@ function crearSala() {
 
 function unirseSala() {
     miNombre = obtenerNombre();
-    const codigo = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-    if (codigo.length !== 4) {
-        alert("El código debe tener 4 letras/números.");
-        return;
+    let codigo;
+    
+    if (isAutoMode) {
+        codigo = AUTO_ROOM_CODE;
+    } else {
+        codigo = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+        if (codigo.length !== 4) {
+            alert("El código debe tener 4 letras/números.");
+            return;
+        }
     }
     
-    // LIMPIAR DESPUÉS DE USAR
+    // Limpiar después de usar
     document.getElementById('roomCodeInput').value = '';
     
     conectarSala(codigo);
@@ -140,7 +168,7 @@ function actualizarDatosPropios() {
     
     datosJugadores[miId] = { 
         nombre: miNombre, 
-        puntaje: puntajesPorArea.total || 0,  // ✅ YA INCLUYE LOBOS
+        puntaje: puntajesPorArea.total || 0,
         movimientos: [...historialMovimientos],
         valoresNaranja: typeof valoresNaranja !== 'undefined' ? [...valoresNaranja] : null,
         valoresMorado: typeof valoresMorado !== 'undefined' ? [...valoresMorado] : null,
@@ -162,7 +190,7 @@ function broadcastPuntaje(accion = 'sync') {
     
     if (typeof PUNTAJES !== 'undefined' && PUNTAJES) {
         puntajesPorArea = PUNTAJES.obtenerPuntajesPorArea();
-        miPuntajeTotal = puntajesPorArea.total || 0;  // ✅ YA INCLUYE LOBOS
+        miPuntajeTotal = puntajesPorArea.total || 0;
     } else {
         // Calcular manual incluyendo lobos
         let total = 0;
@@ -197,7 +225,7 @@ function broadcastPuntaje(accion = 'sync') {
     // Actualizar datos del jugador en memoria local
     datosJugadores[miId] = { 
         nombre: miNombre, 
-        puntaje: miPuntajeTotal,  // ✅ YA INCLUYE LOBOS
+        puntaje: miPuntajeTotal,
         movimientos: [...historialMovimientos],
         valoresNaranja: typeof valoresNaranja !== 'undefined' ? [...valoresNaranja] : null,
         valoresMorado: typeof valoresMorado !== 'undefined' ? [...valoresMorado] : null,
@@ -211,7 +239,7 @@ function broadcastPuntaje(accion = 'sync') {
             accion: accion,
             id: miId,
             nombre: miNombre,
-            puntaje: miPuntajeTotal,  // ✅ YA INCLUYE LOBOS
+            puntaje: miPuntajeTotal,
             movimientos: [...historialMovimientos],
             valoresNaranja: typeof valoresNaranja !== 'undefined' ? [...valoresNaranja] : null,
             valoresMorado: typeof valoresMorado !== 'undefined' ? [...valoresMorado] : null,
@@ -276,6 +304,8 @@ window.miId = miId;
 window.salaActual = salaActual;
 window.datosJugadores = datosJugadores;
 window.miNombre = miNombre;
+window.isAutoMode = isAutoMode;
+window.AUTO_ROOM_CODE = AUTO_ROOM_CODE;
 window.obtenerNombre = obtenerNombre;
 window.mostrarUnirse = mostrarUnirse;
 window.volverLobby = volverLobby;
